@@ -1,0 +1,33 @@
+{
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "{DOCKER_IMAGE}",
+      "network": "BRIDGE",
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "hostPort": 0,
+          "servicePort": 0,
+          "protocol": "tcp"
+        }
+      ]
+    }
+  },
+  "id": "{PUBLISH_ID}",
+  "instances": 1,
+  "cpus": 1,
+  "mem": 600,
+  "backoffFactor": 2,
+  "backoffSeconds": 2,
+  "maxLaunchDelaySeconds": 20,
+  "uris":  [
+      "file:///data/docker.tar.gz"
+  ],
+  "labels": {
+       "group": "{GROUP_NAME}",
+       "serviceName": "{SERVICE_NAME}",
+       "environment":"{ENVIRONMENT}",
+       "appType":"server"
+  }
+}

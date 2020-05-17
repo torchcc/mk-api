@@ -1,0 +1,87 @@
+package conf
+
+import (
+	"os"
+	"path"
+	"strings"
+
+	"mk-api/library/superconf"
+)
+
+const ServiceName string = "mk-server"
+
+var C *Config = nil
+
+type MysqlConfig struct {
+	KeepConnectionAlive bool   `json:"keepConnectionAlive"`
+	MaxConnections      int    `json:"maxConnections"`
+	Port                int    `json:"port"`
+	MinFreeConnections  int    `json:"minFreeConnections"`
+	Host                string `json:"host"`
+	Database            string `json:"database"`
+	Password            string `json:"password"`
+	User                string `json:"user"`
+	Charset             string `json:"charset"`
+}
+
+type RedisConfig struct {
+	Port        int    `json:"port"`
+	Db          int    `json:"db"`
+	Timeout     int    `json:"timeout"`
+	MaxIdle     int    `json:"maxIdle"`
+	MaxActive   int    `json:"maxActive"`
+	IdleTimeout int    `json:"idleTimeout"`
+	Password    string `json:"password"`
+	Host        string `json:"host"`
+}
+
+type MongoConfig struct {
+	Port             int    `json:"port"`
+	Host             string `json:"host"`
+	Db               string `json:"db"`
+	AuthDb           string `json:"auth_db"`
+	ConnectionString string `json:"connection_string"`
+	Collection       string `json:"collection"`
+	Password         string `json:"password"`
+	User             string `json:"user"`
+}
+
+type Config struct {
+	MysqlRead  MysqlConfig
+	MysqlWrite MysqlConfig
+	RedisToken RedisConfig
+	Local      superconf.Config
+	MongoLog   MongoConfig
+	// GenerateOrderKafka kafka.Config
+}
+
+// first define your conf data structure above here , second register your configs here
+func InitConfig() {
+	if C != nil {
+		return
+	}
+	cfg := Config{}
+
+	var allConfigs = make(map[string]interface{})
+	allConfigs["/superconf/union/mysql/read"] = &cfg.MysqlRead
+	allConfigs["/superconf/union/mysql/write"] = &cfg.MysqlWrite
+	allConfigs["/superconf/union/redis/token"] = &cfg.RedisToken
+	allConfigs["/superconf/union/mongo/log"] = &cfg.MongoLog
+	cwd, _ := os.Getwd()
+	pathList := strings.Split(cwd, "/")
+	pathList = pathList[:len(pathList)-1]
+	deployDir := strings.Join(pathList, "/")
+	sc := superconf.NewSuperConfig(path.Join(deployDir, "deployment"), &allConfigs)
+	cfg.Local = *(sc.Config)
+	C = &cfg
+}
+
+func init() {
+	if C == nil {
+		InitConfig()
+	}
+	if C == nil {
+		panic("init config failed")
+	}
+
+}
