@@ -69,7 +69,6 @@ func InitConfig() {
 	allConfigs["/superconf/union/mongo/log"] = &cfg.MongoLog
 	cwd, _ := os.Getwd()
 	pathList := strings.Split(cwd, "/")
-	pathList = pathList[:len(pathList)-1]
 	deployDir := strings.Join(pathList, "/")
 	sc := superconf.NewSuperConfig(path.Join(deployDir, "deployment"), &allConfigs)
 	cfg.Local = *(sc.Config)

@@ -2,15 +2,15 @@ package superconf
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/samuel/go-zookeeper/zk"
 	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/samuel/go-zookeeper/zk"
 )
 
 const superconfJsonFn = "superconf.json"
@@ -75,7 +75,7 @@ type superconfJson struct {
 func loadJsonFile(deploymentDir string) (cfg *superconfJson, err error) {
 	BRANCH := os.Getenv("BRANCH")
 	if BRANCH == "" {
-		return nil, errors.New("failed to get BRANCH ENV")
+		BRANCH = "test"
 	}
 	filename := path.Join(deploymentDir, BRANCH, superconfJsonFn)
 	if data, e := ioutil.ReadFile(filename); e != nil {

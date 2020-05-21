@@ -2,6 +2,7 @@ package dao
 
 import (
 	redigo "github.com/gomodule/redigo/redis"
+	"github.com/jmoiron/sqlx"
 	"mk-api/server/conf"
 )
 
@@ -9,7 +10,7 @@ import (
 var Redis = new(RedisPools)
 
 // 全局mysql db
-var Db = new(DB)
+var Db *sqlx.DB
 
 // Register your redis-cli pool here
 type RedisPools struct {
@@ -17,6 +18,6 @@ type RedisPools struct {
 }
 
 func init() {
-	Db = NewMySQL(&conf.C.MysqlWrite, &conf.C.MysqlRead)
+	Db = NewMySQLx(&conf.C.MysqlWrite)
 	Redis.tokenPool = NewRedisPool(&conf.C.RedisToken)
 }

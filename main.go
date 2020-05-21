@@ -1,24 +1,19 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"time"
+	"os"
+
+	"mk-api/server/router"
 )
 
 func main() {
+	server := router.InitRouter()
+	port := os.Getenv("PORT")
 
-	http.HandleFunc("/", hello)
-	server := &http.Server{
-		Addr: ":8888",
+	// Elastic Beanstalk forwards requests to port 5000
+	if port == "" {
+		port = "5000"
 	}
+	server.Run(":" + port)
 
-	if err := server.ListenAndServe(); err != nil {
-		fmt.Printf("server startup failed, err:%v\n", err)
-	}
-}
-
-func hello(w http.ResponseWriter, _ *http.Request) {
-
-	w.Write([]byte(fmt.Sprint("Now time is:", time.Now())))
 }
