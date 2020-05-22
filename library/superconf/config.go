@@ -4,16 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"path"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/samuel/go-zookeeper/zk"
+	"mk-api/deployment"
 )
-
-const superconfJsonFn = "superconf.json"
 
 type SuperConfig struct {
 	Config   *Config
@@ -26,11 +23,11 @@ type Config struct {
 	ZKServers []string `json:"zk_servers"`
 }
 
-func NewSuperConfig(deploymentDir string, configs *map[string]interface{}) (s *SuperConfig) {
+func NewSuperConfig(configs *map[string]interface{}) (s *SuperConfig) {
 
-	cfg, err := loadJsonFile(deploymentDir)
+	cfg, err := loadJsonFile()
 	if err != nil {
-		panic("load" + superconfJsonFn + " failed: " + err.Error())
+		panic("load" + deployment.SUPERCONF_JSON_ABS_PATH + " failed: " + err.Error())
 	}
 
 	var validCfg = Config{
@@ -54,14 +51,6 @@ func NewSuperConfig(deploymentDir string, configs *map[string]interface{}) (s *S
 	}
 }
 
-func (sc *SuperConfig) connect() (conn *zk.Conn) {
-	var err error
-	if conn, _, err = zk.Connect(sc.Config.ZKServers, time.Second); err != nil {
-		panic(err)
-	}
-	return
-}
-
 // structure of superconf.json
 type superconfJson struct {
 	Env struct {
@@ -72,19 +61,20 @@ type superconfJson struct {
 	} `json:"env"`
 }
 
-func loadJsonFile(deploymentDir string) (cfg *superconfJson, err error) {
-	BRANCH := os.Getenv("BRANCH")
-	if BRANCH == "" {
-		BRANCH = "test"
+func loadJsonFile() (cfg *superconfJson, err error) {
+	data, err := ioutil.ReadFile(deployment.SUPERCONF_JSON_ABS_PATH)
+	if err != nil {
+		return
 	}
-	filename := path.Join(deploymentDir, BRANCH, superconfJsonFn)
-	if data, e := ioutil.ReadFile(filename); e != nil {
-		return nil, e
-	} else {
-		cfg = &superconfJson{}
-		if err = json.Unmarshal(data, &cfg); err != nil {
-			return nil, err
-		}
+	cfg = &superconfJson{}
+	err = json.Unmarshal(data, &cfg)
+	return
+}
+
+func (sc *SuperConfig) connect() (conn *zk.Conn) {
+	var err error
+	if conn, _, err = zk.Connect(sc.Config.ZKServers, time.Second); err != nil {
+		panic(err)
 	}
 	return
 }

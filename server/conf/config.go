@@ -1,16 +1,21 @@
 package conf
 
 import (
-	"os"
-	"path"
-	"strings"
-
 	"mk-api/library/superconf"
 )
 
-const ServiceName string = "mk-server"
+const ServiceName = "mk-server"
 
-var C *Config = nil
+var C *Config
+
+type Config struct {
+	MysqlRead  MysqlConfig
+	MysqlWrite MysqlConfig
+	RedisToken RedisConfig
+	Local      superconf.Config
+	MongoLog   MongoConfig
+	// GenerateOrderKafka kafka.Config
+}
 
 type MysqlConfig struct {
 	KeepConnectionAlive bool   `json:"keepConnectionAlive"`
@@ -46,20 +51,8 @@ type MongoConfig struct {
 	User             string `json:"user"`
 }
 
-type Config struct {
-	MysqlRead  MysqlConfig
-	MysqlWrite MysqlConfig
-	RedisToken RedisConfig
-	Local      superconf.Config
-	MongoLog   MongoConfig
-	// GenerateOrderKafka kafka.Config
-}
-
 // first define your conf data structure above here , second register your configs here
-func InitConfig() {
-	if C != nil {
-		return
-	}
+func init() {
 	cfg := Config{}
 
 	var allConfigs = make(map[string]interface{})
@@ -67,20 +60,8 @@ func InitConfig() {
 	allConfigs["/superconf/union/mysql/write"] = &cfg.MysqlWrite
 	allConfigs["/superconf/union/redis/token"] = &cfg.RedisToken
 	allConfigs["/superconf/union/mongo/log"] = &cfg.MongoLog
-	cwd, _ := os.Getwd()
-	pathList := strings.Split(cwd, "/")
-	deployDir := strings.Join(pathList, "/")
-	sc := superconf.NewSuperConfig(path.Join(deployDir, "deployment"), &allConfigs)
+
+	sc := superconf.NewSuperConfig(&allConfigs)
 	cfg.Local = *(sc.Config)
 	C = &cfg
-}
-
-func init() {
-	if C == nil {
-		InitConfig()
-	}
-	if C == nil {
-		panic("init config failed")
-	}
-
 }
