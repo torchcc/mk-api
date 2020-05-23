@@ -18,7 +18,9 @@
 .
 ├── FAQ.md
 ├── README.md
-├── deployment  
+├── deployment
+│   ├── const.go
+│   ├── const_test.go
 │   ├── local
 │   │   ├── Dockerfile
 │   │   ├── deploy.json
@@ -31,6 +33,10 @@
 │       ├── Dockerfile
 │       ├── deploy.json
 │       └── superconf.json
+├── docs
+│   ├── docs.go
+│   ├── swagger.json
+│   └── swagger.yaml
 ├── go.mod
 ├── go.sum
 ├── library
@@ -42,58 +48,58 @@
 │   ├── superconf
 │   │   └── config.go
 │   └── util
-│       └── json_util.go
+│       ├── conf
+│       │   ├── conf.go
+│       │   └── conf_test.go
+│       ├── cos
+│       │   ├── client.go
+│       │   ├── client_test.go
+│       │   ├── gg.jpeg
+│       │   └── mm.jpeg
+│       ├── json_util.go
+│       └── sms
+│           ├── sms.go
+│           └── sms_test.go
 ├── main.go
 └── server
     ├── conf
     │   ├── config.go
     │   └── config_test.go
-    ├── controller
-    │   ├── admin.go
-    │   ├── admin_login.go
-    │   └── user.go
-    ├── dao
+    ├── controller    // 也叫resource 层
+    │   └── user_controller.go
+    ├── dao     // 数据库连接池
     │   ├── dao.go
     │   ├── redis.go
     │   ├── redis_test.go
     │   ├── sql.go
-    │   └── sql_test.go
-    ├── doc
-    ├── log.go
-    ├── log_test.go
-    ├── logic
-    ├── middleware
-    │   └── middleware.go
-    ├── model
+    │   ├── sql_test.go
+    │   └── sqlx.go
+    ├── dto   // Data transfer object,  接收的参数获， 或者返回的结构体都可以在这里定义。
+    │   └── common.go
+    ├── middleware   /// 中间件
+    │   ├── logger.go
+    │   ├── middleware.go
+    │   └── response.go
+    ├── model          // 模型层， data access object(DAO) 定义在这里
+    │   └── user_model.go
     ├── mq
     │   └── kafka
     │       ├── kafka.go
     │       └── kafka_test.go
-    ├── router
+    ├── router  // 路由层
     │   └── router.go
-    ├── util
-    └── verify
+    ├── service   // 业务逻辑层， 也叫logic, operation 层
+    │   └── user_service.go
+    └── util
+        ├── const.go
+        ├── log.go
+        └── log_test.go
+
+
 ```
 
-- library: 公共库, 可以跨服务用的放在里面， 如全局错误码定义， 可以跨服务用的工具
-
-- server: api服务主目录
-- conf： 配置的注册
-- controller 也就是resource 层
-- dao Database Access Object， 创建redis， mysql， mongo的全局实例, 注意和model层区分
-    - dao中mysql，redis的使用见对应的test文件。 
 - doc: api文档， 用[go-swagger](https://goswagger.io/tutorial/todo-list.html)写文档
     - [自动生成文档](https://juejin.im/post/5b05138cf265da0ba7701a37)
-- logic 也叫做operation层 
-- middleware: 中间件， 如authentication（login_requied）, permission，csrf 等。 
-- model 模型层
-    - DO（数据对象）的定义， sql 语句， 与数据库的交互在着一层完成
-    - 这层不打印错误日志， 错误日志在 logic层打印， 并且在controller层之前要捕捉处理完
-- mq： kafka生产者和消费者client的封装。 
-- route: 路由层
-- util: 本项目的静态常量，本项目的工具类， 工具函数
-- verify : 参数校验层， 可选(看看有没有必要增加着一层)
-
 
 ## 日志：
 - 使用[logrus](https://github.com/sohlich/elogrus)记录日志
@@ -109,12 +115,7 @@ Log.WithFields(logrus.Fields{"order_id": 123456, "user_id": 1}).Errorf("订单�
 
 ## 配置和地址:
 
-- [zookeeper](http://106.53.124.190:9090/login)
-    - 账户： `admin`
-    - 密码: `maikang`
-    
 - mongo, mysql, redis的主机， 端口， 账户， 密码 见zookeeper 的`superconf/union`
-
 
 # go web 项目模版
  - https://github.com/eddycjy/go-gin-example
