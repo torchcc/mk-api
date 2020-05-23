@@ -21,7 +21,8 @@ func TestConf(t *testing.T) {
 		}
 	}()
 
-	for {
-		time.Sleep(time.Second)
-	}
+	// for {
+	// 	time.Sleep(time.Second)
+	// }
+	time.Sleep(time.Second * 20)
 }
