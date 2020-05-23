@@ -1,4 +1,4 @@
-package cos
+package conf
 
 import (
 	"encoding/json"

@@ -10,6 +10,7 @@ import (
 	"path"
 
 	"github.com/tencentyun/cos-go-sdk-v5"
+	. "mk-api/library/util/conf"
 )
 
 const CommonBucketUrl = "https://common-1302104842.cos.ap-guangzhou.myqcloud.com"
