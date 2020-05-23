@@ -26,6 +26,7 @@ type smsParam struct {
 
 }
 
+// 目前只发送注册验证码， 需要发多种业务类型的短信模版的时候再抽象封装。
 func SendRegisterMsg(mobile string, smsVerificationCode string) (err error) {
 
 	credential := common.NewCredential(
