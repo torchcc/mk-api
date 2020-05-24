@@ -21,6 +21,6 @@ RUN \
  && swag init \
  && go build -o app .
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["/src/mk-api/app"]
