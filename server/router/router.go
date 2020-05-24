@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"mk-api/deployment"
 	"mk-api/server/controller"
 
 	"mk-api/docs"
@@ -16,7 +17,7 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	docs.SwaggerInfo.Description = "迈康体检网微信服务号 API"
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
-	docs.SwaggerInfo.Host = "localhost:8080"
+	docs.SwaggerInfo.Host = getHost()
 	docs.SwaggerInfo.BasePath = ""
 
 	router := gin.Default()
@@ -40,4 +41,14 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	}
 
 	return router
+}
+
+func getHost() (host string) {
+	switch deployment.BRANCH {
+	case "test", "prod":
+		host = "106.53.124.190:8080"
+	case "local":
+		host = "localhost:8080"
+	}
+	return
 }
