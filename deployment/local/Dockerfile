@@ -7,21 +7,20 @@ ENV \
     GOARCH=amd64 \
     GOPROXY=https://goproxy.cn,direct \
     ENV_DEPLOY=1 \
-    BRANCH=test \
+    BRANCH=local\
     SERVICE_NAME=mk-api
 
-# 【注意】本地直接在项目目录中：
-# docker build . -t goweb_app -f ./deployment/local/Dockerfile
-
-COPY ./ /src/$SERVICE_NAME/
+COPY ./ /src/$SERVICE_NAME
 
 WORKDIR /src/$SERVICE_NAME/
 
 RUN \
     if ! [ -f "go.mod" ]; then go mod init mk-api; fi \
  && go mod tidy \
+ && go get -u github.com/swaggo/swag/cmd/swag \
+ && swag init \
  && go build -o app .
 
-EXPOSE 8888
+EXPOSE 8080
 
 CMD ["/src/mk-api/app"]
