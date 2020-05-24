@@ -124,3 +124,8 @@ Log.WithFields(logrus.Fields{"order_id": 123456, "user_id": 1}).Errorf("订单�
  - https://github.com/e421083458/go_gateway (这个项目的路由，和controller分层很值得学习)
  
  
+# 运行： 
+```bash
+go get -u github.com/swaggo/swag/cmd/swag 
+swag init
+```
