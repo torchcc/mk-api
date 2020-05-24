@@ -22,4 +22,4 @@
 go.sum
 go.mod
 .DS_Store
-#.docs/
+.docs/
