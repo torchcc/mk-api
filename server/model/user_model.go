@@ -7,13 +7,13 @@ import (
 
 // Data Object
 type User struct {
-	ID       uint32 `json:"id"`
-	Mobile   string `json:"mobile"`
-	UserName string `json:"user_name" db:"user_name"`
-	Avatar   string `json:"avatar"`
-	Gender   string `json:"gender"`
-	Address  string `json:"address"`
-	OpenId   string `json:"open_id" db:"open_id"`
+	ID        uint32 `json:"id"`
+	Mobile    string `json:"mobile"`
+	UserName  string `json:"user_name" db:"user_name"`
+	AvatarUrl string `json:"avatar_url" db:"avatar_url"`
+	Gender    string `json:"gender"`
+	Address   string `json:"address"`
+	OpenId    string `json:"open_id" db:"open_id"`
 }
 
 // Model Class
@@ -63,9 +63,8 @@ func (db *database) FindUserByID(ID uint32) (*User, error) {
 				mu.id,
 				mobile,
 				mup.user_name,
-				avatar,
+				avatar_url,
 				gender,
-				address,
 				open_id  
 			FROM
 				mku_user AS mu          

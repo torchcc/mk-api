@@ -25,6 +25,59 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/": {
+            "get": {
+                "description": "get a single user's info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WechatTag"
+                ],
+                "summary": "Get wechat",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "时间戳",
+                        "name": "timestamp",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "签名",
+                        "name": "signature",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "NONCE",
+                        "name": "nonce",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "回响字符串",
+                        "name": "echostr",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "description": "Get all the existing users",
@@ -202,7 +255,7 @@ var doc = `{
                 "address": {
                     "type": "string"
                 },
-                "avatar": {
+                "avatar_url": {
                     "type": "string"
                 },
                 "gender": {

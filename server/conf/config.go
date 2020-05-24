@@ -14,6 +14,7 @@ type Config struct {
 	RedisToken RedisConfig
 	Local      superconf.Config
 	MongoLog   MongoConfig
+	WeChat     WechatConfig
 	// GenerateOrderKafka kafka.Config
 }
 
@@ -51,6 +52,16 @@ type MongoConfig struct {
 	User             string `json:"user"`
 }
 
+type WechatConfig struct {
+	AppID          string `json:"app_id"`
+	AppSecret      string `json:"app_secret"`
+	Token          string `json:"token"`
+	EncodingAESKey string `json:"encoding_aes_key"`
+	PayMchID       string `json:"pay_mch_id"`     // 支付 - 商户 ID
+	PayNotifyURL   string `json:"pay_notify_url"` // 支付 - 接受微信支付结果通知的接口地址
+	PayKey         string `json:"pay_key"`        // 支付 - 商户后台设置的支付 key
+}
+
 // first define your conf data structure above here , second register your configs here
 func init() {
 	cfg := Config{}
@@ -60,6 +71,7 @@ func init() {
 	allConfigs["/superconf/union/mysql/write"] = &cfg.MysqlWrite
 	allConfigs["/superconf/union/redis/token"] = &cfg.RedisToken
 	allConfigs["/superconf/union/mongo/log"] = &cfg.MongoLog
+	allConfigs["/superconf/third_party/wechat"] = &cfg.WeChat
 
 	sc := superconf.NewSuperConfig(&allConfigs)
 	cfg.Local = *(sc.Config)

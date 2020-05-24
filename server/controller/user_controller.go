@@ -32,7 +32,7 @@ type UserController interface {
 	UserDetail(ctx *gin.Context)
 }
 
-type controller struct {
+type userController struct {
 	service service.UserService
 }
 
@@ -40,7 +40,7 @@ var _ *validator.Validate
 
 func NewUserController(service service.UserService) UserController {
 	_ = validator.New()
-	return &controller{
+	return &userController{
 		service: service,
 	}
 }
@@ -54,7 +54,7 @@ func NewUserController(service service.UserService) UserController {
 // @Success 200 {array} model.User
 // @Failure 401 {object} middleware.Response
 // @Router /users [get]
-func (c *controller) FindAll(ctx *gin.Context) {
+func (c *userController) FindAll(ctx *gin.Context) {
 	data, err := c.service.FindAll()
 	if err != nil {
 		util.Log.Errorf("查找全部用户出错: err: %s\n", err.Error())
@@ -74,7 +74,7 @@ func (c *controller) FindAll(ctx *gin.Context) {
 // @Success 200 {object} middleware.Response
 // @Failure 500 {object} middleware.Response
 // @Router /users [post]
-func (c *controller) Create(ctx *gin.Context) {
+func (c *userController) Create(ctx *gin.Context) {
 	var user model.User
 	var err error
 
@@ -104,7 +104,7 @@ func (c *controller) Create(ctx *gin.Context) {
 // @Failure 400 {object} middleware.Response
 // @Failure 500 {object} middleware.Response
 // @Router /users/{id} [put]
-func (c *controller) Update(ctx *gin.Context) {
+func (c *userController) Update(ctx *gin.Context) {
 	var user model.User
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
@@ -139,7 +139,7 @@ func (c *controller) Update(ctx *gin.Context) {
 // @Param  id path int true "User ID"
 // @Success 200 {object} middleware.Response
 // @Router /users/{id} [get]
-func (c *controller) UserDetail(ctx *gin.Context) {
+func (c *userController) UserDetail(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
 		middleware.ResponseError(ctx, ecode.RequestErr, err)

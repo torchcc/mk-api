@@ -12,7 +12,7 @@ definitions:
     properties:
       address:
         type: string
-      avatar:
+      avatar_url:
         type: string
       gender:
         type: string
@@ -29,6 +29,42 @@ info:
   contact: {}
   license: {}
 paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: get a single user's info
+      parameters:
+      - description: 时间戳
+        in: query
+        name: timestamp
+        required: true
+        type: string
+      - description: 签名
+        in: query
+        name: signature
+        required: true
+        type: string
+      - description: NONCE
+        in: query
+        name: nonce
+        required: true
+        type: string
+      - description: 回响字符串
+        in: query
+        name: echostr
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get wechat
+      tags:
+      - WechatTag
   /users:
     get:
       consumes:

@@ -10,15 +10,17 @@ ENV \
     BRANCH=test \
     SERVICE_NAME=mk-api
 
-COPY ./ /src/
+COPY ./ /src/$SERVICE_NAME
 
 WORKDIR /src/$SERVICE_NAME/
 
 RUN \
     if ! [ -f "go.mod" ]; then go mod init mk-api; fi \
  && go mod tidy \
+ && go get -u github.com/swaggo/swag/cmd/swag \
+ && swag init \
  && go build -o app .
 
-EXPOSE 8888
+EXPOSE 80
 
 CMD ["/src/mk-api/app"]
