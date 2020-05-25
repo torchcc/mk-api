@@ -47,7 +47,7 @@ func NewWechatController() WeChatController {
 // @Success 200 {object} string
 // @Router / [get]
 func (c *wechatController) DockWithWeChatServer(ctx *gin.Context) {
-	timestamp, nonce, signatureIn := ctx.Param("timestamp"), ctx.Param("nonce"), ctx.Param("signature")
+	timestamp, nonce, signatureIn := ctx.Query("timestamp"), ctx.Query("nonce"), ctx.Query("signature")
 	signatureGen := makeSignature(timestamp, nonce)
 
 	if signatureGen != signatureIn {
@@ -56,7 +56,7 @@ func (c *wechatController) DockWithWeChatServer(ctx *gin.Context) {
 
 	} else {
 		// 如果请求来自于微信，则原样返回echostr参数内容 以上完成后，接入验证就会生效，开发者配置提交就会成功。
-		echostr := ctx.Param("echostr")
+		echostr := ctx.Query("echostr")
 		ctx.String(http.StatusOK, "%s", echostr)
 	}
 }
