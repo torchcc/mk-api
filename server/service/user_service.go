@@ -1,9 +1,11 @@
 package service
 
 import (
-	"github.com/sirupsen/logrus"
+	"fmt"
+
+	"github.com/pkg/errors"
+	"mk-api/library/ecode"
 	"mk-api/server/model"
-	"mk-api/server/util"
 )
 
 type UserService interface {
@@ -44,8 +46,8 @@ func (service *userService) FindAll() ([]model.User, error) {
 func (service *userService) Retrieve(ID uint32) (*model.User, error) {
 	u, err := service.model.FindUserByID(ID)
 	if err != nil {
-		util.Log.WithFields(logrus.Fields{"user_id": ID}).Errorf(
-			"根据id查询用户信息失败: %s\n", err.Error())
+		err = errors.Wrap(ecode.ServerErr,
+			fmt.Sprintf("[FindUserByID] Params: [%v] failed with error: %s", ID, err.Error()))
 	}
 	return u, err
 }

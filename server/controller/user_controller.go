@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"mk-api/library/ecode"
 	"mk-api/server/dto"
@@ -147,11 +148,11 @@ func (c *userController) UserDetail(ctx *gin.Context) {
 	}
 
 	user, err := c.service.Retrieve(uint32(id))
-	if err != nil {
+	if _, ok := errors.Cause(err).(ecode.Codes); ok {
 		util.Log.WithFields(logrus.Fields{
 			"user_id": id,
 		}).Errorf("获取用户信息出错: err: %s\n", err.Error())
-		middleware.ResponseError(ctx, ecode.ServerErr, err)
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("服务器内部错误"))
 	} else {
 		middleware.ResponseSuccess(ctx, user)
 	}

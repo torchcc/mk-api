@@ -35,7 +35,7 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	}
 
 	// wechat
-	weChatRouteGroup := router.Group("/")
+	weChatRouteGroup := router.Group("/wx")
 	{
 		controller.WeChatRegister(weChatRouteGroup)
 	}
