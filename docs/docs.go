@@ -232,9 +232,49 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/wx/js_ticket": {
+            "get": {
+                "description": "获取jsApiTicket 签名",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WechatTag"
+                ],
+                "summary": "Get wechat",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "传入需要的调用js-sdk的uri地址",
+                        "name": "uri",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JsApiTicketOutPut"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "dto.JsApiTicketOutPut": {
+            "type": "object",
+            "properties": {
+                "signature": {
+                    "type": "string"
+                }
+            }
+        },
         "middleware.Response": {
             "type": "object",
             "properties": {

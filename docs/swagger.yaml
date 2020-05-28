@@ -1,4 +1,9 @@
 definitions:
+  dto.JsApiTicketOutPut:
+    properties:
+      signature:
+        type: string
+    type: object
   middleware.Response:
     properties:
       data:
@@ -168,4 +173,25 @@ paths:
       summary: Update users
       tags:
       - users
+  /wx/js_ticket:
+    get:
+      consumes:
+      - application/json
+      description: 获取jsApiTicket 签名
+      parameters:
+      - description: 传入需要的调用js-sdk的uri地址
+        in: query
+        name: uri
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.JsApiTicketOutPut'
+      summary: Get wechat
+      tags:
+      - WechatTag
 swagger: "2.0"

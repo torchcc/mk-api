@@ -9,12 +9,13 @@ const ServiceName = "mk-server"
 var C *Config
 
 type Config struct {
-	MysqlRead  MysqlConfig
-	MysqlWrite MysqlConfig
-	RedisToken RedisConfig
-	Local      superconf.Config
-	MongoLog   MongoConfig
-	WeChat     WechatConfig
+	MysqlRead   MysqlConfig
+	MysqlWrite  MysqlConfig
+	RedisToken  RedisConfig
+	RedisWechat RedisConfig
+	Local       superconf.Config
+	MongoLog    MongoConfig
+	WeChat      WechatConfig
 	// GenerateOrderKafka kafka.Config
 }
 
@@ -70,6 +71,7 @@ func init() {
 	allConfigs["/superconf/union/mysql/read"] = &cfg.MysqlRead
 	allConfigs["/superconf/union/mysql/write"] = &cfg.MysqlWrite
 	allConfigs["/superconf/union/redis/token"] = &cfg.RedisToken
+	allConfigs["/superconf/union/redis/wechat"] = &cfg.RedisWechat
 	allConfigs["/superconf/union/mongo/log"] = &cfg.MongoLog
 	allConfigs["/superconf/third_party/wechat"] = &cfg.WeChat
 

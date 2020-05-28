@@ -6,12 +6,18 @@ import (
 	"io"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/silenceper/wechat"
+	"github.com/silenceper/wechat/cache"
 	"github.com/silenceper/wechat/message"
+	"mk-api/library/ecode"
 	"mk-api/server/conf"
+	"mk-api/server/dto"
+	"mk-api/server/middleware"
 	"mk-api/server/util"
 )
 
@@ -19,6 +25,8 @@ import (
 func WeChatRegister(router *gin.RouterGroup) {
 	var wechatController WeChatController = NewWechatController()
 	router.GET("/", wechatController.DockWithWeChatServer)
+	router.GET("/js_ticket", wechatController.JsApiTicket)
+
 }
 
 type WeChatController interface {
@@ -28,15 +36,42 @@ type WeChatController interface {
 }
 
 type wechatController struct {
+	cfg *wechat.Config
+	wc  *wechat.Wechat
 }
 
 func NewWechatController() WeChatController {
-	return &wechatController{}
+	// 创建一个wechat对象
+	rdOpts := cache.RedisOpts{
+		Host:        conf.C.RedisWechat.Host + ":" + strconv.Itoa(conf.C.RedisWechat.Port),
+		Password:    conf.C.RedisWechat.Password,
+		Database:    conf.C.RedisWechat.Db,
+		MaxIdle:     conf.C.RedisWechat.MaxIdle,
+		MaxActive:   conf.C.RedisWechat.MaxActive,
+		IdleTimeout: int32(conf.C.RedisWechat.IdleTimeout),
+	}
+	redisCache := cache.NewRedis(&rdOpts)
+
+	cfg := &wechat.Config{
+		AppID:          conf.C.WeChat.AppID,
+		AppSecret:      conf.C.WeChat.AppSecret,
+		Token:          conf.C.WeChat.Token,
+		EncodingAESKey: conf.C.WeChat.EncodingAESKey,
+		PayMchID:       conf.C.WeChat.PayMchID,
+		PayNotifyURL:   conf.C.WeChat.PayNotifyURL,
+		PayKey:         conf.C.WeChat.PayKey,
+		Cache:          redisCache,
+	}
+
+	return &wechatController{
+		cfg: cfg,
+		wc:  wechat.NewWechat(cfg),
+	}
 }
 
 // UpdateUser godoc
-// @Summary Get wechat
-// @Description get a single user's info
+// @Summary 对接微信
+// @Description 与微信服务器对接，此接口请忽略
 // @Tags WechatTag
 // @Accept json
 // @Produce json
@@ -72,26 +107,37 @@ func makeSignature(timestamp string, nonce string) string {
 	return fmt.Sprintf("%x", s.Sum(nil))
 }
 
+// UpdateUser godoc
+// @Summary 获取签名
+// @Description 获取jsApiTicket 签名
+// @Tags WechatTag
+// @Accept json
+// @Produce json
+// @Param  uri query string true "传入需要的调用js-sdk的uri地址" example "/static/index.html"
+// @Success 200 {object} dto.JsApiTicketOutPut
+// @Router /wx/js_ticket [get]
 func (c *wechatController) JsApiTicket(ctx *gin.Context) {
+	const urlPrefix = "https://www.mkhealth.club"
+	uri := ctx.Query("uri")
+	if uri == "" {
+		middleware.ResponseError(ctx, ecode.RequestErr, errors.New("缺少请求参数uri"))
+		return
+	}
 
+	js := c.wc.GetJs()
+	cfg, err := js.GetConfig(urlPrefix + uri)
+	if err != nil {
+		util.Log.Errorf("failed to get JsApiTicket, Param: %s, err: %v", uri, err)
+		middleware.ResponseError(ctx, ecode.ServerErr, err)
+		return
+	}
+	middleware.ResponseSuccess(ctx, dto.JsApiTicketOutPut{Signature: cfg.Signature})
 }
 
 func (c *wechatController) Echo(ctx *gin.Context) {
-	// 配置微信参数
-	cfg := &wechat.Config{
-		AppID:          conf.C.WeChat.AppID,
-		AppSecret:      conf.C.WeChat.AppSecret,
-		Token:          conf.C.WeChat.Token,
-		EncodingAESKey: conf.C.WeChat.EncodingAESKey,
-		PayMchID:       conf.C.WeChat.PayMchID,
-		PayNotifyURL:   conf.C.WeChat.PayNotifyURL,
-		PayKey:         conf.C.WeChat.PayKey,
-		Cache:          nil,
-	}
 
-	wc := wechat.NewWechat(cfg)
 	// 传入request和responseWriter
-	server := wc.GetServer(ctx.Request, ctx.Writer)
+	server := c.wc.GetServer(ctx.Request, ctx.Writer)
 	// 设置接收消息的处理方法
 	server.SetMessageHandler(func(msg message.MixMessage) *message.Reply {
 
