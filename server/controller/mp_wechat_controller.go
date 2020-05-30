@@ -18,12 +18,18 @@ import (
 	"mk-api/server/conf"
 	"mk-api/server/dto"
 	"mk-api/server/middleware"
+	"mk-api/server/model"
+	"mk-api/server/service"
 	"mk-api/server/util"
 )
 
 // wechat 路由注册
 func WeChatRegister(router *gin.RouterGroup) {
-	var wechatController WeChatController = NewWechatController()
+	var (
+		userModel        model.UserModel       = model.NewUserModel()
+		wechatService    service.WechatService = service.NewWechatService(userModel)
+		wechatController WeChatController      = NewWechatController(wechatService)
+	)
 	router.GET("/", wechatController.DockWithWeChatServer)
 	router.GET("/js_ticket", wechatController.JsApiTicket)
 
@@ -36,11 +42,12 @@ type WeChatController interface {
 }
 
 type wechatController struct {
-	cfg *wechat.Config
-	wc  *wechat.Wechat
+	cfg     *wechat.Config
+	wc      *wechat.Wechat
+	service service.WechatService
 }
 
-func NewWechatController() WeChatController {
+func NewWechatController(service service.WechatService) WeChatController {
 	// 创建一个wechat对象
 	rdOpts := cache.RedisOpts{
 		Host:        conf.C.RedisWechat.Host + ":" + strconv.Itoa(conf.C.RedisWechat.Port),
@@ -64,12 +71,13 @@ func NewWechatController() WeChatController {
 	}
 
 	return &wechatController{
-		cfg: cfg,
-		wc:  wechat.NewWechat(cfg),
+		cfg:     cfg,
+		wc:      wechat.NewWechat(cfg),
+		service: service,
 	}
 }
 
-// UpdateUser godoc
+// DockWechat godoc
 // @Summary 对接微信
 // @Description 与微信服务器对接，此接口请忽略
 // @Tags WechatTag
@@ -107,7 +115,7 @@ func makeSignature(timestamp string, nonce string) string {
 	return fmt.Sprintf("%x", s.Sum(nil))
 }
 
-// UpdateUser godoc
+// JsApiTicket godoc
 // @Summary 获取签名
 // @Description 获取jsApiTicket 签名
 // @Tags WechatTag
@@ -117,7 +125,6 @@ func makeSignature(timestamp string, nonce string) string {
 // @Success 200 {object} dto.JsApiTicketOutPut
 // @Router /wx/js_ticket [get]
 func (c *wechatController) JsApiTicket(ctx *gin.Context) {
-	const urlPrefix = "https://www.mkhealth.club"
 	uri := ctx.Query("uri")
 	if uri == "" {
 		middleware.ResponseError(ctx, ecode.RequestErr, errors.New("缺少请求参数uri"))
@@ -125,13 +132,67 @@ func (c *wechatController) JsApiTicket(ctx *gin.Context) {
 	}
 
 	js := c.wc.GetJs()
-	cfg, err := js.GetConfig(urlPrefix + uri)
+	cfg, err := js.GetConfig(util.UrlPrefix + uri)
 	if err != nil {
 		util.Log.Errorf("failed to get JsApiTicket, Param: %s, err: %v", uri, err)
 		middleware.ResponseError(ctx, ecode.ServerErr, err)
 		return
 	}
 	middleware.ResponseSuccess(ctx, dto.JsApiTicketOutPut{Signature: cfg.Signature})
+}
+
+// Launch Oauth godoc
+// @Summary 发起授权
+// @Description 发起授权，直接在一个button中发一个get请求到这里即可
+// @Tags WechatTag
+// @Success 200 {object} dto.JsApiTicketOutPut
+// @Router /wx/launch_auth [get]
+func (c *wechatController) LaunchAuth(ctx *gin.Context) {
+	staticUrl := ctx.Query("static_url")
+	oau := c.wc.GetOauth()
+	url, err := oau.GetRedirectURL(util.UrlPrefix+"/wx/enter?static_url="+staticUrl, "snsapi_userinfo", "")
+	if err != nil {
+		util.Log.Errorf("fail to launch a oauth2 to wechat server: %v", err)
+		return
+	}
+	ctx.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+// TODO 待测试
+// 发送请求到LaunchAuth 的时候， 重定向到Enter， Enter 重定向到index.html 或者其他页面
+func (c *wechatController) Enter(ctx *gin.Context) {
+	oau := c.wc.GetOauth()
+	code := ctx.Query("code")
+	if code == "" {
+		util.Log.Errorf("failed to get code from wechat server !")
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("failed to get code from wechat server"))
+		return
+	}
+
+	resToken, err := oau.GetUserAccessToken(code)
+	if err != nil || resToken.OpenID == "" {
+		util.Log.Errorf("failed to get access_token/open_id from wechat server !")
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("failed to get access_token/open_id from wechat server"))
+		return
+	}
+
+	token, err := c.service.CheckUserNSetToken(&resToken, oau)
+
+	if err != nil {
+		util.Log.Errorf("查询用户设置token失败， open_id: %s, err: %v",
+			resToken.OpenID, err)
+		middleware.ResponseError(ctx, ecode.ServerErr, err)
+		return
+	}
+
+	homePageUrl := "" // 这个由想进入的页面设定
+	staticUrl := ctx.Query("static_url")
+	if staticUrl == "" {
+		staticUrl = homePageUrl
+	}
+	ctx.SetCookie("token", token, 7200, "", "", true, false)
+	ctx.Redirect(http.StatusTemporaryRedirect, staticUrl)
+
 }
 
 func (c *wechatController) Echo(ctx *gin.Context) {

@@ -2,25 +2,25 @@ package dao
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gomodule/redigo/redis"
 	"mk-api/server/conf"
 )
 
+var redisCfg = &conf.RedisConfig{
+	Host:        "106.53.124.190",
+	Port:        6979,
+	Db:          0,
+	Timeout:     0,
+	MaxIdle:     0,
+	MaxActive:   0,
+	IdleTimeout: 0,
+	Password:    "",
+}
+
 func TestRedis(t *testing.T) {
 
-	redisCfg := &conf.RedisConfig{
-		Host:        "106.53.124.190",
-		Port:        6979,
-		Db:          0,
-		Timeout:     0,
-		MaxIdle:     0,
-		MaxActive:   0,
-		IdleTimeout: 0,
-		Password:    "",
-	}
-	// if you want to test whether the global configuration conf.C , use the row below
-	// redisCfg := &conf.C.RedisToken
 	redisP := NewRedisPool(redisCfg)
 	c := redisP.Get()
 	defer c.Close()
@@ -38,4 +38,33 @@ func TestRedis(t *testing.T) {
 	}
 	t.Logf("key: %s, value: %d\n", "troy", r)
 
+}
+
+func TestEncapsulatedRedis(t *testing.T) {
+	rd := NewRedis(redisCfg)
+
+	if err := rd.Set("fuck", "xue mei"); err != nil {
+		t.Errorf("redis set err: %v", err)
+	} else {
+		t.Logf("redis set done!")
+	}
+
+	val := rd.Get("fuck")
+	t.Logf("get done! key: fuck, val: %s", val.(string))
+
+	err := rd.SetEx("name", "lisa", time.Second*10)
+	if err != nil {
+		t.Errorf("redis err: %v", err)
+	} else {
+		t.Logf("SetEx Done!")
+	}
+
+	if err := rd.HSet("xuemei", "lvl", 20); err != nil {
+		t.Errorf("redis Hset err: %v", err)
+	} else {
+		t.Logf("HSet Done!")
+	}
+
+	res := rd.HGet("xuemei", "lvl")
+	t.Logf("Hget Done! the val of xuemei cup is %v", res.(float64))
 }

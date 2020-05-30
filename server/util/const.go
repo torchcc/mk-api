@@ -1,3 +1,4 @@
 package util
 
-const ServiceName string = "mk-server"
+const ServiceName = "mk-server"
+const UrlPrefix = "https://www.mkhealth.club"

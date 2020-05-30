@@ -27,8 +27,8 @@ func NewUserService(userModel model.UserModel) UserService {
 }
 
 func (service *userService) Save(user model.User) (uint32, error) { // user以后替换成dto 的对象， 不是do
-	id, err := service.model.Save(user)
-	return id, err
+	id, err := service.model.Save(&user)
+	return uint32(id), err
 }
 
 func (service *userService) Update(user model.User) error {
