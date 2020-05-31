@@ -9,7 +9,7 @@ import (
 )
 
 type UserService interface {
-	Save(model.User) (uint32, error)
+	Save(model.User) (int64, error)
 	Update(model.User) error
 	Delete(model.User) error
 	FindAll() ([]model.User, error)
@@ -26,9 +26,9 @@ func NewUserService(userModel model.UserModel) UserService {
 	}
 }
 
-func (service *userService) Save(user model.User) (uint32, error) { // user以后替换成dto 的对象， 不是do
+func (service *userService) Save(user model.User) (int64, error) { // user以后替换成dto 的对象， 不是do
 	id, err := service.model.Save(&user)
-	return uint32(id), err
+	return id, err
 }
 
 func (service *userService) Update(user model.User) error {

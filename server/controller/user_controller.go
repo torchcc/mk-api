@@ -113,13 +113,13 @@ func (c *userController) Update(ctx *gin.Context) {
 		return
 	}
 
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 	if err != nil {
 		middleware.ResponseError(ctx, ecode.RequestErr, err)
 		return
 	}
 
-	user.ID = uint32(id)
+	user.ID = id
 
 	if err = c.service.Update(user); err != nil {
 		util.Log.WithFields(logrus.Fields{

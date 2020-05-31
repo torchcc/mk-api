@@ -10,11 +10,11 @@ import (
 
 // Data Object
 type User struct {
-	ID        int    `json:"id"`
+	ID        int64  `json:"id" db:"id"`
 	Mobile    string `json:"mobile"`
 	UserName  string `json:"user_name" db:"user_name"`
 	AvatarUrl string `json:"avatar_url" db:"avatar_url"`
-	Gender    int32  `json:"gender"`
+	Gender    int32  `json:"gender" db:"gender"`
 	OpenId    string `json:"open_id" db:"open_id"`
 	Country   string `json:"country" db:"country"`
 	Province  string `json:"province" db:"province"`
@@ -23,19 +23,19 @@ type User struct {
 
 // Model Class
 type UserModel interface {
-	Save(user *User) (int, error)
+	Save(user *User) (int64, error)
 	Update(user User) error
 	Delete(user User) error
 	FindAll() ([]User, error)
 	FindUserByID(uint32) (*User, error)
-	FindUserByOpenId(openId string) (id int, mobile string, err error)
+	FindUserByOpenId(openId string) (id int64, mobile string, err error)
 }
 
 type database struct {
 	connection *sqlx.DB
 }
 
-func (db *database) Save(u *User) (id int, err error) {
+func (db *database) Save(u *User) (id int64, err error) {
 	tx, err := db.connection.Beginx()
 	if err != nil {
 		util.Log.Errorf("begin trans failed, err: %v", err)
@@ -62,7 +62,7 @@ func (db *database) Save(u *User) (id int, err error) {
 		return 0, err
 	}
 
-	idInt64, err := rs.LastInsertId()
+	id, err = rs.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
@@ -77,7 +77,7 @@ func (db *database) Save(u *User) (id int, err error) {
 			city, 
 			create_time,
 			update_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	rs, err = tx.Exec(cmd2, idInt64, u.UserName, u.AvatarUrl, u.Gender, u.Country, u.Province, u.City,
+	rs, err = tx.Exec(cmd2, id, u.UserName, u.AvatarUrl, u.Gender, u.Country, u.Province, u.City,
 		time.Now().Unix(), time.Now().Unix())
 
 	if err != nil {
@@ -87,10 +87,10 @@ func (db *database) Save(u *User) (id int, err error) {
 		return 0, err
 	}
 
-	return int(idInt64), err
+	return id, err
 }
 
-func (db *database) FindUserByOpenId(openId string) (id int, mobile string, err error) {
+func (db *database) FindUserByOpenId(openId string) (id int64, mobile string, err error) {
 	var u User
 	cmd := `SELECT id, mobile FROM mku_user WHERE open_id = ? AND is_deleted = 0`
 	err = db.connection.Get(&u, cmd, openId)

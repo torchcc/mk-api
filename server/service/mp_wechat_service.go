@@ -38,7 +38,7 @@ func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken,
 	// redis has openId-userInfo
 	if res, _ := cli.Do("EXISTS", openIdKey); res.(int64) > 0 {
 
-		userId, _ := redis.Int(cli.Do("HGET", openIdKey, "user_id"))
+		userId, _ := redis.Int64(cli.Do("HGET", openIdKey, "user_id"))
 		mobile, _ := redis.String(cli.Do("HGET", openIdKey, "mobile"))
 		return service.handleUserExists(userId, mobile, resToken, cli)
 
@@ -79,8 +79,8 @@ func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken,
 
 }
 
-func (service *wechatService) setToken(token string, mobile string, userId int, cli redis.Conn) {
-	userIdTokenKey := "user_id_token." + strconv.Itoa(userId)
+func (service *wechatService) setToken(token string, mobile string, userId int64, cli redis.Conn) {
+	userIdTokenKey := "user_id_token." + strconv.FormatInt(userId, 10)
 
 	_ = cli.Send("SETEX", userIdTokenKey, token, time.Second*7200)
 
@@ -91,14 +91,16 @@ func (service *wechatService) setToken(token string, mobile string, userId int, 
 	_ = cli.Flush()
 }
 
-func (service *wechatService) setOpenIdUserInfo(openIdKey string, userId int, mobile string, cli redis.Conn) {
+func (service *wechatService) setOpenIdUserInfo(openIdKey string, userId int64, mobile string, cli redis.Conn) {
 	_ = cli.Send("HSET", openIdKey, "user_id", userId)
 	_ = cli.Send("HSET", openIdKey, "user_id", mobile)
 	_ = cli.Flush()
 }
 
-func (service *wechatService) handleUserExists(userId int, mobile string, resToken *oauth.ResAccessToken, cli redis.Conn) (token string, err error) {
-	userIdTokenKey := "user_id_token." + strconv.Itoa(userId)
+// 设置 user_id_token.1232: token
+// 设置 token.xxx: {user_id: id, mobile: mobile}
+func (service *wechatService) handleUserExists(userId int64, mobile string, resToken *oauth.ResAccessToken, cli redis.Conn) (token string, err error) {
+	userIdTokenKey := "user_id_token." + strconv.FormatInt(userId, 10)
 	if token, err = redis.String(cli.Do("GET", userIdTokenKey)); err != nil {
 		// token过期了
 		token = util.OpenId2Token(resToken.OpenID)
@@ -106,5 +108,4 @@ func (service *wechatService) handleUserExists(userId int, mobile string, resTok
 	}
 	// token 没过期
 	return token, nil
-
 }
