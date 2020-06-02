@@ -76,19 +76,6 @@ func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken,
 	// 设置 token.xxx: {user_id: id, mobile: mobile}
 	service.setToken(util.OpenId2Token(resToken.OpenID), "", userId, cli)
 	return
-
-}
-
-func (service *wechatService) setToken(token string, mobile string, userId int64, cli redis.Conn) {
-	userIdTokenKey := "user_id_token." + strconv.FormatInt(userId, 10)
-
-	_ = cli.Send("SETEX", userIdTokenKey, token, time.Second*7200)
-
-	tokenUserInfoKey := "token." + token
-	_ = cli.Send("HSET", tokenUserInfoKey, "user_id", userId)
-	_ = cli.Send("HSET", tokenUserInfoKey, "mobile", mobile)
-	_ = cli.Send("EXPIRE", tokenUserInfoKey, time.Second*7200)
-	_ = cli.Flush()
 }
 
 func (service *wechatService) setOpenIdUserInfo(openIdKey string, userId int64, mobile string, cli redis.Conn) {
@@ -108,4 +95,16 @@ func (service *wechatService) handleUserExists(userId int64, mobile string, resT
 	}
 	// token 没过期
 	return token, nil
+}
+
+func (service *wechatService) setToken(token string, mobile string, userId int64, cli redis.Conn) {
+	userIdTokenKey := "user_id_token." + strconv.FormatInt(userId, 10)
+
+	_ = cli.Send("SETEX", userIdTokenKey, token, time.Second*7200)
+
+	tokenUserInfoKey := "token." + token
+	_ = cli.Send("HSET", tokenUserInfoKey, "user_id", userId)
+	_ = cli.Send("HSET", tokenUserInfoKey, "mobile", mobile)
+	_ = cli.Send("EXPIRE", tokenUserInfoKey, time.Second*7200)
+	_ = cli.Flush()
 }

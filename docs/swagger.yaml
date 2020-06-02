@@ -1,7 +1,71 @@
 definitions:
+  dto.CreateUserAddrInput:
+    properties:
+      building_detail:
+        type: string
+      city_id:
+        type: integer
+      county_id:
+        type: integer
+      is_default:
+        type: integer
+      province_id:
+        type: integer
+      town_id:
+        type: integer
+    required:
+    - building_detail
+    - city_id
+    - county_id
+    - province_id
+    - town_id
+    type: object
+  dto.GetUserAddrOutput:
+    properties:
+      building_detail:
+        type: string
+      city_id:
+        type: integer
+      county_id:
+        type: integer
+      id:
+        type: integer
+      is_default:
+        type: integer
+      province_id:
+        type: integer
+      town_id:
+        type: integer
+    required:
+    - building_detail
+    - city_id
+    - county_id
+    - province_id
+    - town_id
+    type: object
   dto.JsApiTicketOutPut:
     properties:
       signature:
+        type: string
+    type: object
+  dto.ResourceID:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.UserDetailOutput:
+    properties:
+      avatar_url:
+        type: string
+      gender:
+        type: integer
+      id:
+        type: integer
+      mobile:
+        type: string
+      open_id:
+        type: string
+      user_name:
         type: string
     type: object
   middleware.Response:
@@ -15,20 +79,57 @@ definitions:
     type: object
   model.User:
     properties:
-      address:
-        type: string
       avatar_url:
         type: string
-      gender:
+      city:
         type: string
+      country:
+        type: string
+      gender:
+        type: integer
       id:
         type: integer
       mobile:
         type: string
       open_id:
         type: string
+      province:
+        type: string
       user_name:
         type: string
+    type: object
+  model.UserAddr:
+    properties:
+      building_detail:
+        type: string
+      city_id:
+        type: integer
+      city_name:
+        type: string
+      county_id:
+        type: integer
+      county_name:
+        type: string
+      id:
+        type: integer
+      is_default:
+        type: integer
+      province_id:
+        type: integer
+      province_name:
+        type: string
+      town_id:
+        type: integer
+      town_name:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - building_detail
+    - city_id
+    - county_id
+    - province_id
+    - town_id
     type: object
 info:
   contact: {}
@@ -38,7 +139,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: get a single user's info
+      description: 与微信服务器对接，此接口请忽略
       parameters:
       - description: 时间戳
         in: query
@@ -67,7 +168,7 @@ paths:
           description: OK
           schema:
             type: string
-      summary: Get wechat
+      summary: 对接微信
       tags:
       - WechatTag
   /users:
@@ -119,32 +220,12 @@ paths:
       - users
       - create
   /users/{id}:
-    get:
-      consumes:
-      - application/json
-      description: get a single user's info
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/middleware.Response'
-      summary: Get users
-      tags:
-      - users
     put:
       consumes:
       - application/json
       description: Update a single user
       parameters:
-      - description: User ID
+      - description: User Id
         in: path
         name: id
         required: true
@@ -173,6 +254,150 @@ paths:
       summary: Update users
       tags:
       - users
+  /users/addrs:
+    get:
+      description: 获取收件地址列表
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.UserAddr'
+                  type: array
+              type: object
+      summary: 个人中心->账户信息->收件地址
+      tags:
+      - addrs
+    post:
+      consumes:
+      - application/json
+      description: 新增地址
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 新增用户收件地址
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserAddrInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ResourceID'
+              type: object
+      summary: 新增用户收件地址
+      tags:
+      - addrs
+  /users/addrs/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除单个收件地址的
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: addr id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ResourceID'
+              type: object
+      summary: 删除单个收件地址的
+      tags:
+      - addrs
+    get:
+      consumes:
+      - application/json
+      description: 获取单个收件地址的详情
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: addr id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.GetUserAddrOutput'
+              type: object
+      summary: 获取单个收件地址的详情
+      tags:
+      - addrs
+  /users/user_detail:
+    get:
+      consumes:
+      - application/json
+      description: get a single user's info
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserDetailOutput'
+              type: object
+      summary: 个人中心->账户信息
+      tags:
+      - users
   /wx/js_ticket:
     get:
       consumes:
@@ -191,7 +416,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.JsApiTicketOutPut'
-      summary: Get wechat
+      summary: 获取签名
+      tags:
+      - WechatTag
+  /wx/launch_auth:
+    get:
+      description: 发起授权，直接在一个button中发一个get请求到这里即可
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.JsApiTicketOutPut'
+      summary: 发起授权
       tags:
       - WechatTag
 swagger: "2.0"

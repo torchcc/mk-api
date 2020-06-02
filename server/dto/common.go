@@ -1,5 +1,5 @@
 package dto
 
 type ResourceID struct {
-	ID int64 `json:"id"`
+	Id int64 `json:"id"`
 }

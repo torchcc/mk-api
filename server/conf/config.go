@@ -58,7 +58,7 @@ type WechatConfig struct {
 	AppSecret      string `json:"app_secret"`
 	Token          string `json:"token"`
 	EncodingAESKey string `json:"encoding_aes_key"`
-	PayMchID       string `json:"pay_mch_id"`     // 支付 - 商户 ID
+	PayMchID       string `json:"pay_mch_id"`     // 支付 - 商户 Id
 	PayNotifyURL   string `json:"pay_notify_url"` // 支付 - 接受微信支付结果通知的接口地址
 	PayKey         string `json:"pay_key"`        // 支付 - 商户后台设置的支付 key
 }

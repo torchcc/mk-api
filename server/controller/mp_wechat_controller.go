@@ -190,7 +190,7 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 	if staticUrl == "" {
 		staticUrl = homePageUrl
 	}
-	ctx.SetCookie("token", token, 7200, "", "", true, false)
+	ctx.SetCookie("token", token, 7200, "", "", false, false)
 	ctx.Redirect(http.StatusTemporaryRedirect, staticUrl)
 
 }

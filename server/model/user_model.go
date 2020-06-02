@@ -5,6 +5,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"mk-api/server/dao"
+	"mk-api/server/dto"
 	"mk-api/server/util"
 )
 
@@ -27,15 +28,15 @@ type UserModel interface {
 	Update(user User) error
 	Delete(user User) error
 	FindAll() ([]User, error)
-	FindUserByID(uint32) (*User, error)
+	FindUserByID(id int64) (*dto.UserDetailOutput, error)
 	FindUserByOpenId(openId string) (id int64, mobile string, err error)
 }
 
-type database struct {
+type userDatabase struct {
 	connection *sqlx.DB
 }
 
-func (db *database) Save(u *User) (id int64, err error) {
+func (db *userDatabase) Save(u *User) (id int64, err error) {
 	tx, err := db.connection.Beginx()
 	if err != nil {
 		util.Log.Errorf("begin trans failed, err: %v", err)
@@ -90,7 +91,7 @@ func (db *database) Save(u *User) (id int64, err error) {
 	return id, err
 }
 
-func (db *database) FindUserByOpenId(openId string) (id int64, mobile string, err error) {
+func (db *userDatabase) FindUserByOpenId(openId string) (id int64, mobile string, err error) {
 	var u User
 	cmd := `SELECT id, mobile FROM mku_user WHERE open_id = ? AND is_deleted = 0`
 	err = db.connection.Get(&u, cmd, openId)
@@ -99,28 +100,28 @@ func (db *database) FindUserByOpenId(openId string) (id int64, mobile string, er
 
 // model 层有错误要抛出去给 service 层
 func NewUserModel() UserModel {
-	return &database{
+	return &userDatabase{
 		connection: dao.Db,
 	}
 }
 
-func (db *database) Update(user User) error {
+func (db *userDatabase) Update(user User) error {
 	return nil
 
 }
 
-func (db *database) Delete(user User) error {
+func (db *userDatabase) Delete(user User) error {
 	return nil
 }
 
-func (db *database) FindAll() ([]User, error) {
+func (db *userDatabase) FindAll() ([]User, error) {
 	var users []User
 	// sql
 	return users, nil
 }
 
-func (db *database) FindUserByID(ID uint32) (*User, error) {
-	var u User
+func (db *userDatabase) FindUserByID(ID int64) (*dto.UserDetailOutput, error) {
+	var u dto.UserDetailOutput
 
 	cmd := `SELECT
 				mu.id,

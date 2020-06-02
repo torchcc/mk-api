@@ -27,7 +27,7 @@ var doc = `{
     "paths": {
         "/": {
             "get": {
-                "description": "get a single user's info",
+                "description": "与微信服务器对接，此接口请忽略",
                 "consumes": [
                     "application/json"
                 ],
@@ -37,7 +37,7 @@ var doc = `{
                 "tags": [
                     "WechatTag"
                 ],
-                "summary": "Get wechat",
+                "summary": "对接微信",
                 "parameters": [
                     {
                         "type": "string",
@@ -150,7 +150,202 @@ var doc = `{
                 }
             }
         },
-        "/users/{id}": {
+        "/users/addrs": {
+            "get": {
+                "description": "获取收件地址列表",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "addrs"
+                ],
+                "summary": "个人中心-\u003e账户信息-\u003e收件地址",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.UserAddr"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "新增地址",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "addrs"
+                ],
+                "summary": "新增用户收件地址",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "新增用户收件地址",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateUserAddrInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ResourceID"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/users/addrs/{id}": {
+            "get": {
+                "description": "获取单个收件地址的详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "addrs"
+                ],
+                "summary": "获取单个收件地址的详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "addr id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.GetUserAddrOutput"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除单个收件地址的",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "addrs"
+                ],
+                "summary": "删除单个收件地址的",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "addr id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ResourceID"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/users/user_detail": {
             "get": {
                 "description": "get a single user's info",
                 "consumes": [
@@ -162,13 +357,13 @@ var doc = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Get users",
+                "summary": "个人中心-\u003e账户信息",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -176,11 +371,25 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/middleware.Response"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.UserDetailOutput"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
-            },
+            }
+        },
+        "/users/{id}": {
             "put": {
                 "description": "Update a single user",
                 "consumes": [
@@ -196,7 +405,7 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "User ID",
+                        "description": "User Id",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -245,7 +454,7 @@ var doc = `{
                 "tags": [
                     "WechatTag"
                 ],
-                "summary": "Get wechat",
+                "summary": "获取签名",
                 "parameters": [
                     {
                         "type": "string",
@@ -264,13 +473,124 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/wx/launch_auth": {
+            "get": {
+                "description": "发起授权，直接在一个button中发一个get请求到这里即可",
+                "tags": [
+                    "WechatTag"
+                ],
+                "summary": "发起授权",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JsApiTicketOutPut"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "dto.CreateUserAddrInput": {
+            "type": "object",
+            "required": [
+                "building_detail",
+                "city_id",
+                "county_id",
+                "province_id",
+                "town_id"
+            ],
+            "properties": {
+                "building_detail": {
+                    "type": "string"
+                },
+                "city_id": {
+                    "type": "integer"
+                },
+                "county_id": {
+                    "type": "integer"
+                },
+                "is_default": {
+                    "type": "integer"
+                },
+                "province_id": {
+                    "type": "integer"
+                },
+                "town_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.GetUserAddrOutput": {
+            "type": "object",
+            "required": [
+                "building_detail",
+                "city_id",
+                "county_id",
+                "province_id",
+                "town_id"
+            ],
+            "properties": {
+                "building_detail": {
+                    "type": "string"
+                },
+                "city_id": {
+                    "type": "integer"
+                },
+                "county_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_default": {
+                    "type": "integer"
+                },
+                "province_id": {
+                    "type": "integer"
+                },
+                "town_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.JsApiTicketOutPut": {
             "type": "object",
             "properties": {
                 "signature": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ResourceID": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.UserDetailOutput": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "mobile": {
+                    "type": "string"
+                },
+                "open_id": {
+                    "type": "string"
+                },
+                "user_name": {
                     "type": "string"
                 }
             }
@@ -292,14 +612,17 @@ var doc = `{
         "model.User": {
             "type": "object",
             "properties": {
-                "address": {
-                    "type": "string"
-                },
                 "avatar_url": {
                     "type": "string"
                 },
-                "gender": {
+                "city": {
                     "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -310,8 +633,59 @@ var doc = `{
                 "open_id": {
                     "type": "string"
                 },
+                "province": {
+                    "type": "string"
+                },
                 "user_name": {
                     "type": "string"
+                }
+            }
+        },
+        "model.UserAddr": {
+            "type": "object",
+            "required": [
+                "building_detail",
+                "city_id",
+                "county_id",
+                "province_id",
+                "town_id"
+            ],
+            "properties": {
+                "building_detail": {
+                    "type": "string"
+                },
+                "city_id": {
+                    "type": "integer"
+                },
+                "city_name": {
+                    "type": "string"
+                },
+                "county_id": {
+                    "type": "integer"
+                },
+                "county_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_default": {
+                    "type": "integer"
+                },
+                "province_id": {
+                    "type": "integer"
+                },
+                "province_name": {
+                    "type": "string"
+                },
+                "town_id": {
+                    "type": "integer"
+                },
+                "town_name": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         }
