@@ -151,14 +151,10 @@ func (db *addrDatabase) UpdateUserAddr(id int64, addr *dto.UpdateUserAddrInput) 
 				id = :id
 				AND is_deleted = 0`
 
-	type param struct {
+	_, err = db.connection.NamedExec(cmd, struct {
 		Id int64 `json:"id" db:"id"`
 		dto.UpdateUserAddrInput
-	}
-	_, err = db.connection.NamedExec(cmd, param{
-		Id:                  id,
-		UpdateUserAddrInput: *addr,
-	})
+	}{Id: id, UpdateUserAddrInput: *addr})
 	return
 }
 
