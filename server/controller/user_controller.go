@@ -30,6 +30,7 @@ func UserRegister(router *gin.RouterGroup) {
 	router.POST("/addrs", middleware.MobileBoundRequired(), userController.CreateUserAddr)
 	router.GET("/addrs/:id", middleware.MobileBoundRequired(), userController.GetUserAddr)
 	router.DELETE("/addrs/:id", middleware.MobileBoundRequired(), userController.DelUserAddr)
+	router.PUT("/addrs/:id", middleware.MobileBoundRequired(), userController.UpdateUserAddr)
 }
 
 type UserController interface {
@@ -37,10 +38,12 @@ type UserController interface {
 	Create(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	UserDetail(ctx *gin.Context)
+
 	ListUserAddr(ctx *gin.Context)
 	CreateUserAddr(ctx *gin.Context)
 	GetUserAddr(ctx *gin.Context)
 	DelUserAddr(ctx *gin.Context)
+	UpdateUserAddr(ctx *gin.Context)
 }
 
 type userController struct {
@@ -256,6 +259,40 @@ func (c *userController) DelUserAddr(ctx *gin.Context) {
 	if err != nil {
 		util.Log.Errorf("根据id删除addr失败, err: [%s]", err.Error())
 		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("服务器内部错误"))
+	} else {
+		middleware.ResponseSuccess(ctx, dto.ResourceID{Id: id})
+	}
+}
+
+// PutUserAddr godoc
+// @Summary 修改单个收件地址的
+// @Description 修改单个收件地址的
+// @Tags addrs
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Param  id path int true "addr id"
+// @Param body body dto.UpdateUserAddrInput true "修改用户收件地址"
+// @Success 200 {object} middleware.Response{data=dto.ResourceID} "success"
+// @Router /users/addrs/{id} [put]
+func (c *userController) UpdateUserAddr(ctx *gin.Context) {
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	if err != nil {
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+
+	var addr dto.UpdateUserAddrInput
+	err = ctx.ShouldBindJSON(&addr)
+	if err != nil {
+		util.Log.Errorf("参数绑定错误, err: [%s]", err.Error())
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+	err = c.service.UpdateUserAddr(ctx, id, &addr)
+	if err != nil {
+		util.Log.Errorf("修改用户收件地址失败, id: [%d] 参数: [%v], err: [%s]", id, addr, err.Error())
+		middleware.ResponseError(ctx, ecode.ServerErr, err)
 	} else {
 		middleware.ResponseSuccess(ctx, dto.ResourceID{Id: id})
 	}

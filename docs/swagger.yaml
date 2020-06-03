@@ -53,6 +53,8 @@ definitions:
       id:
         type: integer
     type: object
+  dto.UpdateUserAddrInput:
+    $ref: '#/definitions/dto.CreateUserAddrInput'
   dto.UserDetailOutput:
     properties:
       avatar_url:
@@ -370,6 +372,42 @@ paths:
                   $ref: '#/definitions/dto.GetUserAddrOutput'
               type: object
       summary: 获取单个收件地址的详情
+      tags:
+      - addrs
+    put:
+      consumes:
+      - application/json
+      description: 修改单个收件地址的
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: addr id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 修改用户收件地址
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserAddrInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ResourceID'
+              type: object
+      summary: 修改单个收件地址的
       tags:
       - addrs
   /users/user_detail:

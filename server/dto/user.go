@@ -28,3 +28,5 @@ type GetUserAddrOutput struct {
 	BuildingDetail string `json:"building_detail" db:"building_detail" binding:"required,min=2,max=150" comment:"街道楼栋门牌详细字符串"`
 	IsDefault      int8   `json:"is_default" db:"is_default" binding:"oneof=0 1" comment:"是否设置为默认地址"`
 }
+
+type UpdateUserAddrInput CreateUserAddrInput

@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 
+	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"mk-api/library/ecode"
 	"mk-api/server/dto"
@@ -20,6 +21,7 @@ type UserService interface {
 	SaveAddr(addr *model.UserAddr) (id int64, err error)
 	RetrieveAddr(id int64) (addr *dto.GetUserAddrOutput, err error)
 	DeleteAddr(id int64) (err error)
+	UpdateUserAddr(ctx *gin.Context, id int64, addr *dto.UpdateUserAddrInput) (err error)
 }
 
 type userService struct {
@@ -106,6 +108,17 @@ func (service *userService) DeleteAddr(id int64) (err error) {
 	err = service.addrModel.DeleteUserAddrByAddrId(id)
 	if err != nil {
 		util.Log.Errorf("删除用户收件地址出错, err: [%s]", err.Error())
+	}
+	return
+}
+
+func (service *userService) UpdateUserAddr(ctx *gin.Context, id int64, addr *dto.UpdateUserAddrInput) (err error) {
+	if addr.IsDefault == 1 {
+		_ = service.addrModel.CancelOriginDefaultAddr(ctx.GetInt64("userId"))
+	}
+	err = service.addrModel.UpdateUserAddr(id, addr)
+	if err != nil {
+		util.Log.Errorf("修改用户收件地址出错, err: [%s]", err.Error())
 	}
 	return
 }

@@ -295,6 +295,64 @@ var doc = `{
                     }
                 }
             },
+            "put": {
+                "description": "修改单个收件地址的",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "addrs"
+                ],
+                "summary": "修改单个收件地址的",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "addr id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "修改用户收件地址",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateUserAddrInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ResourceID"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "删除单个收件地址的",
                 "consumes": [
@@ -571,6 +629,9 @@ var doc = `{
                     "type": "integer"
                 }
             }
+        },
+        "dto.UpdateUserAddrInput": {
+            "$ref": "#/definitions/dto.CreateUserAddrInput"
         },
         "dto.UserDetailOutput": {
             "type": "object",

@@ -30,6 +30,7 @@ type UserAddrModel interface {
 	CancelOriginDefaultAddr(userId int64) (err error)
 	FindUserAddrByAddrId(id int64) (addr *dto.GetUserAddrOutput, err error)
 	DeleteUserAddrByAddrId(id int64) (err error)
+	UpdateUserAddr(id int64, addr *dto.UpdateUserAddrInput) (err error)
 }
 
 type addrDatabase struct {
@@ -133,6 +134,31 @@ func (db *addrDatabase) FindUserAddrByAddrId(id int64) (addr *dto.GetUserAddrOut
 func (db *addrDatabase) DeleteUserAddrByAddrId(id int64) (err error) {
 	cmd := `UPDATE mku_user_address SET is_deleted = 1 WHERE id = ? AND is_deleted = 0`
 	_, err = db.connection.Exec(cmd, id)
+	return
+}
+
+func (db *addrDatabase) UpdateUserAddr(id int64, addr *dto.UpdateUserAddrInput) (err error) {
+	cmd := `UPDATE 
+				mku_user_address
+			SET 
+				province_id = :province_id,
+				city_id = :city_id,
+				county_id = :county_id,
+				town_id = :town_id,
+				building_detail = :building_detail,
+				is_default = :is_default
+			WHERE 
+				id = :id
+				AND is_deleted = 0`
+
+	type param struct {
+		Id int64 `json:"id" db:"id"`
+		dto.UpdateUserAddrInput
+	}
+	_, err = db.connection.NamedExec(cmd, param{
+		Id:                  id,
+		UpdateUserAddrInput: *addr,
+	})
 	return
 }
 
