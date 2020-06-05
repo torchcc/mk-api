@@ -29,18 +29,18 @@ func NewCosClient(bucketUrl string) *cos.Client {
 }
 
 // 若不想对保存的文件取hash命名， hashName取false
-func UploadIOStream(name string, r io.ReadSeeker, hashName bool) (fn string, urlPrefix string, err error) {
+func UploadIOStream(fileName string, r io.ReadSeeker, hashName bool) (fileUrl string, err error) {
 	cli := NewCosClient(CommonBucketUrl)
 
 	if hashName {
 		h := md5.New()
 		if _, err = io.Copy(h, r); err != nil {
-			return name, "", err
+			return "", err
 		}
-		name = fmt.Sprintf("%x%s", h.Sum(nil), path.Ext(name))
+		fileName = fmt.Sprintf("%x%s", h.Sum(nil), path.Ext(fileName))
 		_, _ = r.Seek(0, io.SeekStart)
 	}
 
-	_, err = cli.Object.Put(context.Background(), name, r, nil)
-	return name, CommonBucketUrl, err
+	_, err = cli.Object.Put(context.Background(), fileName, r, nil)
+	return CommonBucketUrl + "/" + fileName, err
 }

@@ -78,6 +78,142 @@ var doc = `{
                 }
             }
         },
+        "/login_register/": {
+            "post": {
+                "description": "登录或者注册",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "login"
+                ],
+                "summary": "登录或者注册",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "captcha_code:图形验证码， sms_code:短信验证码",
+                        "name": "loginBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginRegisterInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/login_register/captcha": {
+            "get": {
+                "description": "获取图片验证码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "login"
+                ],
+                "summary": "获取图片验证码",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.GetCaptchaOutput"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/login_register/sms": {
+            "get": {
+                "description": "获取短信验证码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "login"
+                ],
+                "summary": "获取短信验证码",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户手机号码",
+                        "name": "mobile",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/middleware.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "description": "Get all the existing users",
@@ -581,6 +717,14 @@ var doc = `{
                 }
             }
         },
+        "dto.GetCaptchaOutput": {
+            "type": "object",
+            "properties": {
+                "captcha_img_url": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.GetUserAddrOutput": {
             "type": "object",
             "required": [
@@ -618,6 +762,37 @@ var doc = `{
             "type": "object",
             "properties": {
                 "signature": {
+                    "description": "微信JsSDK签名",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.LoginRegisterInput": {
+            "type": "object",
+            "required": [
+                "captcha_code",
+                "mobile",
+                "sms_code"
+            ],
+            "properties": {
+                "captcha_code": {
+                    "description": "图形验证码",
+                    "type": "string"
+                },
+                "latitude": {
+                    "description": "注册时的纬度， 获取不到请传 0.0",
+                    "type": "number"
+                },
+                "longitude": {
+                    "description": "注册时的经度, 获取不到的话请传 0.0",
+                    "type": "number"
+                },
+                "mobile": {
+                    "description": "用户手机号码",
+                    "type": "string"
+                },
+                "sms_code": {
+                    "description": "短信验证码",
                     "type": "string"
                 }
             }

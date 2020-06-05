@@ -22,7 +22,7 @@ func MobileBoundRequired() gin.HandlerFunc {
 		cli := Rdb.TokenRdbP.Get()
 		defer cli.Close()
 
-		tokenUserInfoKey := "token." + token
+		tokenUserInfoKey := "hash.token." + token
 		if res, _ := cli.Do("EXISTS", tokenUserInfoKey); res.(int64) <= 0 {
 			ResponseError(ctx, ecode.RequestErr, errors.New("token 已经过期失效， 请重新打开微信同意授权进入"))
 			ctx.Abort()
@@ -37,6 +37,31 @@ func MobileBoundRequired() gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
+		ctx.Set("userId", userId)
+		ctx.Next()
+	}
+}
+
+func TokenRequired() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		token := ctx.GetHeader("token")
+		if token == "" {
+			ResponseError(ctx, ecode.RequestErr, errors.New("缺少请求token"))
+			ctx.Abort()
+			return
+		}
+
+		cli := Rdb.TokenRdbP.Get()
+		defer cli.Close()
+
+		tokenUserInfoKey := "hash.token." + token
+		if res, _ := cli.Do("EXISTS", tokenUserInfoKey); res.(int64) <= 0 {
+			ResponseError(ctx, ecode.RequestErr, errors.New("token 已经过期失效， 请重新打开微信同意授权进入"))
+			ctx.Abort()
+			return
+		}
+
+		userId, _ := redis.Int64(cli.Do("HGET", tokenUserInfoKey, "user_id"))
 		ctx.Set("userId", userId)
 		ctx.Next()
 	}

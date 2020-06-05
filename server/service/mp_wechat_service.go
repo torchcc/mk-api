@@ -2,13 +2,13 @@ package service
 
 import (
 	"strconv"
-	"time"
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/silenceper/wechat/oauth"
 	. "mk-api/server/dao"
 	"mk-api/server/model"
 	"mk-api/server/util"
+	tokenUtil "mk-api/server/util/token"
 )
 
 type WechatService interface {
@@ -33,7 +33,7 @@ func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken,
 	cli := Rdb.TokenRdbP.Get()
 	defer cli.Close()
 
-	openIdKey := "open_id" + resToken.OpenID
+	openIdKey := "hash.open_id." + resToken.OpenID
 
 	// redis has openId-userInfo
 	if res, _ := cli.Do("EXISTS", openIdKey); res.(int64) > 0 {
@@ -41,7 +41,6 @@ func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken,
 		userId, _ := redis.Int64(cli.Do("HGET", openIdKey, "user_id"))
 		mobile, _ := redis.String(cli.Do("HGET", openIdKey, "mobile"))
 		return service.handleUserExists(userId, mobile, resToken, cli)
-
 	}
 
 	// mysql has openId-userInfo
@@ -70,41 +69,23 @@ func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken,
 		return "", err
 	}
 	// 设置 open_id.x123xua:{user_id: usr, mobile}
-	service.setOpenIdUserInfo(openIdKey, userId, "", cli)
+	tokenUtil.SetOpenIdUserInfo(openIdKey, userId, "", cli)
 
 	// 设置 user_id_token.1232: token
 	// 设置 token.xxx: {user_id: id, mobile: mobile}
-	service.setToken(util.OpenId2Token(resToken.OpenID), "", userId, cli)
+	tokenUtil.SetToken(tokenUtil.GenerateUuid(), "", userId, cli)
 	return
-}
-
-func (service *wechatService) setOpenIdUserInfo(openIdKey string, userId int64, mobile string, cli redis.Conn) {
-	_ = cli.Send("HSET", openIdKey, "user_id", userId)
-	_ = cli.Send("HSET", openIdKey, "user_id", mobile)
-	_ = cli.Flush()
 }
 
 // 设置 user_id_token.1232: token
 // 设置 token.xxx: {user_id: id, mobile: mobile}
 func (service *wechatService) handleUserExists(userId int64, mobile string, resToken *oauth.ResAccessToken, cli redis.Conn) (token string, err error) {
-	userIdTokenKey := "user_id_token." + strconv.FormatInt(userId, 10)
-	if token, err = redis.String(cli.Do("GET", userIdTokenKey)); err != nil {
+	userIdTokenKey := "string.user_id_token." + strconv.FormatInt(userId, 10)
+	token, err = redis.String(cli.Do("GET", userIdTokenKey))
+	if err != nil {
 		// token过期了
-		token = util.OpenId2Token(resToken.OpenID)
-		service.setToken(token, mobile, userId, cli)
+		token = tokenUtil.GenerateUuid()
+		tokenUtil.SetToken(token, mobile, userId, cli)
 	}
-	// token 没过期
-	return token, nil
-}
-
-func (service *wechatService) setToken(token string, mobile string, userId int64, cli redis.Conn) {
-	userIdTokenKey := "user_id_token." + strconv.FormatInt(userId, 10)
-
-	_ = cli.Send("SETEX", userIdTokenKey, token, time.Second*7200)
-
-	tokenUserInfoKey := "token." + token
-	_ = cli.Send("HSET", tokenUserInfoKey, "user_id", userId)
-	_ = cli.Send("HSET", tokenUserInfoKey, "mobile", mobile)
-	_ = cli.Send("EXPIRE", tokenUserInfoKey, time.Second*7200)
-	_ = cli.Flush()
+	return
 }

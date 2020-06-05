@@ -3,10 +3,12 @@ package model
 import (
 	"time"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/jmoiron/sqlx"
 	"mk-api/server/dao"
 	"mk-api/server/dto"
 	"mk-api/server/util"
+	tokenUtil "mk-api/server/util/token"
 )
 
 // Data Object
@@ -30,10 +32,58 @@ type UserModel interface {
 	FindAll() ([]User, error)
 	FindUserByID(id int64) (*dto.UserDetailOutput, error)
 	FindUserByOpenId(openId string) (id int64, mobile string, err error)
+	AddRegisterInfo(input *dto.LoginRegisterInput, userId int64) (err error)
+	GetOpenIdByUserId(userId int64) (openId string, err error)
+	UpdateRedisToken(openId string, userId int64, mobile string) (token string)
 }
 
 type userDatabase struct {
 	connection *sqlx.DB
+	redisPool  *redis.Pool
+}
+
+func (db *userDatabase) UpdateRedisToken(openId string, userId int64, mobile string) (token string) {
+	cli := db.redisPool.Get()
+	defer cli.Close()
+
+	openIdKey := "hash.open_id." + openId
+	tokenUtil.SetOpenIdUserInfo(openIdKey, userId, mobile, cli)
+	token = tokenUtil.GenerateUuid()
+	tokenUtil.SetToken(token, mobile, userId, cli)
+	return
+}
+
+func (db *userDatabase) GetOpenIdByUserId(userId int64) (openId string, err error) {
+	cmd := `SELECT open_id FROM mku_user WHERE id = ? AND is_deleted = 0`
+	err = db.connection.Get(&openId, cmd, userId)
+	return
+}
+
+func (db *userDatabase) AddRegisterInfo(input *dto.LoginRegisterInput, userId int64) (err error) {
+	cmd1 := `UPDATE 
+				mku_user
+			SET 
+				mobile = ?,
+				update_time = ?
+			WHERE 
+				id = ?
+			AND is_deleted = 0`
+	_, err = db.connection.Exec(cmd1, input.Mobile, time.Now().Unix(), userId)
+	if err != nil {
+		return
+	}
+
+	cmd2 := `UPDATE
+				mku_user_profile
+			SET 
+				longitude = ?,
+				latitude = ?,
+				update_time = ?
+			WHERE 
+				user_id = ?
+				AND is_deleted = 0`
+	_, _ = db.connection.Exec(cmd2, input.Longitude, input.Latitude, time.Now().Unix(), userId)
+	return
 }
 
 func (db *userDatabase) Save(u *User) (id int64, err error) {
@@ -102,6 +152,7 @@ func (db *userDatabase) FindUserByOpenId(openId string) (id int64, mobile string
 func NewUserModel() UserModel {
 	return &userDatabase{
 		connection: dao.Db,
+		redisPool:  dao.Rdb.TokenRdbP,
 	}
 }
 

@@ -3,11 +3,12 @@ package main
 import (
 	"os"
 
+	"mk-api/server/middleware"
 	"mk-api/server/router"
 )
 
 func main() {
-	server := router.InitRouter()
+	server := router.InitRouter(middleware.Secure())
 	port := os.Getenv("PORT")
 
 	if port == "" {

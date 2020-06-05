@@ -6,6 +6,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"mk-api/deployment"
 	"mk-api/server/controller"
+	"mk-api/server/middleware"
 
 	"mk-api/docs"
 )
@@ -38,6 +39,16 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	weChatRouteGroup := router.Group("/wx")
 	{
 		controller.WeChatRegister(weChatRouteGroup)
+	}
+
+	// login_register
+	loginRegisterRouteGroup := router.Group("/login_register")
+	loginRegisterRouteGroup.Use(
+		middleware.TokenRequired(),
+	)
+
+	{
+		controller.LoginRegister(loginRegisterRouteGroup)
 	}
 
 	return router

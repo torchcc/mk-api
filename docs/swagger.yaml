@@ -20,6 +20,11 @@ definitions:
     - province_id
     - town_id
     type: object
+  dto.GetCaptchaOutput:
+    properties:
+      captcha_img_url:
+        type: string
+    type: object
   dto.GetUserAddrOutput:
     properties:
       building_detail:
@@ -46,7 +51,30 @@ definitions:
   dto.JsApiTicketOutPut:
     properties:
       signature:
+        description: 微信JsSDK签名
         type: string
+    type: object
+  dto.LoginRegisterInput:
+    properties:
+      captcha_code:
+        description: 图形验证码
+        type: string
+      latitude:
+        description: 注册时的纬度， 获取不到请传 0.0
+        type: number
+      longitude:
+        description: 注册时的经度, 获取不到的话请传 0.0
+        type: number
+      mobile:
+        description: 用户手机号码
+        type: string
+      sms_code:
+        description: 短信验证码
+        type: string
+    required:
+    - captcha_code
+    - mobile
+    - sms_code
     type: object
   dto.ResourceID:
     properties:
@@ -173,6 +201,90 @@ paths:
       summary: 对接微信
       tags:
       - WechatTag
+  /login_register/:
+    post:
+      consumes:
+      - application/json
+      description: 登录或者注册
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: captcha_code:图形验证码， sms_code:短信验证码
+        in: body
+        name: loginBody
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRegisterInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: 登录或者注册
+      tags:
+      - login
+  /login_register/captcha:
+    get:
+      consumes:
+      - application/json
+      description: 获取图片验证码
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.GetCaptchaOutput'
+              type: object
+      summary: 获取图片验证码
+      tags:
+      - login
+  /login_register/sms:
+    get:
+      consumes:
+      - application/json
+      description: 获取短信验证码
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 用户手机号码
+        in: query
+        name: mobile
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/middleware.Response'
+      summary: 获取短信验证码
+      tags:
+      - login
   /users:
     get:
       consumes:
