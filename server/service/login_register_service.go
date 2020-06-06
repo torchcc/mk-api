@@ -59,10 +59,13 @@ func (service *loginRegisterService) GenerateCaptcha(ctx *gin.Context) (captchaI
 	}
 	// key格式"string.captcha.123"
 	key := fmt.Sprintf("string.login_captcha.%d", ctx.GetInt64("userId"))
-	err = service.captchaModel.Save(key, captchaCode)
-	if err != nil {
-		util.Log.Errorf("保存到redis出错, err: [%s]", err.Error())
-	}
+
+	go func() {
+		err = service.captchaModel.Save(key, captchaCode)
+		if err != nil {
+			util.Log.Errorf("保存到redis出错, err: [%s]", err.Error())
+		}
+	}()
 
 	// 将图片上传到cos
 	buf := new(bytes.Buffer)
