@@ -81,17 +81,24 @@ func (service *loginRegisterService) GenerateCaptcha(ctx *gin.Context) (captchaI
 func (service *loginRegisterService) GenerateSmsVerificationCode(mobile string) (err error) {
 	smsVerificationCode := service.getRandomDigits()
 	key := "string.login_sms." + mobile
+
 	// 短信验证码保存在redis
-	err = service.captchaModel.Save(key, smsVerificationCode)
-	if err != nil {
-		util.Log.Errorf("sms保存到redis出错, mobile: [%s], err: [%s]", mobile, err.Error())
-		return
-	}
+	go func() {
+		err = service.captchaModel.Save(key, smsVerificationCode)
+		if err != nil {
+			util.Log.Errorf("sms保存到redis出错, mobile: [%s], err: [%s]", mobile, err.Error())
+			return
+		}
+	}()
+
 	// 腾讯云发送短信到手机
-	err = sms.SendRegisterMsg(mobile, smsVerificationCode)
-	if err != nil {
-		util.Log.Errorf("腾讯云发送短信错误, mobile: [%s] err: [%s]", mobile, err.Error())
-	}
+	go func() {
+		err = sms.SendRegisterMsg(mobile, smsVerificationCode)
+		if err != nil {
+			util.Log.Errorf("腾讯云sms服务出错, mobile: [%s], err: [%s]", mobile, err)
+		}
+	}()
+
 	return
 }
 
