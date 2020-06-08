@@ -77,7 +77,6 @@ func (c *packageController) GetPackage(ctx *gin.Context) {
 // @Success 200 {object} middleware.Response{data=dto.PaginateListOutput{list=[]dto.ListPackageOutputEle}}
 // @Router /pkg/ [get]
 func (c *packageController) ListPackage(ctx *gin.Context) {
-	// 尚未通过数据测试
 	var input dto.ListPackageInput
 	err := ctx.ShouldBindQuery(&input)
 	if err != nil {
