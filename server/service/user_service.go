@@ -37,14 +37,6 @@ func (service *userService) SaveAddr(addr *model.UserAddr) (id int64, err error)
 	return service.addrModel.Save(addr)
 }
 
-func NewUserService(userModel model.UserModel, addrModel model.UserAddrModel, regionModel model.RegionModel) UserService {
-	return &userService{
-		model:       userModel,
-		addrModel:   addrModel,
-		regionModel: regionModel,
-	}
-}
-
 func (service *userService) Save(user model.User) (int64, error) { // user以后替换成dto 的对象， 不是do
 	id, err := service.model.Save(&user)
 	return id, err
@@ -121,4 +113,12 @@ func (service *userService) UpdateUserAddr(ctx *gin.Context, id int64, addr *dto
 		util.Log.Errorf("修改用户收件地址出错, err: [%s]", err.Error())
 	}
 	return
+}
+
+func NewUserService(userModel model.UserModel, addrModel model.UserAddrModel, regionModel model.RegionModel) UserService {
+	return &userService{
+		model:       userModel,
+		addrModel:   addrModel,
+		regionModel: regionModel,
+	}
 }

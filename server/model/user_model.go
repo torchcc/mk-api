@@ -148,14 +148,6 @@ func (db *userDatabase) FindUserByOpenId(openId string) (id int64, mobile string
 	return u.ID, u.Mobile, err
 }
 
-// model 层有错误要抛出去给 service 层
-func NewUserModel() UserModel {
-	return &userDatabase{
-		connection: dao.Db,
-		redisPool:  dao.Rdb.TokenRdbP,
-	}
-}
-
 func (db *userDatabase) Update(user User) error {
 	return nil
 
@@ -191,4 +183,12 @@ func (db *userDatabase) FindUserByID(ID int64) (*dto.UserDetailOutput, error) {
 	err := db.connection.Get(&u, cmd, ID)
 
 	return &u, err
+}
+
+// model 层有错误要抛出去给 service 层
+func NewUserModel() UserModel {
+	return &userDatabase{
+		connection: dao.Db,
+		redisPool:  dao.Rdb.TokenRdbP,
+	}
 }

@@ -25,6 +25,28 @@ definitions:
       captcha_img_url:
         type: string
     type: object
+  dto.GetPackageOutPut:
+    properties:
+      basic_info:
+        $ref: '#/definitions/dto.PackageBasicInfo'
+        description: 套餐基本信息
+        type: object
+      items:
+        description: 具体项目
+        items:
+          $ref: '#/definitions/dto.PackageItem'
+        type: array
+      notices:
+        description: 套餐须知
+        items:
+          $ref: '#/definitions/dto.PackageNotice'
+        type: array
+      procedure:
+        description: 套餐流程
+        items:
+          $ref: '#/definitions/dto.PackageProcedure'
+        type: array
+    type: object
   dto.GetUserAddrOutput:
     properties:
       building_detail:
@@ -54,6 +76,35 @@ definitions:
         description: 微信JsSDK签名
         type: string
     type: object
+  dto.ListPackageOutputEle:
+    properties:
+      avatar_url:
+        description: 套餐头像
+        type: string
+      category_id:
+        description: 套餐类别
+        type: integer
+      category_name:
+        description: 类别名称
+        type: string
+      hospital_id:
+        type: integer
+      hospital_name:
+        description: 医院体检中心名字
+        type: string
+      id:
+        description: 套餐id
+        type: integer
+      level:
+        description: 医院等级， 0-不限 1-公立三甲 2-公立医院 3-民营医院 4-专业机构
+        type: integer
+      name:
+        description: 套餐名字
+        type: string
+      sold:
+        description: 已经预约的单数, 这个暂时需要前端用hidden隐藏起来
+        type: integer
+    type: object
   dto.LoginRegisterInput:
     properties:
       captcha_code:
@@ -75,6 +126,83 @@ definitions:
     - captcha_code
     - mobile
     - sms_code
+    type: object
+  dto.PackageAttribute:
+    properties:
+      attr_type:
+        description: 套餐的属性类型， 1-套餐项目 2-套餐须知 3-套餐体检的流程
+        type: integer
+      brief:
+        description: 属性概述
+        type: string
+      comment:
+        description: 属性详情
+        type: string
+      create_time:
+        description: 创建时间
+        type: integer
+      id:
+        type: integer
+      name:
+        description: 属性名字
+        type: string
+      order_no:
+        description: 属性排序， 小的排前面
+        type: integer
+      pkg_id:
+        type: integer
+    type: object
+  dto.PackageBasicInfo:
+    properties:
+      avatar_url:
+        description: 套餐URL
+        type: string
+      brief:
+        description: 套餐简介
+        type: string
+      comment:
+        description: 套餐详细介绍
+        type: string
+      hospital_id:
+        type: integer
+      hospital_name:
+        description: 医院体检中心名称
+        type: string
+      id:
+        type: integer
+      name:
+        description: 套餐名称
+        type: string
+      price_original:
+        description: 原价/门市价
+        type: number
+      price_real:
+        description: 实际价格
+        type: number
+      tips:
+        description: 套餐提示
+        type: string
+    type: object
+  dto.PackageItem:
+    $ref: '#/definitions/dto.PackageAttribute'
+  dto.PackageNotice:
+    $ref: '#/definitions/dto.PackageAttribute'
+  dto.PackageProcedure:
+    $ref: '#/definitions/dto.PackageAttribute'
+  dto.PaginateListOutput:
+    properties:
+      has_next:
+        description: 是否有下一页, 1 是， 0 否
+        type: integer
+      list:
+        description: 列表数据
+        type: object
+      page_no:
+        description: 页码
+        type: integer
+      page_size:
+        description: 本页实际条目数量
+        type: integer
     type: object
   dto.ResourceID:
     properties:
@@ -285,6 +413,106 @@ paths:
       summary: 获取短信验证码
       tags:
       - login
+  /pkg/:
+    get:
+      consumes:
+      - application/json
+      description: 获取套餐列表
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 每页多少条
+        in: query
+        name: page_size
+        type: integer
+      - description: 页码
+        in: query
+        name: page_no
+        type: integer
+      - description: 医院等级， 0-不限 1-公立三甲 2-公立医院 3-民营医院 4-专业机构
+        in: query
+        name: level
+        type: string
+      - description: 套餐类别id
+        in: query
+        name: category_id
+        type: integer
+      - description: 价格区间左值, 0表示最小
+        in: query
+        name: min_price
+        type: integer
+      - description: 价格区间左值, 0表示无上限
+        in: query
+        name: max_price
+        type: integer
+      - description: 适用人群 0-不限 1-男士 2-女未婚 3-女已婚
+        in: query
+        name: target
+        type: integer
+      - description: 高发疾病 0-不限 1-食物不耐受检测，2-骨关节疾病体检 3-健康防癌体检 4-幽门螺旋杆菌检测 5-甲状腺检测 6-糖尿病检测
+        in: query
+        name: disease
+        type: integer
+      - description: 优先排序 0-默认排序，1-低价优先 2 高价优先
+        in: query
+        name: order_by
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/dto.PaginateListOutput'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/dto.ListPackageOutputEle'
+                        type: array
+                    type: object
+              type: object
+      summary: 获取套餐列表
+      tags:
+      - packages
+  /pkg/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取单个套餐详情
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: package id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.GetPackageOutPut'
+              type: object
+      summary: 获取单个套餐详情
+      tags:
+      - packages
   /users:
     get:
       consumes:

@@ -4,7 +4,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"mk-api/library/ecode"
@@ -48,15 +47,6 @@ type UserController interface {
 
 type userController struct {
 	service service.UserService
-}
-
-var _ *validator.Validate
-
-func NewUserController(service service.UserService) UserController {
-	_ = validator.New()
-	return &userController{
-		service: service,
-	}
 }
 
 // GetVideos godoc
@@ -295,5 +285,11 @@ func (c *userController) UpdateUserAddr(ctx *gin.Context) {
 		middleware.ResponseError(ctx, ecode.ServerErr, err)
 	} else {
 		middleware.ResponseSuccess(ctx, dto.ResourceID{Id: id})
+	}
+}
+
+func NewUserController(service service.UserService) UserController {
+	return &userController{
+		service: service,
 	}
 }

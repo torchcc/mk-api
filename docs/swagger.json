@@ -194,6 +194,170 @@
                 }
             }
         },
+        "/pkg/": {
+            "get": {
+                "description": "获取套餐列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "packages"
+                ],
+                "summary": "获取套餐列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页多少条",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page_no",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "医院等级， 0-不限 1-公立三甲 2-公立医院 3-民营医院 4-专业机构",
+                        "name": "level",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "套餐类别id",
+                        "name": "category_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "价格区间左值, 0表示最小",
+                        "name": "min_price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "价格区间左值, 0表示无上限",
+                        "name": "max_price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "适用人群 0-不限 1-男士 2-女未婚 3-女已婚",
+                        "name": "target",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "高发疾病 0-不限 1-食物不耐受检测，2-骨关节疾病体检 3-健康防癌体检 4-幽门螺旋杆菌检测 5-甲状腺检测 6-糖尿病检测",
+                        "name": "disease",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "优先排序 0-默认排序，1-低价优先 2 高价优先",
+                        "name": "order_by",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/dto.PaginateListOutput"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "list": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/definitions/dto.ListPackageOutputEle"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/pkg/{id}": {
+            "get": {
+                "description": "获取单个套餐详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "packages"
+                ],
+                "summary": "获取单个套餐详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "package id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.GetPackageOutPut"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "description": "Get all the existing users",
@@ -705,6 +869,37 @@
                 }
             }
         },
+        "dto.GetPackageOutPut": {
+            "type": "object",
+            "properties": {
+                "basic_info": {
+                    "description": "套餐基本信息",
+                    "type": "object",
+                    "$ref": "#/definitions/dto.PackageBasicInfo"
+                },
+                "items": {
+                    "description": "具体项目",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PackageItem"
+                    }
+                },
+                "notices": {
+                    "description": "套餐须知",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PackageNotice"
+                    }
+                },
+                "procedure": {
+                    "description": "套餐流程",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PackageProcedure"
+                    }
+                }
+            }
+        },
         "dto.GetUserAddrOutput": {
             "type": "object",
             "required": [
@@ -747,6 +942,46 @@
                 }
             }
         },
+        "dto.ListPackageOutputEle": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "description": "套餐头像",
+                    "type": "string"
+                },
+                "category_id": {
+                    "description": "套餐类别",
+                    "type": "integer"
+                },
+                "category_name": {
+                    "description": "类别名称",
+                    "type": "string"
+                },
+                "hospital_id": {
+                    "type": "integer"
+                },
+                "hospital_name": {
+                    "description": "医院体检中心名字",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "套餐id",
+                    "type": "integer"
+                },
+                "level": {
+                    "description": "医院等级， 0-不限 1-公立三甲 2-公立医院 3-民营医院 4-专业机构",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "套餐名字",
+                    "type": "string"
+                },
+                "sold": {
+                    "description": "已经预约的单数, 这个暂时需要前端用hidden隐藏起来",
+                    "type": "integer"
+                }
+            }
+        },
         "dto.LoginRegisterInput": {
             "type": "object",
             "required": [
@@ -774,6 +1009,114 @@
                 "sms_code": {
                     "description": "短信验证码",
                     "type": "string"
+                }
+            }
+        },
+        "dto.PackageAttribute": {
+            "type": "object",
+            "properties": {
+                "attr_type": {
+                    "description": "套餐的属性类型， 1-套餐项目 2-套餐须知 3-套餐体检的流程",
+                    "type": "integer"
+                },
+                "brief": {
+                    "description": "属性概述",
+                    "type": "string"
+                },
+                "comment": {
+                    "description": "属性详情",
+                    "type": "string"
+                },
+                "create_time": {
+                    "description": "创建时间",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "属性名字",
+                    "type": "string"
+                },
+                "order_no": {
+                    "description": "属性排序， 小的排前面",
+                    "type": "integer"
+                },
+                "pkg_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PackageBasicInfo": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "description": "套餐URL",
+                    "type": "string"
+                },
+                "brief": {
+                    "description": "套餐简介",
+                    "type": "string"
+                },
+                "comment": {
+                    "description": "套餐详细介绍",
+                    "type": "string"
+                },
+                "hospital_id": {
+                    "type": "integer"
+                },
+                "hospital_name": {
+                    "description": "医院体检中心名称",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "套餐名称",
+                    "type": "string"
+                },
+                "price_original": {
+                    "description": "原价/门市价",
+                    "type": "number"
+                },
+                "price_real": {
+                    "description": "实际价格",
+                    "type": "number"
+                },
+                "tips": {
+                    "description": "套餐提示",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PackageItem": {
+            "$ref": "#/definitions/dto.PackageAttribute"
+        },
+        "dto.PackageNotice": {
+            "$ref": "#/definitions/dto.PackageAttribute"
+        },
+        "dto.PackageProcedure": {
+            "$ref": "#/definitions/dto.PackageAttribute"
+        },
+        "dto.PaginateListOutput": {
+            "type": "object",
+            "properties": {
+                "has_next": {
+                    "description": "是否有下一页, 1 是， 0 否",
+                    "type": "integer"
+                },
+                "list": {
+                    "description": "列表数据",
+                    "type": "object"
+                },
+                "page_no": {
+                    "description": "页码",
+                    "type": "integer"
+                },
+                "page_size": {
+                    "description": "本页实际条目数量",
+                    "type": "integer"
                 }
             }
         },
