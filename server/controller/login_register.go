@@ -48,7 +48,6 @@ type loginRegisterController struct {
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /login_register/ [post]
 func (c *loginRegisterController) LoginOrRegister(ctx *gin.Context) {
-	// 该接口已经测试
 	var loginPayload dto.LoginRegisterInput
 	err := ctx.ShouldBindJSON(&loginPayload)
 	if err != nil {
@@ -58,7 +57,7 @@ func (c *loginRegisterController) LoginOrRegister(ctx *gin.Context) {
 	err = c.service.LoginRegister(ctx, &loginPayload)
 	if err != nil {
 		util.Log.Errorf("登录/注册出错, 参数：[%v], err: [%s]", loginPayload, err.Error())
-		middleware.ResponseError(ctx, ecode.ServerErr, err)
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
 	} else {
 		middleware.ResponseSuccess(ctx, nil)
 	}

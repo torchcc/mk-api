@@ -20,10 +20,47 @@ definitions:
     - province_id
     - town_id
     type: object
+  dto.DeleteCargoEntriesInput:
+    properties:
+      cargo_ids:
+        items:
+          type: integer
+        type: array
+    type: object
   dto.GetCaptchaOutput:
     properties:
       captcha_img_url:
         type: string
+    type: object
+  dto.GetCargoOutputElem:
+    properties:
+      avatar_url:
+        description: 套餐头像url
+        type: string
+      hospital_id:
+        description: 医院id
+        type: integer
+      hospital_name:
+        description: 医院名字
+        type: string
+      id:
+        description: 购物车条目id
+        type: integer
+      name:
+        description: 套餐名字
+        type: string
+      pkg_count:
+        description: 套餐数量
+        type: integer
+      pkg_id:
+        description: 套餐id
+        type: integer
+      pkg_price:
+        description: 套餐单价
+        type: number
+      update_time:
+        description: 更新时间
+        type: integer
     type: object
   dto.GetPackageOutPut:
     properties:
@@ -204,6 +241,12 @@ definitions:
         description: 本页实际条目数量
         type: integer
     type: object
+  dto.PostCargoInput:
+    properties:
+      pkg_id:
+        description: 要添加的套餐id
+        type: integer
+    type: object
   dto.ResourceID:
     properties:
       id:
@@ -329,6 +372,96 @@ paths:
       summary: 对接微信
       tags:
       - WechatTag
+  /cargo/:
+    delete:
+      consumes:
+      - application/json
+      description: 删除购物车条目
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 加购的套餐id
+        in: body
+        name: cargo_ids
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DeleteCargoEntriesInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: 删除购物车条目
+      tags:
+      - cargo
+    get:
+      consumes:
+      - application/json
+      description: 获取购物车里面的pkg列表
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.GetCargoOutputElem'
+                  type: array
+              type: object
+      summary: 购物车
+      tags:
+      - cargo
+    post:
+      consumes:
+      - application/json
+      description: 加购物车
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 加购的套餐id
+        in: body
+        name: pkgId
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PostCargoInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: 往购物车增添一个套餐
+      tags:
+      - cargo
   /login_register/:
     post:
       consumes:

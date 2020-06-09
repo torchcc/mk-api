@@ -88,6 +88,7 @@ func (db *addrDatabase) Save(addr *UserAddr) (id int64, err error) {
 }
 
 func (db *addrDatabase) FindUserAddrByUserId(userId int64) (addrs []UserAddr, err error) {
+	addrs = make([]UserAddr, 0, 0)
 	// 获取用户的全部收件地址
 	cmd := `SELECT 
 				mua.id, 

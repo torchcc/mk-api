@@ -13,14 +13,21 @@ type PackageModel interface {
 	ListPackage(input *dto.ListPackageInput) ([]dto.ListPackageOutputEle, error)
 	FindPackageBasicInfo(id int64) (*dto.PackageBasicInfo, error)
 	FindPackageAttr(pkgId int64) (attrs []dto.PackageAttribute, err error)
+	FindPackagePriceById(id int64) (price float64, err error)
 }
 
 type packageDatabase struct {
 	connection *sqlx.DB
 }
 
+func (db *packageDatabase) FindPackagePriceById(id int64) (price float64, err error) {
+	cmd := `SELECT price_real FROM mkp_package WHERE id = ? AND is_deleted = 0`
+	err = db.connection.Get(&price, cmd, id)
+	return
+}
+
 func (db *packageDatabase) FindPackageAttr(pkgId int64) ([]dto.PackageAttribute, error) {
-	var attrs []dto.PackageAttribute
+	var attrs = make([]dto.PackageAttribute, 0, 0)
 	cmd := `SELECT
 				id,
 				pkg_id,

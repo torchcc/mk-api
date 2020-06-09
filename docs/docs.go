@@ -78,6 +78,155 @@ var doc = `{
                 }
             }
         },
+        "/cargo/": {
+            "get": {
+                "description": "获取购物车里面的pkg列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cargo"
+                ],
+                "summary": "购物车",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.GetCargoOutputElem"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "加购物车",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cargo"
+                ],
+                "summary": "往购物车增添一个套餐",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "加购的套餐id",
+                        "name": "pkgId",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PostCargoInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除购物车条目",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cargo"
+                ],
+                "summary": "删除购物车条目",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "加购的套餐id",
+                        "name": "cargo_ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.DeleteCargoEntriesInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/login_register/": {
             "post": {
                 "description": "登录或者注册",
@@ -881,11 +1030,63 @@ var doc = `{
                 }
             }
         },
+        "dto.DeleteCargoEntriesInput": {
+            "type": "object",
+            "properties": {
+                "cargo_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "dto.GetCaptchaOutput": {
             "type": "object",
             "properties": {
                 "captcha_img_url": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.GetCargoOutputElem": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "description": "套餐头像url",
+                    "type": "string"
+                },
+                "hospital_id": {
+                    "description": "医院id",
+                    "type": "integer"
+                },
+                "hospital_name": {
+                    "description": "医院名字",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "购物车条目id",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "套餐名字",
+                    "type": "string"
+                },
+                "pkg_count": {
+                    "description": "套餐数量",
+                    "type": "integer"
+                },
+                "pkg_id": {
+                    "description": "套餐id",
+                    "type": "integer"
+                },
+                "pkg_price": {
+                    "description": "套餐单价",
+                    "type": "number"
+                },
+                "update_time": {
+                    "description": "更新时间",
+                    "type": "integer"
                 }
             }
         },
@@ -1136,6 +1337,15 @@ var doc = `{
                 },
                 "page_size": {
                     "description": "本页实际条目数量",
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PostCargoInput": {
+            "type": "object",
+            "properties": {
+                "pkg_id": {
+                    "description": "要添加的套餐id",
                     "type": "integer"
                 }
             }

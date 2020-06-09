@@ -2,13 +2,13 @@ package service
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"image/png"
 	"math/rand"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"mk-api/library/ecode"
 	"mk-api/library/util/cos"
 	"mk-api/library/util/sms"
 	"mk-api/server/dto"
@@ -31,18 +31,22 @@ func (service *loginRegisterService) LoginRegister(ctx *gin.Context, input *dto.
 	userId := ctx.GetInt64("userId")
 	captchaKey := fmt.Sprintf("string.login_captcha.%d", userId)
 	smsKey := "string.login_sms." + input.Mobile
-	if !service.captchaModel.Check(captchaKey, input.CaptchaCode) || !service.captchaModel.Check(smsKey, input.SmsCode) {
-		return ecode.RequestErr
+	if !service.captchaModel.Check(captchaKey, input.CaptchaCode) {
+		return errors.New("图形验证码出错")
+	}
+	if !service.captchaModel.Check(smsKey, input.SmsCode) {
+		return errors.New("短信验证码出错")
 	}
 	// 在mysql设置手机号码, 注册经纬度
 	if err = service.userModel.AddRegisterInfo(input, userId); err != nil {
-		return
+		util.Log.Errorf("注册更新手机号码出错, userId: [%d], err: [%s]", userId, err)
+		return errors.New("服务器内部错误, 请重试")
 	}
 
 	openId, err := service.userModel.GetOpenIdByUserId(userId)
 	if err != nil {
 		util.Log.Errorf("查询open_id出错， user_id: [%d], err: [%s]", userId, err.Error())
-		return
+		return errors.New("服务器内部错误")
 	}
 
 	// 更新open_id 对应的userInfo 更新token
