@@ -11,7 +11,7 @@ import (
 func main() {
 	server := router.InitRouter(
 		middleware.Secure(),
-		middleware.Options(),
+		// middleware.Options(),
 	)
 	port := os.Getenv("PORT")
 
