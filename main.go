@@ -3,14 +3,15 @@ package main
 import (
 	"os"
 
+	"mk-api/server/middleware"
 	"mk-api/server/router"
 	"mk-api/server/validator"
 )
 
 func main() {
 	server := router.InitRouter(
-	// middleware.Secure(),
-	// middleware.Options(),
+		middleware.Secure(),
+		middleware.Options(),
 	)
 	port := os.Getenv("PORT")
 

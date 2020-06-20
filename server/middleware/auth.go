@@ -24,7 +24,7 @@ func MobileBoundRequired() gin.HandlerFunc {
 
 		tokenUserInfoKey := "hash.token." + token
 		if res, _ := cli.Do("EXISTS", tokenUserInfoKey); res.(int64) <= 0 {
-			ResponseError(ctx, ecode.RequestErr, errors.New("token 已经过期失效， 请重新打开微信同意授权进入"))
+			ResponseError(ctx, ecode.Unauthorized, errors.New("token 已经过期失效， 请重新打开微信同意授权进入"))
 			ctx.Abort()
 			return
 		}
@@ -59,7 +59,7 @@ func TokenRequired() gin.HandlerFunc {
 
 		tokenUserInfoKey := "hash.token." + token
 		if res, _ := cli.Do("EXISTS", tokenUserInfoKey); res.(int64) <= 0 {
-			ResponseError(ctx, ecode.RequestErr, errors.New("token 已经过期失效， 请重新打开微信同意授权进入"))
+			ResponseError(ctx, ecode.Unauthorized, errors.New("token 已经过期失效， 请重新打开微信同意授权进入"))
 			ctx.Abort()
 			return
 		}
