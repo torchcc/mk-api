@@ -12,7 +12,6 @@ func main() {
 	server := router.InitRouter(
 		middleware.Secure(),
 		middleware.Options(),
-		middleware.Logger(),
 	)
 	port := os.Getenv("PORT")
 
@@ -20,7 +19,7 @@ func main() {
 	validator.Init()
 
 	if port == "" {
-		port = "8080"
+		port = "8081"
 	}
 	_ = server.Run("0.0.0.0:" + port)
 

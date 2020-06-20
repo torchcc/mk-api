@@ -86,9 +86,9 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 func getHost() (host string) {
 	switch deployment.BRANCH {
 	case "test", "prod":
-		host = "106.53.124.190:8080"
+		host = "106.53.124.190:8081"
 	case "local":
-		host = "localhost:8080"
+		host = "localhost:8081"
 	}
 	return
 }
