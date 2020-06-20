@@ -74,6 +74,8 @@ type PackageBasicInfo struct {
 	Comment string `json:"comment" db:"comment"`
 	// 套餐提示
 	Tips string `json:"tips"`
+	// 套餐目标人群 0-不限 1-男 2-未婚女 3-已婚女
+	Target int8 `json:"target" db:"target"`
 }
 
 type PackageAttribute struct {
@@ -114,3 +116,8 @@ func (p PackageAttributes) Swap(i, j int) {
 type PackageItem = PackageAttribute
 type PackageNotice = PackageAttribute
 type PackageProcedure = PackageAttribute
+
+type PkgTargetNPrice struct {
+	Price  float64 `db:"price_real"`
+	Target int8    `db:"target"`
+}

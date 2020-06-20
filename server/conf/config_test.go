@@ -22,7 +22,7 @@ func TestConf(t *testing.T) {
 	}()
 
 	// for {
-	// 	time.Sleep(time.Second)
+	// 	xtime.Sleep(xtime.Second)
 	// }false
 	// change k-v in zk, during sleeping, it will change also here
 	time.Sleep(time.Second * 5)

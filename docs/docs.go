@@ -25,60 +25,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/": {
-            "get": {
-                "description": "与微信服务器对接，此接口请忽略",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "WechatTag"
-                ],
-                "summary": "对接微信",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "时间戳",
-                        "name": "timestamp",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "签名",
-                        "name": "signature",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "NONCE",
-                        "name": "nonce",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "回响字符串",
-                        "name": "echostr",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/cargo/": {
+        "/cart/": {
             "get": {
                 "description": "获取购物车里面的pkg列表",
                 "consumes": [
@@ -88,9 +35,9 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "cargo"
+                    "cart"
                 ],
-                "summary": "购物车",
+                "summary": "获取购物车里面的pkg列表",
                 "parameters": [
                     {
                         "type": "string",
@@ -114,7 +61,7 @@ var doc = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/dto.GetCargoOutputElem"
+                                                "$ref": "#/definitions/dto.GetCartOutputElem"
                                             }
                                         }
                                     }
@@ -133,7 +80,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "cargo"
+                    "cart"
                 ],
                 "summary": "往购物车增添一个套餐",
                 "parameters": [
@@ -150,7 +97,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.PostCargoInput"
+                            "$ref": "#/definitions/dto.PostCartInput"
                         }
                     }
                 ],
@@ -184,7 +131,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "cargo"
+                    "cart"
                 ],
                 "summary": "删除购物车条目",
                 "parameters": [
@@ -197,11 +144,11 @@ var doc = `{
                     },
                     {
                         "description": "加购的套餐id",
-                        "name": "cargo_ids",
+                        "name": "cart_ids",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.DeleteCargoEntriesInput"
+                            "$ref": "#/definitions/dto.DeleteCartEntriesInput"
                         }
                     }
                 ],
@@ -358,6 +305,59 @@ var doc = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/middleware.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/": {
+            "post": {
+                "description": "创建订单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "创建订单",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "创建订单的请求体",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PostOrderInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.PostOrderOutput"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -522,78 +522,6 @@ var doc = `{
                                     }
                                 }
                             ]
-                        }
-                    }
-                }
-            }
-        },
-        "/users": {
-            "get": {
-                "description": "Get all the existing users",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users",
-                    "list"
-                ],
-                "summary": "List existing users",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.User"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/middleware.Response"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users",
-                    "create"
-                ],
-                "summary": "Create new users",
-                "parameters": [
-                    {
-                        "description": "Create user",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.User"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/middleware.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/middleware.Response"
                         }
                     }
                 }
@@ -852,9 +780,9 @@ var doc = `{
                 }
             }
         },
-        "/users/user_detail": {
+        "/users/profile": {
             "get": {
-                "description": "get a single user's info",
+                "description": "获取用户的profile",
                 "consumes": [
                     "application/json"
                 ],
@@ -891,59 +819,6 @@ var doc = `{
                                     }
                                 }
                             ]
-                        }
-                    }
-                }
-            }
-        },
-        "/users/{id}": {
-            "put": {
-                "description": "Update a single user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Update users",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User Id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update user",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.User"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/middleware.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/middleware.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/middleware.Response"
                         }
                     }
                 }
@@ -1000,6 +875,35 @@ var doc = `{
         }
     },
     "definitions": {
+        "dto.CartItem": {
+            "type": "object",
+            "required": [
+                "cart_id",
+                "pkg_count",
+                "pkg_id"
+            ],
+            "properties": {
+                "cart_id": {
+                    "description": "购物车条目id",
+                    "type": "integer"
+                },
+                "examinees": {
+                    "description": "体检人信息列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Examinee"
+                    }
+                },
+                "pkg_count": {
+                    "description": "套餐数量",
+                    "type": "integer"
+                },
+                "pkg_id": {
+                    "description": "套餐id",
+                    "type": "integer"
+                }
+            }
+        },
         "dto.CreateUserAddrInput": {
             "type": "object",
             "required": [
@@ -1030,14 +934,50 @@ var doc = `{
                 }
             }
         },
-        "dto.DeleteCargoEntriesInput": {
+        "dto.DeleteCartEntriesInput": {
             "type": "object",
             "properties": {
-                "cargo_ids": {
+                "cart_ids": {
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
+                }
+            }
+        },
+        "dto.Examinee": {
+            "type": "object",
+            "required": [
+                "examine_date",
+                "examinee_mobile",
+                "examinee_name",
+                "gender",
+                "id_card_no"
+            ],
+            "properties": {
+                "examine_date": {
+                    "description": "体检日期 时间戳， 精确到 日",
+                    "type": "integer"
+                },
+                "examinee_mobile": {
+                    "description": "体检人电话",
+                    "type": "string"
+                },
+                "examinee_name": {
+                    "description": "体检人姓名",
+                    "type": "string"
+                },
+                "gender": {
+                    "description": "性别 1-男 2-女",
+                    "type": "integer"
+                },
+                "id_card_no": {
+                    "description": "身份证号码",
+                    "type": "string"
+                },
+                "is_married": {
+                    "description": "婚否 1-是 2-否",
+                    "type": "integer"
                 }
             }
         },
@@ -1049,7 +989,7 @@ var doc = `{
                 }
             }
         },
-        "dto.GetCargoOutputElem": {
+        "dto.GetCartOutputElem": {
             "type": "object",
             "properties": {
                 "avatar_url": {
@@ -1305,6 +1245,10 @@ var doc = `{
                     "description": "实际价格",
                     "type": "number"
                 },
+                "target": {
+                    "description": "套餐目标人群 0-不限 1-男 2-未婚女 3-已婚女",
+                    "type": "integer"
+                },
                 "tips": {
                     "description": "套餐提示",
                     "type": "string"
@@ -1341,11 +1285,51 @@ var doc = `{
                 }
             }
         },
-        "dto.PostCargoInput": {
+        "dto.PostCartInput": {
             "type": "object",
             "properties": {
                 "pkg_id": {
                     "description": "要添加的套餐id",
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PostOrderInput": {
+            "type": "object",
+            "required": [
+                "cart_items",
+                "subscriber_mobile"
+            ],
+            "properties": {
+                "cart_items": {
+                    "description": "订单项目",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CartItem"
+                    }
+                },
+                "subscriber_comment": {
+                    "type": "string"
+                },
+                "subscriber_mobile": {
+                    "description": "预约人手机号",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PostOrderOutput": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "description": "订单总金额 单位：分（显示到ui时需要前端转为元）",
+                    "type": "number"
+                },
+                "biz_no": {
+                    "description": "订单流水号",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "订单id",
                     "type": "integer"
                 }
             }
@@ -1394,38 +1378,6 @@ var doc = `{
                     "type": "integer"
                 },
                 "emsg": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.User": {
-            "type": "object",
-            "properties": {
-                "avatar_url": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "gender": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "mobile": {
-                    "type": "string"
-                },
-                "open_id": {
-                    "type": "string"
-                },
-                "province": {
-                    "type": "string"
-                },
-                "user_name": {
                     "type": "string"
                 }
             }

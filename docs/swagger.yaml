@@ -1,4 +1,25 @@
 definitions:
+  dto.CartItem:
+    properties:
+      cart_id:
+        description: 购物车条目id
+        type: integer
+      examinees:
+        description: 体检人信息列表
+        items:
+          $ref: '#/definitions/dto.Examinee'
+        type: array
+      pkg_count:
+        description: 套餐数量
+        type: integer
+      pkg_id:
+        description: 套餐id
+        type: integer
+    required:
+    - cart_id
+    - pkg_count
+    - pkg_id
+    type: object
   dto.CreateUserAddrInput:
     properties:
       building_detail:
@@ -20,19 +41,46 @@ definitions:
     - province_id
     - town_id
     type: object
-  dto.DeleteCargoEntriesInput:
+  dto.DeleteCartEntriesInput:
     properties:
-      cargo_ids:
+      cart_ids:
         items:
           type: integer
         type: array
+    type: object
+  dto.Examinee:
+    properties:
+      examine_date:
+        description: 体检日期 时间戳， 精确到 日
+        type: integer
+      examinee_mobile:
+        description: 体检人电话
+        type: string
+      examinee_name:
+        description: 体检人姓名
+        type: string
+      gender:
+        description: 性别 1-男 2-女
+        type: integer
+      id_card_no:
+        description: 身份证号码
+        type: string
+      is_married:
+        description: 婚否 1-是 2-否
+        type: integer
+    required:
+    - examine_date
+    - examinee_mobile
+    - examinee_name
+    - gender
+    - id_card_no
     type: object
   dto.GetCaptchaOutput:
     properties:
       captcha_img_url:
         type: string
     type: object
-  dto.GetCargoOutputElem:
+  dto.GetCartOutputElem:
     properties:
       avatar_url:
         description: 套餐头像url
@@ -216,6 +264,9 @@ definitions:
       price_real:
         description: 实际价格
         type: number
+      target:
+        description: 套餐目标人群 0-不限 1-男 2-未婚女 3-已婚女
+        type: integer
       tips:
         description: 套餐提示
         type: string
@@ -241,10 +292,38 @@ definitions:
         description: 本页实际条目数量
         type: integer
     type: object
-  dto.PostCargoInput:
+  dto.PostCartInput:
     properties:
       pkg_id:
         description: 要添加的套餐id
+        type: integer
+    type: object
+  dto.PostOrderInput:
+    properties:
+      cart_items:
+        description: 订单项目
+        items:
+          $ref: '#/definitions/dto.CartItem'
+        type: array
+      subscriber_comment:
+        type: string
+      subscriber_mobile:
+        description: 预约人手机号
+        type: string
+    required:
+    - cart_items
+    - subscriber_mobile
+    type: object
+  dto.PostOrderOutput:
+    properties:
+      amount:
+        description: 订单总金额 单位：分（显示到ui时需要前端转为元）
+        type: number
+      biz_no:
+        description: 订单流水号
+        type: integer
+      id:
+        description: 订单id
         type: integer
     type: object
   dto.ResourceID:
@@ -276,27 +355,6 @@ definitions:
       ecode:
         type: integer
       emsg:
-        type: string
-    type: object
-  model.User:
-    properties:
-      avatar_url:
-        type: string
-      city:
-        type: string
-      country:
-        type: string
-      gender:
-        type: integer
-      id:
-        type: integer
-      mobile:
-        type: string
-      open_id:
-        type: string
-      province:
-        type: string
-      user_name:
         type: string
     type: object
   model.UserAddr:
@@ -336,43 +394,7 @@ info:
   contact: {}
   license: {}
 paths:
-  /:
-    get:
-      consumes:
-      - application/json
-      description: 与微信服务器对接，此接口请忽略
-      parameters:
-      - description: 时间戳
-        in: query
-        name: timestamp
-        required: true
-        type: string
-      - description: 签名
-        in: query
-        name: signature
-        required: true
-        type: string
-      - description: NONCE
-        in: query
-        name: nonce
-        required: true
-        type: string
-      - description: 回响字符串
-        in: query
-        name: echostr
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: 对接微信
-      tags:
-      - WechatTag
-  /cargo/:
+  /cart/:
     delete:
       consumes:
       - application/json
@@ -385,10 +407,10 @@ paths:
         type: string
       - description: 加购的套餐id
         in: body
-        name: cargo_ids
+        name: cart_ids
         required: true
         schema:
-          $ref: '#/definitions/dto.DeleteCargoEntriesInput'
+          $ref: '#/definitions/dto.DeleteCartEntriesInput'
       produces:
       - application/json
       responses:
@@ -403,7 +425,7 @@ paths:
               type: object
       summary: 删除购物车条目
       tags:
-      - cargo
+      - cart
     get:
       consumes:
       - application/json
@@ -425,12 +447,12 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/dto.GetCargoOutputElem'
+                    $ref: '#/definitions/dto.GetCartOutputElem'
                   type: array
               type: object
-      summary: 购物车
+      summary: 获取购物车里面的pkg列表
       tags:
-      - cargo
+      - cart
     post:
       consumes:
       - application/json
@@ -446,7 +468,7 @@ paths:
         name: pkgId
         required: true
         schema:
-          $ref: '#/definitions/dto.PostCargoInput'
+          $ref: '#/definitions/dto.PostCartInput'
       produces:
       - application/json
       responses:
@@ -461,7 +483,7 @@ paths:
               type: object
       summary: 往购物车增添一个套餐
       tags:
-      - cargo
+      - cart
   /login_register/:
     post:
       consumes:
@@ -546,6 +568,38 @@ paths:
       summary: 获取短信验证码
       tags:
       - login
+  /orders/:
+    post:
+      consumes:
+      - application/json
+      description: 创建订单
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 创建订单的请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PostOrderInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PostOrderOutput'
+              type: object
+      summary: 创建订单
+      tags:
+      - orders
   /pkg/:
     get:
       consumes:
@@ -646,89 +700,6 @@ paths:
       summary: 获取单个套餐详情
       tags:
       - packages
-  /users:
-    get:
-      consumes:
-      - application/json
-      description: Get all the existing users
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.User'
-            type: array
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/middleware.Response'
-      summary: List existing users
-      tags:
-      - users
-      - list
-    post:
-      consumes:
-      - application/json
-      description: Create a new user
-      parameters:
-      - description: Create user
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/model.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/middleware.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/middleware.Response'
-      summary: Create new users
-      tags:
-      - users
-      - create
-  /users/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update a single user
-      parameters:
-      - description: User Id
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Update user
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/model.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/middleware.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/middleware.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/middleware.Response'
-      summary: Update users
-      tags:
-      - users
   /users/addrs:
     get:
       description: 获取收件地址列表
@@ -883,11 +854,11 @@ paths:
       summary: 修改单个收件地址的
       tags:
       - addrs
-  /users/user_detail:
+  /users/profile:
     get:
       consumes:
       - application/json
-      description: get a single user's info
+      description: 获取用户的profile
       parameters:
       - description: 用户token
         in: header

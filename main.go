@@ -9,7 +9,11 @@ import (
 )
 
 func main() {
-	server := router.InitRouter(middleware.Secure())
+	server := router.InitRouter(
+		middleware.Secure(),
+		middleware.Options(),
+		middleware.Logger(),
+	)
 	port := os.Getenv("PORT")
 
 	// 注册自定义校验器

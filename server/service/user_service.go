@@ -12,8 +12,6 @@ import (
 )
 
 type UserService interface {
-	Save(model.User) (int64, error)
-	Update(model.User) error
 	Delete(model.User) error
 	FindAll() ([]model.User, error)
 	Retrieve(id int64) (*dto.UserDetailOutput, error)
@@ -35,15 +33,6 @@ func (service *userService) SaveAddr(addr *model.UserAddr) (id int64, err error)
 		_ = service.addrModel.CancelOriginDefaultAddr(addr.UserId)
 	}
 	return service.addrModel.Save(addr)
-}
-
-func (service *userService) Save(user model.User) (int64, error) { // user以后替换成dto 的对象， 不是do
-	id, err := service.model.Save(&user)
-	return id, err
-}
-
-func (service *userService) Update(user model.User) error {
-	return service.model.Update(user)
 }
 
 func (service *userService) Delete(user model.User) error {

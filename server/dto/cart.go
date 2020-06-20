@@ -1,6 +1,6 @@
 package dto
 
-type GetCargoOutputElem struct {
+type GetCartOutputElem struct {
 	// 购物车条目id
 	Id int64 `json:"id" db:"id"`
 	// 套餐头像url
@@ -21,11 +21,11 @@ type GetCargoOutputElem struct {
 	UpdateTime int64 `json:"update_time" db:"update_time"`
 }
 
-type PostCargoInput struct {
+type PostCartInput struct {
 	// 要添加的套餐id
 	PkgId int64 `json:"pkg_id"`
 }
 
-type DeleteCargoEntriesInput struct {
-	CargoIds []int64 `json:"cargo_ids" db:"cargo_ids"`
+type DeleteCartEntriesInput struct {
+	CartIds []int64 `json:"cart_ids" db:"cart_ids"`
 }

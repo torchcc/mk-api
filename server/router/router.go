@@ -61,13 +61,23 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 		controller.PackageRegister(pkgRegisterRouteGroup)
 	}
 
-	// cargo_register
-	cargoRegisterRouteGroup := router.Group("/cargo")
-	cargoRegisterRouteGroup.Use(
+	// cart_register
+	cartRegisterRouteGroup := router.Group("/cart")
+	cartRegisterRouteGroup.Use(
 		middleware.MobileBoundRequired(),
 	)
 	{
-		controller.CargoRegister(cargoRegisterRouteGroup)
+		controller.CartRegister(cartRegisterRouteGroup)
+	}
+
+	// order_register
+	orderRegisterRouteGroup := router.Group("/orders")
+	orderRegisterRouteGroup.Use(
+		middleware.MobileBoundRequired(),
+	)
+
+	{
+		controller.OrderRegister(orderRegisterRouteGroup)
 	}
 
 	return router

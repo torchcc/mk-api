@@ -89,6 +89,7 @@ func NewWechatController(service service.WechatService) WeChatController {
 // @Param  echostr query string true "回响字符串"
 // @Success 200 {object} string
 // @Router / [get]
+
 func (c *wechatController) DockWithWeChatServer(ctx *gin.Context) {
 	timestamp, nonce, signatureIn := ctx.Query("timestamp"), ctx.Query("nonce"), ctx.Query("signature")
 	signatureGen := makeSignature(timestamp, nonce)

@@ -31,6 +31,7 @@ func MobileBoundRequired() gin.HandlerFunc {
 
 		userId, _ := redis.Int64(cli.Do("HGET", tokenUserInfoKey, "user_id"))
 		mobile, _ := redis.String(cli.Do("HGET", tokenUserInfoKey, "mobile"))
+		openId, _ := redis.String(cli.Do("HGET", tokenUserInfoKey, "open_id"))
 
 		if mobile == "" {
 			ResponseError(ctx, ecode.MobileNoVerfiy, errors.New("用户尚未绑定手机"))
@@ -38,6 +39,8 @@ func MobileBoundRequired() gin.HandlerFunc {
 			return
 		}
 		ctx.Set("userId", userId)
+		ctx.Set("mobile", mobile)
+		ctx.Set("openId", openId)
 		ctx.Next()
 	}
 }

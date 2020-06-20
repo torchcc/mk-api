@@ -34,7 +34,6 @@ func init() {
 		xlog.Level = logrus.DebugLevel
 	} else {
 		xlog.Level = logrus.InfoLevel
-
 	}
 
 	// xlog.Formatter = &logrus.JSONFormatter{}

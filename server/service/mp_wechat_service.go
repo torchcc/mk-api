@@ -5,6 +5,7 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/silenceper/wechat/oauth"
+	"mk-api/library/ecode"
 	. "mk-api/server/dao"
 	"mk-api/server/model"
 	"mk-api/server/util"
@@ -66,14 +67,14 @@ func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken,
 	userId, err = service.model.Save(&u)
 	if err != nil {
 		util.Log.Errorf("创建用户失败: err: %v, openId: %s", err, resToken.OpenID)
-		return "", err
+		return "", ecode.ServerErr
 	}
 	// 设置 open_id.x123xua:{user_id: usr, mobile}
 	tokenUtil.SetOpenIdUserInfo(openIdKey, userId, "", cli)
 
 	// 设置 user_id_token.1232: token
 	// 设置 token.xxx: {user_id: id, mobile: mobile}
-	tokenUtil.SetToken(tokenUtil.GenerateUuid(), "", userId, cli)
+	tokenUtil.SetToken(tokenUtil.GenerateUuid(), "", userId, resToken.OpenID, cli)
 	return
 }
 
@@ -85,7 +86,7 @@ func (service *wechatService) handleUserExists(userId int64, mobile string, resT
 	if err != nil {
 		// token过期了
 		token = tokenUtil.GenerateUuid()
-		tokenUtil.SetToken(token, mobile, userId, cli)
+		tokenUtil.SetToken(token, mobile, userId, resToken.OpenID, cli)
 	}
 	return
 }

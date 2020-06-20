@@ -27,7 +27,6 @@ type User struct {
 // Model Class
 type UserModel interface {
 	Save(user *User) (int64, error)
-	Update(user User) error
 	Delete(user User) error
 	FindAll() ([]User, error)
 	FindUserByID(id int64) (*dto.UserDetailOutput, error)
@@ -49,7 +48,7 @@ func (db *userDatabase) UpdateRedisToken(openId string, userId int64, mobile str
 	openIdKey := "hash.open_id." + openId
 	tokenUtil.SetOpenIdUserInfo(openIdKey, userId, mobile, cli)
 	token = tokenUtil.GenerateUuid()
-	tokenUtil.SetToken(token, mobile, userId, cli)
+	tokenUtil.SetToken(token, mobile, userId, openId, cli)
 	return
 }
 
@@ -106,7 +105,7 @@ func (db *userDatabase) Save(u *User) (id int64, err error) {
 		}
 	}()
 
-	cmd1 := `INSERT INTO mku_user (open_id, create_time, update_time) VALUES (?, ?, ?)`
+	const cmd1 = `INSERT INTO mku_user (open_id, create_time, update_time) VALUES (?, ?, ?)`
 
 	rs, err := tx.Exec(cmd1, u.OpenId, time.Now().Unix(), time.Now().Unix())
 	if err != nil {
@@ -118,7 +117,7 @@ func (db *userDatabase) Save(u *User) (id int64, err error) {
 		return 0, err
 	}
 
-	cmd2 := `INSERT INTO mk_user_profile (
+	const cmd2 = `INSERT INTO mk_user_profile (
 			user_id, 
 			user_name, 
 			avatar_url, 
@@ -146,11 +145,6 @@ func (db *userDatabase) FindUserByOpenId(openId string) (id int64, mobile string
 	cmd := `SELECT id, mobile FROM mku_user WHERE open_id = ? AND is_deleted = 0`
 	err = db.connection.Get(&u, cmd, openId)
 	return u.ID, u.Mobile, err
-}
-
-func (db *userDatabase) Update(user User) error {
-	return nil
-
 }
 
 func (db *userDatabase) Delete(user User) error {

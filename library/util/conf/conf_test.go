@@ -22,7 +22,7 @@ func TestConf(t *testing.T) {
 	}()
 
 	// for {
-	// 	time.Sleep(time.Second)
+	// 	xtime.Sleep(xtime.Second)
 	// }
 	time.Sleep(time.Second * 20)
 }

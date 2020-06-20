@@ -23,8 +23,8 @@ func UserRegister(router *gin.RouterGroup) {
 		userService    service.UserService = service.NewUserService(userModel, addrModel, regionModel)
 		userController UserController      = NewUserController(userService)
 	)
-	router.GET("/", userController.FindAll)
-	router.GET("/user_detail", middleware.MobileBoundRequired(), userController.UserDetail)
+	router.GET("/profile", middleware.MobileBoundRequired(), userController.UserProfile)
+
 	router.GET("/addrs", middleware.MobileBoundRequired(), userController.ListUserAddr)
 	router.POST("/addrs", middleware.MobileBoundRequired(), userController.CreateUserAddr)
 	router.GET("/addrs/:id", middleware.MobileBoundRequired(), userController.GetUserAddr)
@@ -33,11 +33,7 @@ func UserRegister(router *gin.RouterGroup) {
 }
 
 type UserController interface {
-	FindAll(ctx *gin.Context)
-	Create(ctx *gin.Context)
-	Update(ctx *gin.Context)
-	UserDetail(ctx *gin.Context)
-
+	UserProfile(ctx *gin.Context)
 	ListUserAddr(ctx *gin.Context)
 	CreateUserAddr(ctx *gin.Context)
 	GetUserAddr(ctx *gin.Context)
@@ -49,101 +45,16 @@ type userController struct {
 	service service.UserService
 }
 
-// GetVideos godoc
-// @Summary List existing users
-// @Description Get all the existing users
-// @Tags users,list
-// @Accept  json
-// @Produce  json
-// @Success 200 {array} model.User
-// @Failure 401 {object} middleware.Response
-// @Router /users [get]
-func (c *userController) FindAll(ctx *gin.Context) {
-	data, err := c.service.FindAll()
-	if err != nil {
-		util.Log.Errorf("查找全部用户出错: err: %s\n", err.Error())
-		middleware.ResponseError(ctx, ecode.ServerErr, err)
-	} else {
-		middleware.ResponseSuccess(ctx, data)
-	}
-}
-
-// CreateVideo godoc
-// @Summary Create new users
-// @Description Create a new user
-// @Tags users,create
-// @Accept  json
-// @Produce  json
-// @Param user body model.User true "Create user"
-// @Success 200 {object} middleware.Response
-// @Failure 500 {object} middleware.Response
-// @Router /users [post]
-func (c *userController) Create(ctx *gin.Context) {
-	var user model.User
-	var err error
-
-	if err = ctx.ShouldBindJSON(&user); err != nil {
-		middleware.ResponseError(ctx, ecode.RequestErr, err)
-		return
-	}
-
-	id, err := c.service.Save(user)
-	if err != nil {
-		util.Log.Errorf("创建用户出错: err: %s\n", err.Error())
-		middleware.ResponseError(ctx, ecode.ServerErr, err)
-	} else {
-		middleware.ResponseSuccess(ctx, dto.ResourceID{Id: id})
-	}
-}
-
-// UpdateUser godoc
-// @Summary Update users
-// @Description Update a single user
-// @Tags users
-// @Accept  json
-// @Produce  json
-// @Param  id path int true "User Id"
-// @Param user body model.User true "Update user"
-// @Success 200 {object} middleware.Response
-// @Failure 400 {object} middleware.Response
-// @Failure 500 {object} middleware.Response
-// @Router /users/{id} [put]
-func (c *userController) Update(ctx *gin.Context) {
-	var user model.User
-	err := ctx.ShouldBindJSON(&user)
-	if err != nil {
-		middleware.ResponseError(ctx, ecode.RequestErr, err)
-		return
-	}
-
-	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
-	if err != nil {
-		middleware.ResponseError(ctx, ecode.RequestErr, err)
-		return
-	}
-
-	user.ID = id
-
-	if err = c.service.Update(user); err != nil {
-		util.Log.WithFields(logrus.Fields{
-			"user_id": user.ID,
-		}).Errorf("创建用户出错: err: %s\n", err.Error())
-		middleware.ResponseError(ctx, ecode.ServerErr, err)
-	} else {
-		middleware.ResponseSuccess(ctx, dto.ResourceID{Id: user.ID})
-	}
-}
-
 // GetUserDetail godoc
 // @Summary 个人中心->账户信息
-// @Description get a single user's info
+// @Description 获取用户的profile
 // @Tags users
 // @Accept json
 // @Produce json
 // @Param  token header string true "用户token"
 // @Success 200 {object} middleware.Response{data=dto.UserDetailOutput}
-// @Router /users/user_detail [get]
-func (c *userController) UserDetail(ctx *gin.Context) {
+// @Router /users/profile [get]
+func (c *userController) UserProfile(ctx *gin.Context) {
 	id := ctx.GetInt64("userId")
 	userDetail, err := c.service.Retrieve(id)
 	if _, ok := errors.Cause(err).(ecode.Codes); ok {

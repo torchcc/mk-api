@@ -50,7 +50,7 @@ package kafka
 // 				case msg := <-ch:
 // 					fmt.Printf("Partition: %d Offset: %d Key: %v Value: %v\n", msg.Partition, msg.Offset, string(msg.Key), string(msg.Value))
 // 				}
-// 				time.Sleep(1 * time.Second)
+// 				xtime.Sleep(1 * xtime.Second)
 //
 // 			}
 // 	}
