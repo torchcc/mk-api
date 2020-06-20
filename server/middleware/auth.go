@@ -14,7 +14,7 @@ func MobileBoundRequired() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		token := ctx.GetHeader("token")
 		if token == "" {
-			ResponseError(ctx, ecode.RequestErr, errors.New("缺少请求token"))
+			ResponseError(ctx, ecode.Unauthorized, errors.New("缺少请求token"))
 			ctx.Abort()
 			return
 		}
@@ -49,7 +49,7 @@ func TokenRequired() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		token := ctx.GetHeader("token")
 		if token == "" {
-			ResponseError(ctx, ecode.RequestErr, errors.New("缺少请求token"))
+			ResponseError(ctx, ecode.Unauthorized, errors.New("缺少请求token"))
 			ctx.Abort()
 			return
 		}
