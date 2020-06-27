@@ -4,7 +4,10 @@ import (
 	"errors"
 
 	"github.com/gin-gonic/gin"
+	"github.com/silenceper/wechat/v2/pay"
+	payConfig "github.com/silenceper/wechat/v2/pay/config"
 	"mk-api/library/ecode"
+	"mk-api/server/conf"
 	"mk-api/server/dto"
 	"mk-api/server/middleware"
 	"mk-api/server/model"
@@ -14,32 +17,70 @@ import (
 
 func OrderRegister(router *gin.RouterGroup) {
 	var (
-		cartModel       model.CartModel      = model.NewCartModel()
-		packageModel    model.PackageModel   = model.NewPackageModel()
-		orderModel      model.OrderModel     = model.NewOrderModel()
-		orderService    service.OrderService = service.NewOrderService(orderModel, packageModel, cartModel)
+		cartModel    model.CartModel    = model.NewCartModel()
+		packageModel model.PackageModel = model.NewPackageModel()
+		orderModel   model.OrderModel   = model.NewOrderModel()
+		payModel     model.PayModel     = model.NewPayModel()
+		cfg                             = &payConfig.Config{
+			AppID:     conf.C.WeChat.AppID,
+			MchID:     conf.C.WeChat.PayMchID,
+			Key:       conf.C.WeChat.PayKey,
+			NotifyURL: conf.C.WeChat.PayNotifyURL,
+		}
+		wechatPay                            = pay.NewPay(cfg)
+		orderService    service.OrderService = service.NewOrderService(orderModel, packageModel, cartModel, payModel, wechatPay)
 		orderController OrderController      = NewOrderController(orderService)
 	)
 	router.POST("/", orderController.PostOrder)
+	router.GET("/", orderController.ListOrder)
 }
 
 type OrderController interface {
 	PostOrder(ctx *gin.Context)
+	ListOrder(ctx *gin.Context)
 }
 
 type orderController struct {
 	service service.OrderService
 }
 
+// OrderList godoc
+// @Summary 获取订单列表
+// @Description 获取订单列表
+// @Tags orders
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Param page_size query int false "每页多少条"
+// @Param page_no query int false "页码"
+// @Param status query int false "订单状态 -1 全部(默认值) 0-未付款，2-已付款(待预约), 3-已退款, 4-已关闭"
+// @Success 200 {object} middleware.Response{data=dto.PaginateListOutput{list=[]dto.ListOrderOutputEle}}
+// @Router /orders/ [get]
+func (c *orderController) ListOrder(ctx *gin.Context) {
+	var input dto.ListOrderInput
+	if err := util.ParseRequest(ctx, &input); err != nil {
+		util.Log.Errorf("参数绑定失败, err: [%s]", err)
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+	data, err := c.service.ListOrder(ctx, &input)
+	if err != nil {
+		util.Log.Errorf("获取订单列表失败, err: [%s]", err)
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("服务器内部错误"))
+		return
+	}
+	middleware.ResponseSuccess(ctx, data)
+}
+
 // CreateOrder godoc
 // @Summary 创建订单
-// @Description 创建订单
+// @Description 创建订单,返回前端调起微信支付的必须参数
 // @Tags orders
 // @Accept  json
 // @Produce  json
 // @Param token header string true "用户token"
 // @Param body body dto.PostOrderInput true "创建订单的请求体"
-// @Success 200 {object} middleware.Response{data=dto.PostOrderOutput} "success"
+// @Success 200 {object} middleware.Response{data=dto.PostOrderOutput}
 // @Router /orders/ [post]
 func (c *orderController) PostOrder(ctx *gin.Context) {
 	var input dto.PostOrderInput
@@ -49,7 +90,7 @@ func (c *orderController) PostOrder(ctx *gin.Context) {
 		return
 	}
 
-	err = c.service.CreateOrder(ctx, &input)
+	cfg, err := c.service.CreateOrder(ctx, &input)
 	if err != nil {
 		switch err.(type) {
 		case ecode.Codes:
@@ -61,8 +102,7 @@ func (c *orderController) PostOrder(ctx *gin.Context) {
 		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("服务器错误"))
 		return
 	}
-	// TODO 到这儿了
-	ctx.JSON(200, "ok")
+	middleware.ResponseSuccess(ctx, cfg)
 }
 
 func NewOrderController(service service.OrderService) OrderController {

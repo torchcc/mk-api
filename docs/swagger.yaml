@@ -1,4 +1,28 @@
 definitions:
+  dto.AggregatedOrderItem:
+    properties:
+      create_time:
+        description: 创建时间
+        type: integer
+      order_id:
+        description: 套餐所属的order_id
+        type: integer
+      pkg_avatar_url:
+        description: 套餐头像
+        type: string
+      pkg_count:
+        description: 套餐数量
+        type: integer
+      pkg_id:
+        description: 套餐id
+        type: integer
+      pkg_name:
+        description: 套餐名称
+        type: string
+      pkg_price:
+        description: 套餐单价
+        type: number
+    type: object
   dto.CartItem:
     properties:
       cart_id:
@@ -16,9 +40,14 @@ definitions:
         description: 套餐id
         type: integer
     required:
-    - cart_id
     - pkg_count
     - pkg_id
+    type: object
+  dto.CheckPayStatusOutput:
+    properties:
+      status:
+        description: 支付状态 0-待支付 2-支付成功 4-订单已关闭
+        type: integer
     type: object
   dto.CreateUserAddrInput:
     properties:
@@ -160,6 +189,26 @@ definitions:
       signature:
         description: 微信JsSDK签名
         type: string
+    type: object
+  dto.ListOrderOutputEle:
+    properties:
+      aggregated_order_items:
+        description: 订单中的套餐列表
+        items:
+          $ref: '#/definitions/dto.AggregatedOrderItem'
+        type: array
+      amount:
+        description: 订单总价
+        type: number
+      order_id:
+        description: 订单id
+        type: integer
+      out_trade_no:
+        description: 订单号
+        type: integer
+      status:
+        description: 订单状态 0-待付款，2-待预约(指已经付款) 3-已退款 4-已关闭 5-待评价
+        type: integer
     type: object
   dto.ListPackageOutputEle:
     properties:
@@ -316,15 +365,18 @@ definitions:
     type: object
   dto.PostOrderOutput:
     properties:
-      amount:
-        description: 订单总金额 单位：分（显示到ui时需要前端转为元）
-        type: number
-      biz_no:
-        description: 订单流水号
-        type: integer
-      id:
-        description: 订单id
-        type: integer
+      nonceStr:
+        type: string
+      package:
+        type: string
+      paySign:
+        type: string
+      prePayId:
+        type: string
+      signType:
+        type: string
+      timestamp:
+        type: string
     type: object
   dto.ResourceID:
     properties:
@@ -569,10 +621,54 @@ paths:
       tags:
       - login
   /orders/:
+    get:
+      consumes:
+      - application/json
+      description: 获取订单列表
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 每页多少条
+        in: query
+        name: page_size
+        type: integer
+      - description: 页码
+        in: query
+        name: page_no
+        type: integer
+      - description: 订单状态 -1 全部(默认值) 0-未付款，2-已付款(待预约), 3-已退款, 4-已关闭
+        in: query
+        name: status
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/dto.PaginateListOutput'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/dto.ListOrderOutputEle'
+                        type: array
+                    type: object
+              type: object
+      summary: 获取订单列表
+      tags:
+      - orders
     post:
       consumes:
       - application/json
-      description: 创建订单
+      description: 创建订单,返回前端调起微信支付的必须参数
       parameters:
       - description: 用户token
         in: header
@@ -589,7 +685,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/middleware.Response'
@@ -600,6 +696,37 @@ paths:
       summary: 创建订单
       tags:
       - orders
+  /pay/status:
+    get:
+      consumes:
+      - application/json
+      description: 前端轮询支付状态
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 订单的prepay_id
+        in: query
+        name: prepay_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CheckPayStatusOutput'
+              type: object
+      summary: 查询订单支付状态
+      tags:
+      - pay
   /pkg/:
     get:
       consumes:

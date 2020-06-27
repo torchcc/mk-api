@@ -1,6 +1,5 @@
 package dto
 
-// TODO 这里需要在tag中写 form 或者 query 吗
 type ListPackageInput struct {
 	// 页码, 不传默认第一页
 	PageNo int64 `json:"page_no,default=1" form:"page_no,default=1" binding:"min=1"`

@@ -291,8 +291,83 @@
             }
         },
         "/orders/": {
+            "get": {
+                "description": "获取订单列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "获取订单列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页多少条",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page_no",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "订单状态 -1 全部(默认值) 0-未付款，2-已付款(待预约), 3-已退款, 4-已关闭",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/dto.PaginateListOutput"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "list": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/definitions/dto.ListOrderOutputEle"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
             "post": {
-                "description": "创建订单",
+                "description": "创建订单,返回前端调起微信支付的必须参数",
                 "consumes": [
                     "application/json"
                 ],
@@ -323,7 +398,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -334,6 +409,57 @@
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/dto.PostOrderOutput"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/pay/status": {
+            "get": {
+                "description": "前端轮询支付状态",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pay"
+                ],
+                "summary": "查询订单支付状态",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "订单的prepay_id",
+                        "name": "prepay_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.CheckPayStatusOutput"
                                         }
                                     }
                                 }
@@ -855,10 +981,42 @@
         }
     },
     "definitions": {
+        "dto.AggregatedOrderItem": {
+            "type": "object",
+            "properties": {
+                "create_time": {
+                    "description": "创建时间",
+                    "type": "integer"
+                },
+                "order_id": {
+                    "description": "套餐所属的order_id",
+                    "type": "integer"
+                },
+                "pkg_avatar_url": {
+                    "description": "套餐头像",
+                    "type": "string"
+                },
+                "pkg_count": {
+                    "description": "套餐数量",
+                    "type": "integer"
+                },
+                "pkg_id": {
+                    "description": "套餐id",
+                    "type": "integer"
+                },
+                "pkg_name": {
+                    "description": "套餐名称",
+                    "type": "string"
+                },
+                "pkg_price": {
+                    "description": "套餐单价",
+                    "type": "number"
+                }
+            }
+        },
         "dto.CartItem": {
             "type": "object",
             "required": [
-                "cart_id",
                 "pkg_count",
                 "pkg_id"
             ],
@@ -880,6 +1038,15 @@
                 },
                 "pkg_id": {
                     "description": "套餐id",
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.CheckPayStatusOutput": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "description": "支付状态 0-待支付 2-支付成功 4-订单已关闭",
                     "type": "integer"
                 }
             }
@@ -1080,6 +1247,34 @@
                 "signature": {
                     "description": "微信JsSDK签名",
                     "type": "string"
+                }
+            }
+        },
+        "dto.ListOrderOutputEle": {
+            "type": "object",
+            "properties": {
+                "aggregated_order_items": {
+                    "description": "订单中的套餐列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.AggregatedOrderItem"
+                    }
+                },
+                "amount": {
+                    "description": "订单总价",
+                    "type": "number"
+                },
+                "order_id": {
+                    "description": "订单id",
+                    "type": "integer"
+                },
+                "out_trade_no": {
+                    "description": "订单号",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "订单状态 0-待付款，2-待预约(指已经付款) 3-已退款 4-已关闭 5-待评价",
+                    "type": "integer"
                 }
             }
         },
@@ -1300,17 +1495,23 @@
         "dto.PostOrderOutput": {
             "type": "object",
             "properties": {
-                "amount": {
-                    "description": "订单总金额 单位：分（显示到ui时需要前端转为元）",
-                    "type": "number"
+                "nonceStr": {
+                    "type": "string"
                 },
-                "biz_no": {
-                    "description": "订单流水号",
-                    "type": "integer"
+                "package": {
+                    "type": "string"
                 },
-                "id": {
-                    "description": "订单id",
-                    "type": "integer"
+                "paySign": {
+                    "type": "string"
+                },
+                "prePayId": {
+                    "type": "string"
+                },
+                "signType": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
                 }
             }
         },

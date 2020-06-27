@@ -80,6 +80,13 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 		controller.OrderRegister(orderRegisterRouteGroup)
 	}
 
+	// pay_register
+	payRegisterRouteGroup := router.Group("/pay")
+
+	{
+		controller.PayRegister(payRegisterRouteGroup)
+	}
+
 	return router
 }
 

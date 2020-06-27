@@ -10,7 +10,7 @@ type PostOrderInput struct {
 
 type CartItem struct {
 	// 购物车条目id
-	CartId int64 `json:"cart_id" binding:"required"`
+	CartId int64 `json:"cart_id"`
 	// 套餐id
 	PackageId int64 `json:"pkg_id" binding:"required"`
 	// 套餐数量
@@ -35,30 +35,71 @@ type Examinee struct {
 }
 
 type PostOrderOutput struct {
-	// 订单id
-	OrderId int64 `json:"id"`
-	// 订单流水号
-	BizNo uint64 `json:"biz_no"`
-	// 订单总金额 单位：分（显示到ui时需要前端转为元）
-	Amount float64 `json:"amount"`
+	Timestamp string `json:"timestamp"`
+	NonceStr  string `json:"nonceStr"`
+	PrePayID  string `json:"prePayId"`
+	SignType  string `json:"signType"`
+	Package   string `json:"package"`
+	PaySign   string `json:"paySign"`
 }
 
 type OrderItem struct {
-	UserId     int64 `json:"user_id" db:"user_id"`
-	OrderId    int64 `json:"order_id" db:"order_id"`
-	PackageId  int64 `json:"pkg_id" db:"pkg_id"`
-	CreateTime int64 `json:"create_time" db:"create_time"`
-	UpdateTime int64 `json:"update_time" db:"update_time"`
+	UserId       int64   `json:"user_id" db:"user_id"`
+	OrderId      int64   `json:"order_id" db:"order_id"`
+	PackageId    int64   `json:"pkg_id" db:"pkg_id"`
+	PackagePrice float64 `json:"pkg_price" db:"pkg_price"`
+	CreateTime   int64   `json:"create_time" db:"create_time"`
+	UpdateTime   int64   `json:"update_time" db:"update_time"`
 	*Examinee
 }
 
 type Order struct {
 	Id         int64   `json:"id" db:"id"`
-	BizNo      int64   `json:"biz_no" db:"biz_no"`
+	OutTradeNo int64   `json:"out_trade_no" db:"out_trade_no"`
 	UserId     int64   `json:"user_id" db:"user_id"`
 	Mobile     string  `json:"mobile" db:"mobile"`
 	OpenId     string  `json:"open_id" db:"open_id"`
 	Amount     float64 `json:"amount" db:"amount"`
+	Remark     string  `json:"remark" db:"remark"`
 	CreateTime int64   `json:"create_time" db:"create_time"`
 	UpdateTime int64   `json:"update_time" db:"update_time"`
+}
+
+type ListOrderInput struct {
+	// 页码, 不传默认第一页
+	PageNo int64 `json:"page_no,default=1" form:"page_no,default=1" binding:"min=1"`
+	// 每页条数, 不传默认 10
+	PageSize int64 `json:"page_size,default=10" form:"page_size,default=10" binding:"min=1,max=100"`
+	// 订单筛选 -1-全部，0-待付款，2-待预约(指已经付款) 3-已退款 4-已关闭 5-待评价(该功能暂时disable)
+	Status int8 `json:"status" db:"status" form:"status,default=-1" binding:"min=-1,max=5"`
+}
+
+type ListOrderOutputEle struct {
+	// 订单id
+	OrderId int64 `json:"order_id" db:"order_id"`
+	// 订单号
+	OutTradeNo int64 `json:"out_trade_no" db:"out_trade_no"`
+	// 订单状态 0-待付款，2-待预约(指已经付款) 3-已退款 4-已关闭 5-待评价
+	Status int8 `json:"status" db:"status"`
+	// 订单总价
+	Amount float64 `json:"amount" db:"amount"`
+	// 订单中的套餐列表
+	AggregatedOrderItems []*AggregatedOrderItem `json:"aggregated_order_items"`
+}
+
+type AggregatedOrderItem struct {
+	// 套餐id
+	PackageId int64 `json:"pkg_id" db:"pkg_id"`
+	// 套餐所属的order_id
+	OrderId int64 `json:"order_id" db:"order_id"`
+	// 套餐名称
+	PackageName string `json:"pkg_name" db:"pkg_name"`
+	// 套餐头像
+	PackageAvatarUrl string `json:"pkg_avatar_url" db:"pkg_avatar_url"`
+	// 套餐数量
+	PackageCount int64 `json:"pkg_count" db:"pkg_count"`
+	// 套餐单价
+	PackagePrice float64 `json:"pkg_price" db:"pkg_price"`
+	// 创建时间
+	CreateTime int64 `json:"create_time" db:"create_time"`
 }

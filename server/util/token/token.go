@@ -33,10 +33,10 @@ func GenerateUuid() string {
 	return uuid.New().String()
 }
 
-func GenerateSnowflake() (int64, error) {
+func GenerateSnowflake() (snowflake.ID, error) {
 	node, err := snowflake.NewNode(1)
 	if err != nil {
 		return 0, err
 	}
-	return node.Generate().Int64(), nil
+	return node.Generate(), nil
 }

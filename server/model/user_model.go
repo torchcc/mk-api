@@ -117,7 +117,7 @@ func (db *userDatabase) Save(u *User) (id int64, err error) {
 		return 0, err
 	}
 
-	const cmd2 = `INSERT INTO mk_user_profile (
+	const cmd2 = `INSERT INTO mku_user_profile (
 			user_id, 
 			user_name, 
 			avatar_url, 

@@ -21,6 +21,7 @@ import (
 	"mk-api/server/model"
 	"mk-api/server/service"
 	"mk-api/server/util"
+	"mk-api/server/util/consts"
 )
 
 // wechat 路由注册
@@ -45,36 +46,6 @@ type wechatController struct {
 	cfg     *wechat.Config
 	wc      *wechat.Wechat
 	service service.WechatService
-}
-
-func NewWechatController(service service.WechatService) WeChatController {
-	// 创建一个wechat对象
-	rdOpts := cache.RedisOpts{
-		Host:        conf.C.RedisWechat.Host + ":" + strconv.Itoa(conf.C.RedisWechat.Port),
-		Password:    conf.C.RedisWechat.Password,
-		Database:    conf.C.RedisWechat.Db,
-		MaxIdle:     conf.C.RedisWechat.MaxIdle,
-		MaxActive:   conf.C.RedisWechat.MaxActive,
-		IdleTimeout: int32(conf.C.RedisWechat.IdleTimeout),
-	}
-	redisCache := cache.NewRedis(&rdOpts)
-
-	cfg := &wechat.Config{
-		AppID:          conf.C.WeChat.AppID,
-		AppSecret:      conf.C.WeChat.AppSecret,
-		Token:          conf.C.WeChat.Token,
-		EncodingAESKey: conf.C.WeChat.EncodingAESKey,
-		PayMchID:       conf.C.WeChat.PayMchID,
-		PayNotifyURL:   conf.C.WeChat.PayNotifyURL,
-		PayKey:         conf.C.WeChat.PayKey,
-		Cache:          redisCache,
-	}
-
-	return &wechatController{
-		cfg:     cfg,
-		wc:      wechat.NewWechat(cfg),
-		service: service,
-	}
 }
 
 // DockWechat godoc
@@ -133,7 +104,7 @@ func (c *wechatController) JsApiTicket(ctx *gin.Context) {
 	}
 
 	js := c.wc.GetJs()
-	cfg, err := js.GetConfig(util.UrlPrefix + uri)
+	cfg, err := js.GetConfig(consts.UrlPrefix + uri)
 	if err != nil {
 		util.Log.Errorf("failed to get JsApiTicket, Param: %s, err: %v", uri, err)
 		middleware.ResponseError(ctx, ecode.ServerErr, err)
@@ -151,7 +122,7 @@ func (c *wechatController) JsApiTicket(ctx *gin.Context) {
 func (c *wechatController) LaunchAuth(ctx *gin.Context) {
 	staticUrl := ctx.Query("static_url")
 	oau := c.wc.GetOauth()
-	url, err := oau.GetRedirectURL(util.UrlPrefix+"/wx/enter?static_url="+staticUrl, "snsapi_userinfo", "")
+	url, err := oau.GetRedirectURL(consts.UrlPrefix+"/wx/enter?static_url="+staticUrl, "snsapi_userinfo", "")
 	if err != nil {
 		util.Log.Errorf("fail to launch a oauth2 to wechat server: %v", err)
 		return
@@ -217,4 +188,34 @@ func (c *wechatController) Echo(ctx *gin.Context) {
 	// 发送回复的消息
 	_ = server.Send()
 
+}
+
+func NewWechatController(service service.WechatService) WeChatController {
+	// 创建一个wechat对象
+	rdOpts := cache.RedisOpts{
+		Host:        conf.C.RedisWechat.Host + ":" + strconv.Itoa(conf.C.RedisWechat.Port),
+		Password:    conf.C.RedisWechat.Password,
+		Database:    conf.C.RedisWechat.Db,
+		MaxIdle:     conf.C.RedisWechat.MaxIdle,
+		MaxActive:   conf.C.RedisWechat.MaxActive,
+		IdleTimeout: int32(conf.C.RedisWechat.IdleTimeout),
+	}
+	redisCache := cache.NewRedis(&rdOpts)
+
+	cfg := &wechat.Config{
+		AppID:          conf.C.WeChat.AppID,
+		AppSecret:      conf.C.WeChat.AppSecret,
+		Token:          conf.C.WeChat.Token,
+		EncodingAESKey: conf.C.WeChat.EncodingAESKey,
+		PayMchID:       conf.C.WeChat.PayMchID,
+		PayNotifyURL:   conf.C.WeChat.PayNotifyURL,
+		PayKey:         conf.C.WeChat.PayKey,
+		Cache:          redisCache,
+	}
+
+	return &wechatController{
+		cfg:     cfg,
+		wc:      wechat.NewWechat(cfg),
+		service: service,
+	}
 }
