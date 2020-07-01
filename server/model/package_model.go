@@ -14,10 +14,27 @@ type PackageModel interface {
 	FindPackageBasicInfo(id int64) (*dto.PackageBasicInfo, error)
 	FindPackageAttr(pkgId int64) (attrs []dto.PackageAttribute, err error)
 	FindPackagePriceNTargetById(id int64) (output *dto.PkgTargetNPrice, err error)
+	FindPkgItemNameByPkgId(pkgId int64) ([]*dto.PkgItemName, error)
 }
 
 type packageDatabase struct {
 	connection *sqlx.DB
+}
+
+func (db *packageDatabase) FindPkgItemNameByPkgId(pkgId int64) ([]*dto.PkgItemName, error) {
+	names := make([]*dto.PkgItemName, 0, 16)
+	const cmd = `SELECT 
+					order_no, name 
+				FROM
+				     mkp_package_attribute 
+				WHERE 
+					pkg_id = ?
+					AND attr_type = 1
+					AND is_deleted = 0
+				ORDER BY order_no
+`
+	err := db.connection.Select(&names, cmd, pkgId)
+	return names, err
 }
 
 func (db *packageDatabase) FindPackagePriceNTargetById(id int64) (output *dto.PkgTargetNPrice, err error) {

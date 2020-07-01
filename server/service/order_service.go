@@ -43,6 +43,7 @@ const (
 type OrderService interface {
 	CreateOrder(ctx *gin.Context, input *dto.PostOrderInput) (*wo.Config, error)
 	ListOrder(ctx *gin.Context, input *dto.ListOrderInput) (*dto.PaginateListOutput, error)
+	RetrieveOrder(ctx *gin.Context, id int64) (*dto.RetrieveOrderOutput, error)
 }
 
 type orderService struct {
@@ -51,6 +52,14 @@ type orderService struct {
 	packageModel model.PackageModel
 	payModel     model.PayModel
 	wechatPay    *pay.Pay
+}
+
+func (service *orderService) RetrieveOrder(ctx *gin.Context, id int64) (*dto.RetrieveOrderOutput, error) {
+	output, err := service.orderModel.FindOrderDetailById(id, service.packageModel)
+	if err != nil {
+		util.Log.Errorf("获取订单详情出错, err: [%]", err)
+	}
+	return output, err
 }
 
 func (service *orderService) ListOrder(ctx *gin.Context, input *dto.ListOrderInput) (*dto.PaginateListOutput, error) {

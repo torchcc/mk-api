@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/silenceper/wechat/v2/pay"
@@ -33,15 +34,42 @@ func OrderRegister(router *gin.RouterGroup) {
 	)
 	router.POST("/", orderController.PostOrder)
 	router.GET("/", orderController.ListOrder)
+	router.GET("/:id", orderController.GetOrder)
 }
 
 type OrderController interface {
 	PostOrder(ctx *gin.Context)
 	ListOrder(ctx *gin.Context)
+	GetOrder(ctx *gin.Context)
 }
 
 type orderController struct {
 	service service.OrderService
+}
+
+// GetOrderDetail godoc
+// @Summary 获取订单详情
+// @Description 获取订单详情
+// @Tags orders
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Param id path int true "订单的id, order_id"
+// @Success 200 {object} middleware.Response{data=dto.RetrieveOrderOutput} "success"
+// @Router /orders/{id} [get]
+func (c *orderController) GetOrder(ctx *gin.Context) {
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	if err != nil {
+		middleware.ResponseError(ctx, ecode.RequestErr, errors.New("参数id有误"))
+		return
+	}
+	order, err := c.service.RetrieveOrder(ctx, id)
+	if err != nil {
+		util.Log.Errorf("根据id获取order失败, err: [%s]", err.Error())
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("服务器内部错误"))
+	} else {
+		middleware.ResponseSuccess(ctx, order)
+	}
 }
 
 // OrderList godoc

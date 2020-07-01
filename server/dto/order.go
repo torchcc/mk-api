@@ -44,9 +44,12 @@ type PostOrderOutput struct {
 }
 
 type OrderItem struct {
-	UserId       int64   `json:"user_id" db:"user_id"`
-	OrderId      int64   `json:"order_id" db:"order_id"`
-	PackageId    int64   `json:"pkg_id" db:"pkg_id"`
+	UserId int64 `json:"user_id" db:"user_id"`
+	// 订单order_id
+	OrderId int64 `json:"order_id" db:"order_id"`
+	// 套餐id
+	PackageId int64 `json:"pkg_id" db:"pkg_id"`
+	// 套餐价格
 	PackagePrice float64 `json:"pkg_price" db:"pkg_price"`
 	CreateTime   int64   `json:"create_time" db:"create_time"`
 	UpdateTime   int64   `json:"update_time" db:"update_time"`
@@ -102,4 +105,54 @@ type AggregatedOrderItem struct {
 	PackagePrice float64 `json:"pkg_price" db:"pkg_price"`
 	// 创建时间
 	CreateTime int64 `json:"create_time" db:"create_time"`
+}
+
+type RetrieveOrderOutput struct {
+	// 订单id
+	OrderId int64 `json:"order_id" db:"order_id"`
+	// 订单号
+	OutTradeNo int64 `json:"out_trade_no" db:"out_trade_no"`
+	// 订单状态 0-待付款，2-待预约(指已经付款) 3-已退款 4-已关闭 5-待评价
+	Status int8 `json:"status" db:"status"`
+	// 订单总价
+	Amount float64 `json:"amount" db:"amount"`
+	// 下单人/预约人手机号
+	Mobile string `json:"mobile" db:"mobile"`
+	// 订单备注
+	Remark string `json:"remark" db:"remark"`
+	// 聚合后包括套餐项目的的order item
+	AggregatedOrderItemsWithPkgItem []*AggregatedOrderItemWithPkgItem `json:"aggregated_order_items_with_pkg_item"`
+}
+
+type AggregatedOrderItemWithPkgItem struct {
+	// 套餐检查项目
+	PkgItems []*PkgItemName
+	// 套餐检查人信息列表
+	Examinees []*ExamineeInOrderItem
+	// 套餐信息
+	AggregatedOrderItem
+}
+
+type PkgItemName struct {
+	// 属性排序， 小的排前面
+	OrderNo int64 `json:"order_no" db:"order_no"`
+	// 属性名字，此处是套餐项目名字
+	Name string `json:"name" db:"name"`
+}
+
+type ExamineeInOrderItem struct {
+	// order item(订单项)的id
+	OrderItemId int64 `json:"order_item_id" db:"order_item_id"`
+	Examinee
+}
+
+type OItemWithPkgBrief struct {
+	OrderItemId      int64   `json:"order_item_id" db:"order_item_id"`
+	PackageId        int64   `json:"pkg_id" db:"pkg_id"`
+	PackagePrice     float64 `json:"pkg_price" db:"pkg_price"`
+	PackageName      string  `json:"pkg_name" db:"pkg_name"`
+	PackageAvatarUrl string  `json:"pkg_avatar_url" db:"pkg_avatar_url"`
+	OrderId          int64   `json:"order_id" db:"order_id"`
+	CreateTime       int64   `json:"create_time" db:"create_time"`
+	Examinee
 }

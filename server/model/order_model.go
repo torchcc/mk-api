@@ -14,10 +14,119 @@ type OrderModel interface {
 	SaveOrder(order *dto.Order, items []*dto.OrderItem) (id int64, err error)
 	UpdateOrderStatus(outTradeNo string, status int8) (err error)
 	ListOrder(input *dto.ListOrderInput, userId int64) ([]*dto.ListOrderOutputEle, error)
+	FindOrderDetailById(id int64, pkgModel PackageModel) (*dto.RetrieveOrderOutput, error)
 }
 
 type orderDatabase struct {
 	connection *sqlx.DB
+}
+
+func (db *orderDatabase) FindOrderDetailById(id int64, pkgModel PackageModel) (*dto.RetrieveOrderOutput, error) {
+	output := dto.RetrieveOrderOutput{}
+	// step 1 获取订单表头信息
+	const cmd1 = `
+			SELECT
+				mo.id AS order_id,
+				mo.out_trade_no,
+				mo.status,
+				mo.amount,
+				mo.mobile,
+				mo.remark
+			FROM 
+				mko_order AS mo
+			WHERE 
+				mo.id = ? 
+				AND mo.is_deleted = 0
+`
+	if err := db.connection.Get(&output, cmd1, id); err != nil {
+		return nil, err
+	}
+	output.AggregatedOrderItemsWithPkgItem = make([]*dto.AggregatedOrderItemWithPkgItem, 0, 4)
+
+	var orderItems []*dto.OItemWithPkgBrief
+	const cmd2 = `
+			SELECT 
+				moi.id AS order_item_id,
+				moi.pkg_id,
+				moi.pkg_price,
+				moi.order_id,
+				moi.examinee_name,
+				moi.examinee_mobile,
+				moi.id_card_no,
+				moi.is_married,
+				moi.gender,
+				moi.examine_date,
+				mp.name AS pkg_name,
+				mp.avatar_url AS pkg_avatar_url,
+				moi.create_time
+			FROM
+				mko_order_item AS moi
+				INNER JOIN
+					mkp_package AS mp
+					ON moi.pkg_id = mp.id AND mp.is_deleted = 0
+			WHERE 
+				moi.order_id = ?
+				AND moi.is_deleted = 0
+`
+	if err := db.connection.Select(&orderItems, cmd2, id); err != nil {
+		return nil, err
+	}
+	if orderItems == nil {
+		return &output, nil
+	}
+
+	dic := make(map[int64]*dto.AggregatedOrderItemWithPkgItem)
+	for _, item := range orderItems {
+		if _, ok := dic[item.PackageId]; !ok {
+			pkgItems, err := pkgModel.FindPkgItemNameByPkgId(item.PackageId)
+			if err != nil {
+				util.Log.Errorf("查询套餐项目名称失败, err: [%s]", err.Error())
+			}
+			dic[item.PackageId] = &dto.AggregatedOrderItemWithPkgItem{
+				PkgItems: pkgItems,
+				Examinees: []*dto.ExamineeInOrderItem{{
+					OrderItemId: item.OrderItemId,
+					Examinee: dto.Examinee{
+						ExamineeName:   item.ExamineeName,
+						ExamineeMobile: item.ExamineeMobile,
+						IdCardNo:       item.IdCardNo,
+						Gender:         item.Gender,
+						IsMarried:      item.IsMarried,
+						ExamineDate:    item.ExamineDate,
+					},
+				}},
+				AggregatedOrderItem: dto.AggregatedOrderItem{
+					PackageId:        item.PackageId,
+					OrderId:          item.OrderId,
+					PackageName:      item.PackageName,
+					PackageAvatarUrl: item.PackageAvatarUrl,
+					PackageCount:     1,
+					PackagePrice:     item.PackagePrice,
+					CreateTime:       item.CreateTime,
+				},
+			}
+		} else {
+			dic[item.PackageId].PackageCount++
+			dic[item.PackageId].Examinees = append(dic[item.PackageId].Examinees, &dto.ExamineeInOrderItem{
+				OrderItemId: item.OrderItemId,
+				Examinee: dto.Examinee{
+					ExamineeName:   item.ExamineeName,
+					ExamineeMobile: item.ExamineeMobile,
+					IdCardNo:       item.IdCardNo,
+					Gender:         item.Gender,
+					IsMarried:      item.IsMarried,
+					ExamineDate:    item.ExamineDate,
+				},
+			})
+		}
+	}
+
+	for _, item := range dic {
+		output.AggregatedOrderItemsWithPkgItem = append(output.AggregatedOrderItemsWithPkgItem, item)
+	}
+
+	return &output, nil
+
 }
 
 func (db *orderDatabase) ListOrder(input *dto.ListOrderInput, userId int64) ([]*dto.ListOrderOutputEle, error) {

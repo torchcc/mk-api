@@ -418,6 +418,57 @@
                 }
             }
         },
+        "/orders/{id}": {
+            "get": {
+                "description": "获取订单详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "获取订单详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "订单的id, order_id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.RetrieveOrderOutput"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/pay/status": {
             "get": {
                 "description": "前端轮询支付状态",
@@ -1014,6 +1065,53 @@
                 }
             }
         },
+        "dto.AggregatedOrderItemWithPkgItem": {
+            "type": "object",
+            "properties": {
+                "create_time": {
+                    "description": "创建时间",
+                    "type": "integer"
+                },
+                "examinees": {
+                    "description": "套餐检查人信息列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.ExamineeInOrderItem"
+                    }
+                },
+                "order_id": {
+                    "description": "套餐所属的order_id",
+                    "type": "integer"
+                },
+                "pkgItems": {
+                    "description": "套餐检查项目",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PkgItemName"
+                    }
+                },
+                "pkg_avatar_url": {
+                    "description": "套餐头像",
+                    "type": "string"
+                },
+                "pkg_count": {
+                    "description": "套餐数量",
+                    "type": "integer"
+                },
+                "pkg_id": {
+                    "description": "套餐id",
+                    "type": "integer"
+                },
+                "pkg_name": {
+                    "description": "套餐名称",
+                    "type": "string"
+                },
+                "pkg_price": {
+                    "description": "套餐单价",
+                    "type": "number"
+                }
+            }
+        },
         "dto.CartItem": {
             "type": "object",
             "required": [
@@ -1124,6 +1222,46 @@
                 },
                 "is_married": {
                     "description": "婚否 1-是 2-否",
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.ExamineeInOrderItem": {
+            "type": "object",
+            "required": [
+                "examine_date",
+                "examinee_mobile",
+                "examinee_name",
+                "gender",
+                "id_card_no"
+            ],
+            "properties": {
+                "examine_date": {
+                    "description": "体检日期 时间戳， 精确到 日",
+                    "type": "integer"
+                },
+                "examinee_mobile": {
+                    "description": "体检人电话",
+                    "type": "string"
+                },
+                "examinee_name": {
+                    "description": "体检人姓名",
+                    "type": "string"
+                },
+                "gender": {
+                    "description": "性别 1-男 2-女",
+                    "type": "integer"
+                },
+                "id_card_no": {
+                    "description": "身份证号码",
+                    "type": "string"
+                },
+                "is_married": {
+                    "description": "婚否 1-是 2-否",
+                    "type": "integer"
+                },
+                "order_item_id": {
+                    "description": "order item(订单项)的id",
                     "type": "integer"
                 }
             }
@@ -1460,6 +1598,19 @@
                 }
             }
         },
+        "dto.PkgItemName": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "属性名字，此处是套餐项目名字",
+                    "type": "string"
+                },
+                "order_no": {
+                    "description": "属性排序， 小的排前面",
+                    "type": "integer"
+                }
+            }
+        },
         "dto.PostCartInput": {
             "type": "object",
             "properties": {
@@ -1519,6 +1670,42 @@
             "type": "object",
             "properties": {
                 "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.RetrieveOrderOutput": {
+            "type": "object",
+            "properties": {
+                "aggregated_order_items_with_pkg_item": {
+                    "description": "聚合后包括套餐项目的的order item",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.AggregatedOrderItemWithPkgItem"
+                    }
+                },
+                "amount": {
+                    "description": "订单总价",
+                    "type": "number"
+                },
+                "mobile": {
+                    "description": "下单人/预约人手机号",
+                    "type": "string"
+                },
+                "order_id": {
+                    "description": "订单id",
+                    "type": "integer"
+                },
+                "out_trade_no": {
+                    "description": "订单号",
+                    "type": "integer"
+                },
+                "remark": {
+                    "description": "订单备注",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "订单状态 0-待付款，2-待预约(指已经付款) 3-已退款 4-已关闭 5-待评价",
                     "type": "integer"
                 }
             }
