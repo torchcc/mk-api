@@ -1,31 +1,73 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"mk-api/library/ecode"
 	"mk-api/server/dto"
 	"mk-api/server/model"
 	"mk-api/server/util"
+	"mk-api/server/validator/id_card"
 )
 
 type UserService interface {
-	Delete(model.User) error
-	FindAll() ([]model.User, error)
 	Retrieve(id int64) (*dto.UserDetailOutput, error)
 	FindAllAddrs(userId int64) (addrs []model.UserAddr, err error)
 	SaveAddr(addr *model.UserAddr) (id int64, err error)
 	RetrieveAddr(id int64) (addr *dto.GetUserAddrOutput, err error)
 	DeleteAddr(id int64) (err error)
 	UpdateUserAddr(ctx *gin.Context, id int64, addr *dto.UpdateUserAddrInput) (err error)
+
+	FindAllExaminees(userId int64) ([]*dto.ListExamineeOutputEle, error)
+	SaveExaminee(userId int64, input *dto.PostExamineeInput) (id int64, err error)
 }
 
 type userService struct {
-	model       model.UserModel
-	addrModel   model.UserAddrModel
-	regionModel model.RegionModel
+	model         model.UserModel
+	addrModel     model.UserAddrModel
+	regionModel   model.RegionModel
+	examineeModel model.ExamineeModel
+}
+
+func (service *userService) SaveExaminee(userId int64, input *dto.PostExamineeInput) (id int64, err error) {
+	var bean = &dto.ExamineeBean{
+		UserId:            userId,
+		Gender:            0,
+		CreateTime:        time.Now().Unix(),
+		UpdateTime:        time.Now().Unix(),
+		PostExamineeInput: dto.PostExamineeInput{},
+	}
+	tmp, _ := json.Marshal(input) // Marshal 可以传指针吗 test
+	_ = json.Unmarshal(tmp, bean)
+	if _, isMale, _, _ := id_card.GetCitizenNoInfo([]byte(input.IdCardNo)); isMale {
+		bean.Gender = MALE
+	} else {
+		bean.Gender = Female
+	}
+
+	id, err = service.examineeModel.SaveExaminee(bean)
+	if err != nil {
+		util.Log.WithFields(logrus.Fields{"user_id": userId}).Errorf("创建常用体检人失败, err: [%s]", err.Error())
+	}
+	return
+}
+
+func (service *userService) FindAllExaminees(userId int64) ([]*dto.ListExamineeOutputEle, error) {
+	output, err := service.examineeModel.FindExamineesByUserId(userId)
+	if err != nil {
+		util.Log.WithFields(logrus.Fields{"user_id": userId}).Errorf("获取常用体检人出错: [%s]", err.Error())
+		return output, err
+	}
+	for _, examinee := range output {
+		birthday, _, _, _ := id_card.GetCitizenNoInfo([]byte(examinee.IdCardNo))
+		examinee.Age = (time.Now().Unix()-birthday)/(365*24*3600) + 1
+	}
+	return output, err
 }
 
 func (service *userService) SaveAddr(addr *model.UserAddr) (id int64, err error) {
@@ -33,14 +75,6 @@ func (service *userService) SaveAddr(addr *model.UserAddr) (id int64, err error)
 		_ = service.addrModel.CancelOriginDefaultAddr(addr.UserId)
 	}
 	return service.addrModel.Save(addr)
-}
-
-func (service *userService) Delete(user model.User) error {
-	return service.model.Delete(user)
-}
-
-func (service *userService) FindAll() ([]model.User, error) {
-	return service.model.FindAll()
 }
 
 func (service *userService) Retrieve(id int64) (*dto.UserDetailOutput, error) {
@@ -104,10 +138,11 @@ func (service *userService) UpdateUserAddr(ctx *gin.Context, id int64, addr *dto
 	return
 }
 
-func NewUserService(userModel model.UserModel, addrModel model.UserAddrModel, regionModel model.RegionModel) UserService {
+func NewUserService(userModel model.UserModel, addrModel model.UserAddrModel, regionModel model.RegionModel, examineeModel model.ExamineeModel) UserService {
 	return &userService{
-		model:       userModel,
-		addrModel:   addrModel,
-		regionModel: regionModel,
+		model:         userModel,
+		addrModel:     addrModel,
+		regionModel:   regionModel,
+		examineeModel: examineeModel,
 	}
 }

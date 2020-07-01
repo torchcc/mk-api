@@ -20,29 +20,83 @@ func UserRegister(router *gin.RouterGroup) {
 		userModel      model.UserModel     = model.NewUserModel()
 		addrModel      model.UserAddrModel = model.NewUserAddrModel()
 		regionModel    model.RegionModel   = model.NewRegionModel()
-		userService    service.UserService = service.NewUserService(userModel, addrModel, regionModel)
+		examineeModel  model.ExamineeModel = model.NewExamineeModel()
+		userService    service.UserService = service.NewUserService(userModel, addrModel, regionModel, examineeModel)
 		userController UserController      = NewUserController(userService)
 	)
-	router.GET("/profile", middleware.MobileBoundRequired(), userController.UserProfile)
+	router.GET("/profile", userController.UserProfile)
 
-	router.GET("/addrs", middleware.MobileBoundRequired(), userController.ListUserAddr)
-	router.POST("/addrs", middleware.MobileBoundRequired(), userController.CreateUserAddr)
-	router.GET("/addrs/:id", middleware.MobileBoundRequired(), userController.GetUserAddr)
-	router.DELETE("/addrs/:id", middleware.MobileBoundRequired(), userController.DelUserAddr)
-	router.PUT("/addrs/:id", middleware.MobileBoundRequired(), userController.UpdateUserAddr)
+	router.GET("/addrs", userController.ListUserAddr)
+	router.POST("/addrs", userController.PostUserAddr)
+	router.GET("/addrs/:id", userController.GetUserAddr)
+	router.DELETE("/addrs/:id", userController.DelUserAddr)
+	router.PUT("/addrs/:id", userController.UpdateUserAddr)
+
+	router.GET("/examinees", userController.ListExaminee)
+	router.POST("/examinees", userController.PostExaminee)
 }
 
 type UserController interface {
 	UserProfile(ctx *gin.Context)
+
 	ListUserAddr(ctx *gin.Context)
-	CreateUserAddr(ctx *gin.Context)
+	PostUserAddr(ctx *gin.Context)
 	GetUserAddr(ctx *gin.Context)
 	DelUserAddr(ctx *gin.Context)
 	UpdateUserAddr(ctx *gin.Context)
+
+	ListExaminee(ctx *gin.Context)
+	PostExaminee(ctx *gin.Context)
 }
 
 type userController struct {
 	service service.UserService
+}
+
+// PostExaminee godoc
+// @Summary 新增常用体检人
+// @Description 新增常用体检人
+// @Tags examinees
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Param body body dto.PostExamineeInput true "新增常用体检人"
+// @Success 200 {object} middleware.Response{data=dto.ResourceID} "success"
+// @Router /users/examinees [post]
+func (c *userController) PostExaminee(ctx *gin.Context) {
+	var input dto.PostExamineeInput
+	if err := util.ParseRequest(ctx, &input); err != nil {
+		util.Log.Errorf("参数绑定失败, err: [%s]", err)
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+	userId := ctx.GetInt64("userId")
+	id, err := c.service.SaveExaminee(userId, &input)
+	if err != nil {
+		util.Log.WithFields(logrus.Fields{"user_id": userId}).Errorf("创建常用体检人出错, err: [%s]", err.Error())
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("服务器内部错误"))
+		return
+	}
+	middleware.ResponseSuccess(ctx, dto.ResourceID{Id: id})
+}
+
+// ListExaminee godoc
+// @Summary 个人中心->常用信息
+// @Description 获取常用体检人列表
+// @Tags examinees
+// @Produce json
+// @Param  token header string true "用户token"
+// @Success 200 {object} middleware.Response{data=[]dto.ListExamineeOutputEle}
+// @Router /users/examinees [get]
+func (c *userController) ListExaminee(ctx *gin.Context) {
+	userId := ctx.GetInt64("userId")
+	output, err := c.service.FindAllExaminees(userId)
+	if err != nil {
+		util.Log.Errorf("获取用户常用体检人列表出错, err: [%s]", err.Error())
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("服务器内部错误"))
+	} else {
+		middleware.ResponseSuccess(ctx, output)
+	}
 }
 
 // GetUserDetail godoc
@@ -86,7 +140,7 @@ func (c *userController) ListUserAddr(ctx *gin.Context) {
 	}
 }
 
-// CreateUserAddr godoc
+// PostUserAddr godoc
 // @Summary 新增用户收件地址
 // @Description 新增地址
 // @Tags addrs
@@ -96,7 +150,7 @@ func (c *userController) ListUserAddr(ctx *gin.Context) {
 // @Param body body dto.CreateUserAddrInput true "新增用户收件地址"
 // @Success 200 {object} middleware.Response{data=dto.ResourceID} "success"
 // @Router /users/addrs [post]
-func (c *userController) CreateUserAddr(ctx *gin.Context) {
+func (c *userController) PostUserAddr(ctx *gin.Context) {
 	var addr model.UserAddr
 	err := ctx.ShouldBindJSON(&addr)
 	if err != nil {

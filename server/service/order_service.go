@@ -20,26 +20,6 @@ import (
 	"mk-api/server/validator/id_card"
 )
 
-type PackageTarget = int8
-type FeeType = int8
-type TransType = int8
-
-const (
-	AnyGender       PackageTarget = 0
-	MALE                          = 1
-	UnMarriedFemale               = 2
-	MarriedFemale                 = 3
-)
-
-const (
-	Income FeeType = 1
-	// Outgo          = 2
-)
-
-const (
-	Earned TransType = 1
-)
-
 type OrderService interface {
 	CreateOrder(ctx *gin.Context, input *dto.PostOrderInput) (*wo.Config, error)
 	ListOrder(ctx *gin.Context, input *dto.ListOrderInput) (*dto.PaginateListOutput, error)

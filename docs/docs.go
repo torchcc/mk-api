@@ -1006,6 +1006,101 @@ var doc = `{
                 }
             }
         },
+        "/users/examinees": {
+            "get": {
+                "description": "获取常用体检人列表",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "examinees"
+                ],
+                "summary": "个人中心-\u003e常用信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.ListExamineeOutputEle"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "新增常用体检人",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "examinees"
+                ],
+                "summary": "新增常用体检人",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "新增常用体检人",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PostExamineeInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ResourceID"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/users/profile": {
             "get": {
                 "description": "获取用户的profile",
@@ -1457,6 +1552,50 @@ var doc = `{
                 }
             }
         },
+        "dto.ListExamineeOutputEle": {
+            "type": "object",
+            "required": [
+                "examinee_mobile",
+                "examinee_name",
+                "gender",
+                "id_card_no",
+                "is_married"
+            ],
+            "properties": {
+                "age": {
+                    "description": "年龄",
+                    "type": "integer"
+                },
+                "examinee_mobile": {
+                    "description": "体检人电话",
+                    "type": "string"
+                },
+                "examinee_name": {
+                    "description": "体检人姓名",
+                    "type": "string"
+                },
+                "gender": {
+                    "description": "性别 1-男 2-女",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "Examinee 表的id",
+                    "type": "integer"
+                },
+                "id_card_no": {
+                    "description": "身份证号码",
+                    "type": "string"
+                },
+                "is_married": {
+                    "description": "婚否 1-是 2-否",
+                    "type": "integer"
+                },
+                "relation": {
+                    "description": "体检人与本人的关系 0 本人， 1 父亲， 2 兄弟姐妹， 3 儿子， 4 女儿， 5 母亲， 6 夫妻， 7 其他",
+                    "type": "integer"
+                }
+            }
+        },
         "dto.ListOrderOutputEle": {
             "type": "object",
             "properties": {
@@ -1685,6 +1824,37 @@ var doc = `{
             "properties": {
                 "pkg_id": {
                     "description": "要添加的套餐id",
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PostExamineeInput": {
+            "type": "object",
+            "required": [
+                "examinee_mobile",
+                "examinee_name",
+                "id_card_no",
+                "is_married"
+            ],
+            "properties": {
+                "examinee_mobile": {
+                    "description": "体检人电话",
+                    "type": "string"
+                },
+                "examinee_name": {
+                    "description": "体检人姓名",
+                    "type": "string"
+                },
+                "id_card_no": {
+                    "description": "身份证号码",
+                    "type": "string"
+                },
+                "is_married": {
+                    "description": "婚否 1-是 2-否",
+                    "type": "integer"
+                },
+                "relation": {
+                    "description": "体检人与本人的关系 0 本人， 1 父亲， 2 兄弟姐妹， 3 儿子， 4 女儿， 5 母亲， 6 夫妻， 7 其他",
                     "type": "integer"
                 }
             }

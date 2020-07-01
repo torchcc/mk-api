@@ -28,9 +28,10 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 
 	// users
 	userRouteGroup := router.Group("/users")
-	// usersRouteGroup.Use(
-	// 	middleware.TranslationMiddleware(),
-	// )
+	userRouteGroup.Use(
+		middleware.MobileBoundRequired(),
+	)
+
 	{
 		controller.UserRegister(userRouteGroup)
 	}

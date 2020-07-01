@@ -27,8 +27,6 @@ type User struct {
 // Model Class
 type UserModel interface {
 	Save(user *User) (int64, error)
-	Delete(user User) error
-	FindAll() ([]User, error)
 	FindUserByID(id int64) (*dto.UserDetailOutput, error)
 	FindUserByOpenId(openId string) (id int64, mobile string, err error)
 	AddRegisterInfo(input *dto.LoginRegisterInput, userId int64) (err error)
@@ -145,16 +143,6 @@ func (db *userDatabase) FindUserByOpenId(openId string) (id int64, mobile string
 	cmd := `SELECT id, mobile FROM mku_user WHERE open_id = ? AND is_deleted = 0`
 	err = db.connection.Get(&u, cmd, openId)
 	return u.ID, u.Mobile, err
-}
-
-func (db *userDatabase) Delete(user User) error {
-	return nil
-}
-
-func (db *userDatabase) FindAll() ([]User, error) {
-	var users []User
-	// sql
-	return users, nil
 }
 
 func (db *userDatabase) FindUserByID(ID int64) (*dto.UserDetailOutput, error) {
