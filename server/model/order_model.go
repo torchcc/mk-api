@@ -15,10 +15,17 @@ type OrderModel interface {
 	UpdateOrderStatus(outTradeNo string, status int8) (err error)
 	ListOrder(input *dto.ListOrderInput, userId int64) ([]*dto.ListOrderOutputEle, error)
 	FindOrderDetailById(id int64, pkgModel PackageModel) (*dto.RetrieveOrderOutput, error)
+	DeleteOrderByIdNUserId(userId int64, id int64) error
 }
 
 type orderDatabase struct {
 	connection *sqlx.DB
+}
+
+func (db *orderDatabase) DeleteOrderByIdNUserId(userId int64, id int64) error {
+	const cmd = `UPDATE mko_order SET is_deleted = 1 WHERE id = ? AND user_id = ?`
+	_, err := db.connection.Exec(cmd, id, userId)
+	return err
 }
 
 func (db *orderDatabase) FindOrderDetailById(id int64, pkgModel PackageModel) (*dto.RetrieveOrderOutput, error) {

@@ -80,7 +80,7 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 		controller.OrderRegister(orderRegisterRouteGroup)
 	}
 
-	// pay_register
+	// pay_register, 出于微信回调， 组路由不加mobile required 验证， 需要的话在子路由添加
 	payRegisterRouteGroup := router.Group("/pay")
 
 	{

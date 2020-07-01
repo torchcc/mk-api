@@ -31,7 +31,7 @@ func PayRegister(router *gin.RouterGroup) {
 		payController PayController      = NewPayController(payService)
 	)
 	router.POST("/wechat_callback", payController.WechatPayCallback)
-	router.GET("/status", payController.CheckPayStatus)
+	router.GET("/status", middleware.MobileBoundRequired(), payController.CheckPayStatus)
 }
 
 type PayController interface {

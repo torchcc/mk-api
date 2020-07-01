@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/silenceper/wechat/v2/pay"
 	payConfig "github.com/silenceper/wechat/v2/pay/config"
+	"github.com/sirupsen/logrus"
 	"mk-api/library/ecode"
 	"mk-api/server/conf"
 	"mk-api/server/dto"
@@ -35,16 +36,43 @@ func OrderRegister(router *gin.RouterGroup) {
 	router.POST("/", orderController.PostOrder)
 	router.GET("/", orderController.ListOrder)
 	router.GET("/:id", orderController.GetOrder)
+	router.DELETE("/:id", orderController.DeleteOrder)
 }
 
 type OrderController interface {
 	PostOrder(ctx *gin.Context)
 	ListOrder(ctx *gin.Context)
 	GetOrder(ctx *gin.Context)
+	DeleteOrder(ctx *gin.Context)
 }
 
 type orderController struct {
 	service service.OrderService
+}
+
+// DeleteOrder godoc
+// @Summary 删除订单
+// @Description 删除订单
+// @Tags orders
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Param id path int true "订单的id, order_id"
+// @Success 200 {object} middleware.Response{data=string}
+// @Router /orders/{id} [delete]
+func (c *orderController) DeleteOrder(ctx *gin.Context) {
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	if err != nil {
+		middleware.ResponseError(ctx, ecode.RequestErr, errors.New("参数id有误"))
+		return
+	}
+	err = c.service.RemoveOrder(ctx, id)
+	if err != nil {
+		util.Log.WithFields(logrus.Fields{"order_id": id}).Errorf("移除订单失败, err: [%s]", err.Error())
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("服务器内部错误"))
+	} else {
+		middleware.ResponseSuccess(ctx, "")
+	}
 }
 
 // GetOrderDetail godoc

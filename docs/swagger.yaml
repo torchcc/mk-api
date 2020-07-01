@@ -796,6 +796,36 @@ paths:
       tags:
       - orders
   /orders/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除订单
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 订单的id, order_id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: 删除订单
+      tags:
+      - orders
     get:
       consumes:
       - application/json

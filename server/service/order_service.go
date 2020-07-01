@@ -44,6 +44,7 @@ type OrderService interface {
 	CreateOrder(ctx *gin.Context, input *dto.PostOrderInput) (*wo.Config, error)
 	ListOrder(ctx *gin.Context, input *dto.ListOrderInput) (*dto.PaginateListOutput, error)
 	RetrieveOrder(ctx *gin.Context, id int64) (*dto.RetrieveOrderOutput, error)
+	RemoveOrder(ctx *gin.Context, id int64) error
 }
 
 type orderService struct {
@@ -52,6 +53,18 @@ type orderService struct {
 	packageModel model.PackageModel
 	payModel     model.PayModel
 	wechatPay    *pay.Pay
+}
+
+func (service *orderService) RemoveOrder(ctx *gin.Context, id int64) error {
+	userId := ctx.GetInt64("userId")
+	err := service.orderModel.DeleteOrderByIdNUserId(userId, id)
+	if err != nil {
+		util.Log.WithFields(logrus.Fields{
+			"user_id":  userId,
+			"order_id": id,
+		}).Errorf("删除订单失败， err: [%s]", err)
+	}
+	return err
 }
 
 func (service *orderService) RetrieveOrder(ctx *gin.Context, id int64) (*dto.RetrieveOrderOutput, error) {
