@@ -1254,6 +1254,73 @@ paths:
       summary: 新增常用体检人
       tags:
       - examinees
+  /users/examinees/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除常用体检人信息
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: examinee id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ResourceID'
+              type: object
+      summary: 删除常用体检人信息
+      tags:
+      - examinees
+    put:
+      consumes:
+      - application/json
+      description: 修改单个常用体检人
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: examinee id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 修改单个常用体检人
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PostExamineeInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ResourceID'
+              type: object
+      summary: 修改单个常用体检人
+      tags:
+      - examinees
   /users/profile:
     get:
       consumes:

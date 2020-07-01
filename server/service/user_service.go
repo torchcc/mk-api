@@ -25,6 +25,8 @@ type UserService interface {
 
 	FindAllExaminees(userId int64) ([]*dto.ListExamineeOutputEle, error)
 	SaveExaminee(userId int64, input *dto.PostExamineeInput) (id int64, err error)
+	RemoveExaminee(id int64, userId int64) error
+	ModifyExaminee(ctx *gin.Context, id int64, input *dto.PostExamineeInput) error
 }
 
 type userService struct {
@@ -32,6 +34,43 @@ type userService struct {
 	addrModel     model.UserAddrModel
 	regionModel   model.RegionModel
 	examineeModel model.ExamineeModel
+}
+
+func (service *userService) ModifyExaminee(ctx *gin.Context, id int64, input *dto.PostExamineeInput) error {
+	userId := ctx.GetInt64("userId")
+	var bean = &dto.ExamineeBean{
+		Id:                id,
+		UserId:            userId,
+		Gender:            0,
+		UpdateTime:        time.Now().Unix(),
+		PostExamineeInput: dto.PostExamineeInput{},
+	}
+	tmp, _ := json.Marshal(input)
+	_ = json.Unmarshal(tmp, bean)
+	if _, isMale, _, _ := id_card.GetCitizenNoInfo([]byte(input.IdCardNo)); isMale {
+		bean.Gender = MALE
+	} else {
+		bean.Gender = Female
+	}
+
+	err := service.examineeModel.UpdateExaminee(bean)
+	if err != nil {
+		util.Log.WithFields(logrus.Fields{
+			"user_id":     userId,
+			"examinee_id": id,
+		}).Errorf("更新examinee出错, err: [%s]", err.Error())
+	}
+	return err
+}
+
+func (service *userService) RemoveExaminee(id int64, userId int64) error {
+	err := service.examineeModel.DeleteExamineeByIdNUserId(id, userId)
+	if err != nil {
+		util.Log.WithFields(
+			logrus.Fields{"user_id": userId, "examinee_id": id}).
+			Errorf("逻辑删除examinee失败， err: [%s]", err.Error())
+	}
+	return err
 }
 
 func (service *userService) SaveExaminee(userId int64, input *dto.PostExamineeInput) (id int64, err error) {
@@ -42,7 +81,7 @@ func (service *userService) SaveExaminee(userId int64, input *dto.PostExamineeIn
 		UpdateTime:        time.Now().Unix(),
 		PostExamineeInput: dto.PostExamineeInput{},
 	}
-	tmp, _ := json.Marshal(input) // Marshal 可以传指针吗 test
+	tmp, _ := json.Marshal(input)
 	_ = json.Unmarshal(tmp, bean)
 	if _, isMale, _, _ := id_card.GetCitizenNoInfo([]byte(input.IdCardNo)); isMale {
 		bean.Gender = MALE

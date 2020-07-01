@@ -14,6 +14,7 @@ type PostExamineeInput struct {
 }
 
 type ExamineeBean struct {
+	Id     int64 `json:"id" db:"id"`
 	UserId int64 `json:"user_id" db:"user_id" binding:"-"`
 	// 性别 1-男 2-女
 	Gender     int8  `json:"gender" binding:"required" db:"gender"`

@@ -30,10 +30,12 @@ func UserRegister(router *gin.RouterGroup) {
 	router.POST("/addrs", userController.PostUserAddr)
 	router.GET("/addrs/:id", userController.GetUserAddr)
 	router.DELETE("/addrs/:id", userController.DelUserAddr)
-	router.PUT("/addrs/:id", userController.UpdateUserAddr)
+	router.PUT("/addrs/:id", userController.PutUserAddr)
 
 	router.GET("/examinees", userController.ListExaminee)
 	router.POST("/examinees", userController.PostExaminee)
+	router.DELETE("/examinees/:id", userController.DelExaminee)
+	router.PUT("/examinees/:id", userController.PutExaminee)
 }
 
 type UserController interface {
@@ -43,14 +45,76 @@ type UserController interface {
 	PostUserAddr(ctx *gin.Context)
 	GetUserAddr(ctx *gin.Context)
 	DelUserAddr(ctx *gin.Context)
-	UpdateUserAddr(ctx *gin.Context)
+	PutUserAddr(ctx *gin.Context)
 
 	ListExaminee(ctx *gin.Context)
 	PostExaminee(ctx *gin.Context)
+	DelExaminee(ctx *gin.Context)
+	PutExaminee(ctx *gin.Context)
 }
 
 type userController struct {
 	service service.UserService
+}
+
+// PutExaminee godoc
+// @Summary 修改单个常用体检人
+// @Description 修改单个常用体检人
+// @Tags examinees
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Param  id path int true "examinee id"
+// @Param body body dto.PostExamineeInput true "修改单个常用体检人"
+// @Success 200 {object} middleware.Response{data=dto.ResourceID} "success"
+// @Router /users/examinees/{id} [put]
+func (c *userController) PutExaminee(ctx *gin.Context) {
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	if err != nil {
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+	var input dto.PostExamineeInput
+
+	if err := util.ParseRequest(ctx, &input); err != nil {
+		util.Log.Errorf("参数绑定失败, err: [%s]", err)
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+
+	err = c.service.ModifyExaminee(ctx, id, &input)
+	if err != nil {
+		util.Log.Errorf("修改用户收件地址失败, id: [%d] 参数: [%v], err: [%s]", id, input, err.Error())
+		middleware.ResponseError(ctx, ecode.ServerErr, err)
+	} else {
+		middleware.ResponseSuccess(ctx, dto.ResourceID{Id: id})
+	}
+}
+
+// RemoveExaminee godoc
+// @Summary 删除常用体检人信息
+// @Description 删除常用体检人信息
+// @Tags examinees
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Param  id path int true "examinee id"
+// @Success 200 {object} middleware.Response{data=dto.ResourceID} "success"
+// @Router /users/examinees/{id} [delete]
+func (c *userController) DelExaminee(ctx *gin.Context) {
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	if err != nil {
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+	userId := ctx.GetInt64("userId")
+	err = c.service.RemoveExaminee(id, userId)
+	if err != nil {
+		util.Log.Errorf("根据id删除examinee失败, err: [%s]", err.Error())
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("服务器内部错误"))
+	} else {
+		middleware.ResponseSuccess(ctx, dto.ResourceID{Id: id})
+	}
 }
 
 // PostExaminee godoc
@@ -230,7 +294,7 @@ func (c *userController) DelUserAddr(ctx *gin.Context) {
 // @Param body body dto.UpdateUserAddrInput true "修改用户收件地址"
 // @Success 200 {object} middleware.Response{data=dto.ResourceID} "success"
 // @Router /users/addrs/{id} [put]
-func (c *userController) UpdateUserAddr(ctx *gin.Context) {
+func (c *userController) PutUserAddr(ctx *gin.Context) {
 	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 	if err != nil {
 		middleware.ResponseError(ctx, ecode.RequestErr, err)
