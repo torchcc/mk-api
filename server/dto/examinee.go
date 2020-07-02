@@ -23,8 +23,6 @@ type ExamineeBean struct {
 	PostExamineeInput
 }
 
-// POST 时请忽略这个参数.
-
 type ListExamineeOutputEle struct {
 	// Examinee 表的id
 	Id int64 `json:"id" db:"id"`
