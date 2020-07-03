@@ -88,6 +88,16 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 		controller.PayRegister(payRegisterRouteGroup)
 	}
 
+	// region_register,
+	regionRegisterRouteGroup := router.Group("/regions")
+	regionRegisterRouteGroup.Use(
+		middleware.MobileBoundRequired(),
+	)
+
+	{
+		controller.RegionRegister(regionRegisterRouteGroup)
+	}
+
 	return router
 }
 

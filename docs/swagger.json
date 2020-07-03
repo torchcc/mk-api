@@ -733,6 +733,59 @@
                 }
             }
         },
+        "/regions/": {
+            "get": {
+                "description": "根据parent_id获取行政区域列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "regions"
+                ],
+                "summary": "根据parent_id获取行政区域列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "父级行政区域id， 默认值为第一级(省等)：0",
+                        "name": "parent_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.Region"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/users/addrs": {
             "get": {
                 "description": "获取收件地址列表",
@@ -1991,6 +2044,27 @@
                 },
                 "timestamp": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.Region": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "省，市， 区/县， 镇/街道 的行政区域id",
+                    "type": "integer"
+                },
+                "level": {
+                    "description": "行政区域等级, 1-省，2-市， 3-区/县， 4-镇/街道",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "行政区域名称",
+                    "type": "string"
+                },
+                "parent_id": {
+                    "description": "该行政区域的父级id， 1级行政区域的父id 是 0",
+                    "type": "integer"
                 }
             }
         },

@@ -1,10 +1,14 @@
 package model
 
 import (
-	"github.com/jmoiron/sqlx"
-	"mk-api/server/dao"
-	"mk-api/server/util"
+	"strconv"
 	"sync"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/patrickmn/go-cache"
+	"mk-api/server/dao"
+	"mk-api/server/dto"
+	"mk-api/server/util"
 )
 
 type RegionIdName struct {
@@ -14,10 +18,29 @@ type RegionIdName struct {
 
 type RegionModel interface {
 	GetRegionIdNameMap() (id2name map[int64]string, err error)
+	FindRegionsByParentId(parentId int64) ([]*dto.Region, error)
 }
 
 type regionDatabase struct {
 	connection *sqlx.DB
+	goCache    *cache.Cache
+}
+
+func (db regionDatabase) FindRegionsByParentId(parentId int64) (output []*dto.Region, err error) {
+	// 增加内存缓存
+	key := "region" + strconv.FormatInt(parentId, 10)
+	if x, found := db.goCache.Get(key); found {
+		output = x.([]*dto.Region)
+		return
+	}
+
+	const cmd = `SELECT id, name, parent_id, level FROM mkm_region WHERE parent_id = ? AND is_deleted = 0`
+	err = db.connection.Select(&output, cmd, parentId)
+
+	if err != nil {
+		db.goCache.Set(key, output, cache.DefaultExpiration)
+	}
+	return
 }
 
 var regionId2NameMap map[int64]string
@@ -42,5 +65,8 @@ func (db regionDatabase) GetRegionIdNameMap() (id2name map[int64]string, err err
 }
 
 func NewRegionModel() RegionModel {
-	return &regionDatabase{connection: dao.Db}
+	return &regionDatabase{
+		connection: dao.Db,
+		goCache:    dao.GoCache,
+	}
 }

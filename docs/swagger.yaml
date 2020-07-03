@@ -507,6 +507,21 @@ definitions:
       timestamp:
         type: string
     type: object
+  dto.Region:
+    properties:
+      id:
+        description: 省，市， 区/县， 镇/街道 的行政区域id
+        type: integer
+      level:
+        description: 行政区域等级, 1-省，2-市， 3-区/县， 4-镇/街道
+        type: integer
+      name:
+        description: 行政区域名称
+        type: string
+      parent_id:
+        description: 该行政区域的父级id， 1级行政区域的父id 是 0
+        type: integer
+    type: object
   dto.ResourceID:
     properties:
       id:
@@ -1043,6 +1058,38 @@ paths:
       summary: 获取单个套餐详情
       tags:
       - packages
+  /regions/:
+    get:
+      consumes:
+      - application/json
+      description: 根据parent_id获取行政区域列表
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 父级行政区域id， 默认值为第一级(省等)：0
+        in: query
+        name: parent_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.Region'
+                  type: array
+              type: object
+      summary: 根据parent_id获取行政区域列表
+      tags:
+      - regions
   /users/addrs:
     get:
       description: 获取收件地址列表
