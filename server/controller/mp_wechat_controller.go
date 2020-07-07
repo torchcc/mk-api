@@ -33,6 +33,8 @@ func WeChatRegister(router *gin.RouterGroup) {
 	)
 	router.GET("/", wechatController.DockWithWeChatServer)
 	router.GET("/js_ticket", wechatController.JsApiTicket)
+	router.GET("/launch_auth", wechatController.LaunchAuth)
+	router.GET("/enter", wechatController.Enter)
 
 }
 
@@ -40,6 +42,8 @@ type WeChatController interface {
 	DockWithWeChatServer(ctx *gin.Context)
 	JsApiTicket(ctx *gin.Context)
 	Echo(ctx *gin.Context)
+	LaunchAuth(ctx *gin.Context)
+	Enter(ctx *gin.Context)
 }
 
 type wechatController struct {
@@ -121,9 +125,9 @@ func (c *wechatController) JsApiTicket(ctx *gin.Context) {
 // @Success 200 {object} string ""
 // @Router /wx/launch_auth [get]
 func (c *wechatController) LaunchAuth(ctx *gin.Context) {
-	staticUrl := ctx.Query("static_url")
+	uri := ctx.Query("uri")
 	oau := c.wc.GetOauth()
-	url, err := oau.GetRedirectURL(consts.UrlPrefix+"/wx/enter?static_url="+staticUrl, "snsapi_userinfo", "")
+	url, err := oau.GetRedirectURL(consts.UrlPrefix+"/wx/enter?uri="+uri, "snsapi_userinfo", "")
 	if err != nil {
 		util.Log.Errorf("fail to launch a oauth2 to wechat server: %v", err)
 		return
@@ -158,13 +162,13 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 		return
 	}
 
-	homePageUrl := "https://www.mkhealth.club/index.html" // 这个由想进入的页面设定
-	staticUrl := ctx.Query("static_url")
-	if staticUrl == "" {
-		staticUrl = homePageUrl
+	uri := ctx.Query("uri")
+	if uri == "" {
+		uri = "index.html"
 	}
+	url := consts.UrlPrefix + "/" + uri
 	ctx.SetCookie("token", token, 7200, "", "", false, false)
-	ctx.Redirect(http.StatusTemporaryRedirect, staticUrl)
+	ctx.Redirect(http.StatusTemporaryRedirect, url)
 
 }
 
