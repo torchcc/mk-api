@@ -117,7 +117,8 @@ func (c *wechatController) JsApiTicket(ctx *gin.Context) {
 // @Summary 发起授权
 // @Description 发起授权，直接在一个button中发一个get请求到这里即可
 // @Tags WechatTag
-// @Success 200 {object} dto.JsApiTicketOutPut
+// @Param uri query string false "需要设置的button 入口" example "/index.html"
+// @Success 200 {object} string ""
 // @Router /wx/launch_auth [get]
 func (c *wechatController) LaunchAuth(ctx *gin.Context) {
 	staticUrl := ctx.Query("static_url")
@@ -157,7 +158,7 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 		return
 	}
 
-	homePageUrl := "" // 这个由想进入的页面设定
+	homePageUrl := "https://www.mkhealth.club/index.html" // 这个由想进入的页面设定
 	staticUrl := ctx.Query("static_url")
 	if staticUrl == "" {
 		staticUrl = homePageUrl

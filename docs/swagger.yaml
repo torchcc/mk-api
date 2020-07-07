@@ -1418,6 +1418,11 @@ paths:
   /wx/launch_auth:
     get:
       description: 发起授权，直接在一个button中发一个get请求到这里即可
+      parameters:
+      - description: 需要设置的button 入口
+        in: query
+        name: uri
+        type: string
       responses:
         "200":
           description: OK

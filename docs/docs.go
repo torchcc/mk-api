@@ -1346,6 +1346,14 @@ var doc = `{
                     "WechatTag"
                 ],
                 "summary": "发起授权",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "需要设置的button 入口",
+                        "name": "uri",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
