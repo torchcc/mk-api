@@ -122,7 +122,7 @@ func (c *wechatController) JsApiTicket(ctx *gin.Context) {
 // @Description 发起授权，直接在一个button中发一个get请求到这里即可
 // @Tags WechatTag
 // @Param uri query string false "需要设置的button 入口" example "/index.html"
-// @Success 200 {object} string ""
+// @Success 200 {object} string "进入微信的url"
 // @Router /wx/launch_auth [get]
 func (c *wechatController) LaunchAuth(ctx *gin.Context) {
 	uri := ctx.Query("uri")
@@ -132,7 +132,7 @@ func (c *wechatController) LaunchAuth(ctx *gin.Context) {
 		util.Log.Errorf("fail to launch a oauth2 to wechat server: %v", err)
 		return
 	}
-	ctx.Redirect(http.StatusTemporaryRedirect, url)
+	middleware.ResponseSuccess(ctx, url)
 }
 
 // TODO 待测试
