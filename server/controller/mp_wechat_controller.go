@@ -118,11 +118,11 @@ func (c *wechatController) JsApiTicket(ctx *gin.Context) {
 }
 
 // Launch Oauth godoc
-// @Summary 发起授权
-// @Description 发起授权，直接在一个button中发一个get请求到这里即可
+// @Summary 获取微信入口url
+// @Description 获取微信入口url
 // @Tags WechatTag
-// @Param uri query string false "需要设置的button 入口" example "/index.html"
-// @Success 200 {object} string "进入微信的url"
+// @Param uri query string false "需要设置的button 入口，eg: '/index.html'"
+// @Success 200 {object} middleware.Response{data=string} "进入微信的url"
 // @Router /wx/launch_auth [get]
 func (c *wechatController) LaunchAuth(ctx *gin.Context) {
 	uri := ctx.Query("uri")
@@ -135,8 +135,7 @@ func (c *wechatController) LaunchAuth(ctx *gin.Context) {
 	middleware.ResponseSuccess(ctx, url)
 }
 
-// TODO 待测试
-// 发送请求到LaunchAuth 的时候， 重定向到Enter， Enter 重定向到index.html 或者其他页面
+// 微信入口, Enter 重定向到index.html 或者其他页面
 func (c *wechatController) Enter(ctx *gin.Context) {
 	oau := c.wc.GetOauth()
 	code := ctx.Query("code")
@@ -169,7 +168,6 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 	url := consts.UrlPrefix + "/" + uri
 	ctx.SetCookie("token", token, 7200, "", "", false, false)
 	ctx.Redirect(http.StatusTemporaryRedirect, url)
-
 }
 
 func (c *wechatController) Echo(ctx *gin.Context) {
