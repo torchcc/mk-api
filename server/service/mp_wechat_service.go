@@ -38,7 +38,7 @@ func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken,
 
 	// redis has openId-userInfo
 	if res, _ := cli.Do("EXISTS", openIdKey); res.(int64) > 0 {
-
+		util.Log.Debugf("该用户存在， open_id_key 为 [%s]", openIdKey)
 		userId, _ := redis.Int64(cli.Do("HGET", openIdKey, "user_id"))
 		mobile, _ := redis.String(cli.Do("HGET", openIdKey, "mobile"))
 		return service.handleUserExists(userId, mobile, resToken, cli)
@@ -46,7 +46,7 @@ func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken,
 
 	// mysql has openId-userInfo
 	userId, mobile, err := service.model.FindUserByOpenId(resToken.OpenID)
-	if err != nil {
+	if err == nil {
 		return service.handleUserExists(userId, mobile, resToken, cli)
 	}
 
