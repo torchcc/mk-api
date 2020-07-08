@@ -203,6 +203,11 @@ definitions:
         description: 更新时间
         type: integer
     type: object
+  dto.GetEnterUrlOutput:
+    properties:
+      url:
+        type: string
+    type: object
   dto.GetPackageOutPut:
     properties:
       basic_info:
@@ -568,6 +573,11 @@ definitions:
       open_id:
         type: string
       user_name:
+        type: string
+    type: object
+  dto.WechatEnterOutput:
+    properties:
+      token:
         type: string
     type: object
   middleware.Response:
@@ -1394,6 +1404,49 @@ paths:
       summary: 个人中心->账户信息
       tags:
       - users
+  /wx/enter:
+    get:
+      description: 拿到code后的回调地址
+      parameters:
+      - description: 微信服务器的code
+        in: query
+        name: code
+        required: true
+        type: string
+      responses:
+        "200":
+          description: token
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.WechatEnterOutput'
+              type: object
+      summary: 拿到code后的回调地址
+      tags:
+      - WechatTag
+  /wx/enter_url:
+    get:
+      description: 获取微信入口url
+      parameters:
+      - description: '需要设置的button 入口，eg: ''/index.html'''
+        in: query
+        name: uri
+        type: string
+      responses:
+        "200":
+          description: 进入微信的url
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.GetEnterUrlOutput'
+              type: object
+      summary: 获取微信入口url
+      tags:
+      - WechatTag
   /wx/js_ticket:
     get:
       consumes:
@@ -1413,22 +1466,6 @@ paths:
           schema:
             $ref: '#/definitions/dto.JsApiTicketOutPut'
       summary: 获取签名
-      tags:
-      - WechatTag
-  /wx/launch_auth:
-    get:
-      description: 发起授权，直接在一个button中发一个get请求到这里即可
-      parameters:
-      - description: 需要设置的button 入口
-        in: query
-        name: uri
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.JsApiTicketOutPut'
-      summary: 发起授权
       tags:
       - WechatTag
 swagger: "2.0"

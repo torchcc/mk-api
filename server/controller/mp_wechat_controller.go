@@ -33,7 +33,7 @@ func WeChatRegister(router *gin.RouterGroup) {
 	)
 	router.GET("/", wechatController.DockWithWeChatServer)
 	router.GET("/js_ticket", wechatController.JsApiTicket)
-	router.GET("/launch_auth", wechatController.LaunchAuth)
+	router.GET("/enter_url", wechatController.GetEnterUrl)
 	router.GET("/enter", wechatController.Enter)
 
 }
@@ -42,7 +42,7 @@ type WeChatController interface {
 	DockWithWeChatServer(ctx *gin.Context)
 	JsApiTicket(ctx *gin.Context)
 	Echo(ctx *gin.Context)
-	LaunchAuth(ctx *gin.Context)
+	GetEnterUrl(ctx *gin.Context)
 	Enter(ctx *gin.Context)
 }
 
@@ -97,7 +97,7 @@ func makeSignature(timestamp string, nonce string) string {
 // @Tags WechatTag
 // @Accept json
 // @Produce json
-// @Param  uri query string true "传入需要的调用js-sdk的uri地址" example "/static/index.html"
+// @Param  uri query string true "传入需要的调用js-sdk的uri地址"
 // @Success 200 {object} dto.JsApiTicketOutPut
 // @Router /wx/js_ticket [get]
 func (c *wechatController) JsApiTicket(ctx *gin.Context) {
@@ -122,9 +122,9 @@ func (c *wechatController) JsApiTicket(ctx *gin.Context) {
 // @Description 获取微信入口url
 // @Tags WechatTag
 // @Param uri query string false "需要设置的button 入口，eg: '/index.html'"
-// @Success 200 {object} middleware.Response{data=string} "进入微信的url"
-// @Router /wx/launch_auth [get]
-func (c *wechatController) LaunchAuth(ctx *gin.Context) {
+// @Success 200 {object} middleware.Response{data=dto.GetEnterUrlOutput} "进入微信的url"
+// @Router /wx/enter_url [get]
+func (c *wechatController) GetEnterUrl(ctx *gin.Context) {
 	uri := ctx.Query("uri")
 	oau := c.wc.GetOauth()
 	url, err := oau.GetRedirectURL(consts.UrlPrefix+"/wx/enter?uri="+uri, "snsapi_userinfo", "")
@@ -132,10 +132,16 @@ func (c *wechatController) LaunchAuth(ctx *gin.Context) {
 		util.Log.Errorf("fail to launch a oauth2 to wechat server: %v", err)
 		return
 	}
-	middleware.ResponseSuccess(ctx, url)
+	middleware.ResponseSuccess(ctx, dto.GetEnterUrlOutput{Url: url})
 }
 
-// 微信入口, Enter 重定向到index.html 或者其他页面
+// Enter  godoc
+// @Summary 拿到code后的回调地址
+// @Description 拿到code后的回调地址
+// @Tags WechatTag
+// @Param code query string true "微信服务器的code"
+// @Success 200 {object} middleware.Response{data=dto.WechatEnterOutput} "token"
+// @Router /wx/enter [get]
 func (c *wechatController) Enter(ctx *gin.Context) {
 	oau := c.wc.GetOauth()
 	code := ctx.Query("code")
@@ -160,14 +166,7 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 		middleware.ResponseError(ctx, ecode.ServerErr, err)
 		return
 	}
-
-	uri := ctx.Query("uri")
-	if uri == "" {
-		uri = "index.html"
-	}
-	url := consts.UrlPrefix + "/" + uri
-	ctx.SetCookie("token", token, 7200, "", "", false, false)
-	ctx.Redirect(http.StatusTemporaryRedirect, url)
+	middleware.ResponseSuccess(ctx, dto.WechatEnterOutput{Token: token})
 }
 
 func (c *wechatController) Echo(ctx *gin.Context) {

@@ -1307,6 +1307,81 @@ var doc = `{
                 }
             }
         },
+        "/wx/enter": {
+            "get": {
+                "description": "拿到code后的回调地址",
+                "tags": [
+                    "WechatTag"
+                ],
+                "summary": "拿到code后的回调地址",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "微信服务器的code",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "token",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.WechatEnterOutput"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/wx/enter_url": {
+            "get": {
+                "description": "获取微信入口url",
+                "tags": [
+                    "WechatTag"
+                ],
+                "summary": "获取微信入口url",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "需要设置的button 入口，eg: '/index.html'",
+                        "name": "uri",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "进入微信的url",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.GetEnterUrlOutput"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/wx/js_ticket": {
             "get": {
                 "description": "获取jsApiTicket 签名",
@@ -1327,31 +1402,6 @@ var doc = `{
                         "name": "uri",
                         "in": "query",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.JsApiTicketOutPut"
-                        }
-                    }
-                }
-            }
-        },
-        "/wx/launch_auth": {
-            "get": {
-                "description": "发起授权，直接在一个button中发一个get请求到这里即可",
-                "tags": [
-                    "WechatTag"
-                ],
-                "summary": "发起授权",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "需要设置的button 入口",
-                        "name": "uri",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1646,6 +1696,14 @@ var doc = `{
                 "update_time": {
                     "description": "更新时间",
                     "type": "integer"
+                }
+            }
+        },
+        "dto.GetEnterUrlOutput": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
                 }
             }
         },
@@ -2162,6 +2220,14 @@ var doc = `{
                     "type": "string"
                 },
                 "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.WechatEnterOutput": {
+            "type": "object",
+            "properties": {
+                "token": {
                     "type": "string"
                 }
             }
