@@ -1,7 +1,6 @@
 package cos
 
 import (
-	"os"
 	"testing"
 )
 
@@ -31,7 +30,7 @@ func TestClient(t *testing.T) {
 
 func TestUploadIOStream(t *testing.T) {
 	// fileSource := "./mm.jpeg"
-	f, _ := os.Open(fileSource)
+	// f, _ := os.Open(fileSource)
 	// defer f.Close()
 	// name, urlPrefix, err := UploadIOStream(fileSource, f, true)
 	// if err != nil {

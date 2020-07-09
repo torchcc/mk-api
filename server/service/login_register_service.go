@@ -19,7 +19,7 @@ import (
 type LoginRegisterService interface {
 	GenerateCaptcha(ctx *gin.Context) (captchaImgUrl string, err error)
 	GenerateSmsVerificationCode(mobile string) (err error)
-	LoginRegister(ctx *gin.Context, input *dto.LoginRegisterInput) (err error)
+	LoginRegister(ctx *gin.Context, input *dto.LoginRegisterInput) (token string, err error)
 }
 
 type loginRegisterService struct {
@@ -27,31 +27,30 @@ type loginRegisterService struct {
 	userModel    model.UserModel
 }
 
-func (service *loginRegisterService) LoginRegister(ctx *gin.Context, input *dto.LoginRegisterInput) (err error) {
+func (service *loginRegisterService) LoginRegister(ctx *gin.Context, input *dto.LoginRegisterInput) (token string, err error) {
 	userId := ctx.GetInt64("userId")
 	captchaKey := fmt.Sprintf("string.login_captcha.%d", userId)
 	smsKey := "string.login_sms." + input.Mobile
 	if !service.captchaModel.Check(captchaKey, input.CaptchaCode) {
-		return errors.New("图形验证码出错")
+		return "", errors.New("图形验证码出错")
 	}
 	if !service.captchaModel.Check(smsKey, input.SmsCode) {
-		return errors.New("短信验证码出错")
+		return "", errors.New("短信验证码出错")
 	}
 	// 在mysql设置手机号码, 注册经纬度
 	if err = service.userModel.AddRegisterInfo(input, userId); err != nil {
 		util.Log.Errorf("注册更新手机号码出错, userId: [%d], err: [%s]", userId, err)
-		return errors.New("服务器内部错误, 请重试")
+		return "", errors.New("服务器内部错误, 请重试")
 	}
 
 	openId, err := service.userModel.GetOpenIdByUserId(userId)
 	if err != nil {
 		util.Log.Errorf("查询open_id出错， user_id: [%d], err: [%s]", userId, err.Error())
-		return errors.New("服务器内部错误")
+		return "", errors.New("服务器内部错误")
 	}
 
 	// 更新open_id 对应的userInfo 更新token
-	token := service.userModel.UpdateRedisToken(openId, userId, input.Mobile)
-	ctx.SetCookie("token", token, 7200, "", "", false, false)
+	token = service.userModel.UpdateRedisToken(openId, userId, input.Mobile)
 	return
 }
 

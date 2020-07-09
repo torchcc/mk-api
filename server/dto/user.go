@@ -30,3 +30,19 @@ type GetUserAddrOutput struct {
 }
 
 type UpdateUserAddrInput CreateUserAddrInput
+
+type PutUserProfileInput struct {
+	// 用户id
+	UserId int64 `json:"user_id" db:"user_id"`
+	// 用户昵称
+	UserName string `json:"user_name" db:"user_name"`
+	// 用户性别 1-男 2-女
+	Gender int32 `json:"gender" db:"gender" binding:"oneof=0 1 2"`
+	// 这个参数请忽略， 不用管
+	UpdateTime int64 `json:"update_time" db:"update_time"`
+}
+
+type UploadUserAvatarOutput struct {
+	// 头像url
+	AvatarUrl string `json:"avatar_url"`
+}

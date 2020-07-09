@@ -140,7 +140,7 @@ func (c *wechatController) GetEnterUrl(ctx *gin.Context) {
 // @Description 拿到code后的回调地址
 // @Tags WechatTag
 // @Param code query string true "微信服务器的code"
-// @Success 200 {object} middleware.Response{data=dto.WechatEnterOutput} "token"
+// @Success 200 {object} middleware.Response{data=dto.TokenOutput} "token"
 // @Router /wx/enter [get]
 func (c *wechatController) Enter(ctx *gin.Context) {
 	oau := c.wc.GetOauth()
@@ -166,7 +166,7 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 		middleware.ResponseError(ctx, ecode.ServerErr, err)
 		return
 	}
-	middleware.ResponseSuccess(ctx, dto.WechatEnterOutput{Token: token})
+	middleware.ResponseSuccess(ctx, dto.TokenOutput{Token: token})
 }
 
 func (c *wechatController) Echo(ctx *gin.Context) {

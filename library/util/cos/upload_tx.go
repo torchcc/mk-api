@@ -5,9 +5,11 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"path"
+	"time"
 
 	"github.com/tencentyun/cos-go-sdk-v5"
 	. "mk-api/library/util/conf"
@@ -43,4 +45,21 @@ func UploadIOStream(fileName string, r io.ReadSeeker, hashName bool) (fileUrl st
 
 	_, err = cli.Object.Put(context.Background(), fileName, r, nil)
 	return CommonBucketUrl + "/" + fileName, err
+}
+
+func Upload2Tx(file *multipart.FileHeader) (err error, path string, key string) {
+	cli := NewCosClient(CommonBucketUrl)
+	f, err := file.Open()
+	if err != nil {
+		fmt.Printf("failed to open mulipart.FileHeader, err: [%s]", err.Error())
+		return
+	}
+
+	fileKey := fmt.Sprintf("%d%s", time.Now().Unix(), file.Filename) // 文件名格式 自己可以改 建议保证唯一性
+	_, err = cli.Object.Put(context.Background(), fileKey, f, nil)
+	if err != nil {
+		fmt.Printf("fail to upload to tx cos, err: [%s]", err.Error())
+		return
+	}
+	return err, CommonBucketUrl + "/" + fileKey, fileKey
 }

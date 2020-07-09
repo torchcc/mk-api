@@ -217,7 +217,7 @@ var doc = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "string"
+                                            "$ref": "#/definitions/dto.TokenOutput"
                                         }
                                     }
                                 }
@@ -1305,6 +1305,108 @@ var doc = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "description": "修改个人信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "修改个人信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "修改个人信息",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PutUserProfileInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ResourceID"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/users/profile/avatar": {
+            "post": {
+                "description": "上传个人头像",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "上传个人头像",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "用户上传头像",
+                        "name": "avatar",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.UploadUserAvatarOutput"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
             }
         },
         "/wx/enter": {
@@ -1335,7 +1437,7 @@ var doc = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/dto.WechatEnterOutput"
+                                            "$ref": "#/definitions/dto.TokenOutput"
                                         }
                                     }
                                 }
@@ -2133,6 +2235,27 @@ var doc = `{
                 }
             }
         },
+        "dto.PutUserProfileInput": {
+            "type": "object",
+            "properties": {
+                "gender": {
+                    "description": "用户性别 1-男 2-女",
+                    "type": "integer"
+                },
+                "update_time": {
+                    "description": "这个参数请忽略， 不用管",
+                    "type": "integer"
+                },
+                "user_id": {
+                    "description": "用户id",
+                    "type": "integer"
+                },
+                "user_name": {
+                    "description": "用户昵称",
+                    "type": "string"
+                }
+            }
+        },
         "dto.Region": {
             "type": "object",
             "properties": {
@@ -2198,8 +2321,25 @@ var doc = `{
                 }
             }
         },
+        "dto.TokenOutput": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UpdateUserAddrInput": {
             "$ref": "#/definitions/dto.CreateUserAddrInput"
+        },
+        "dto.UploadUserAvatarOutput": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "description": "头像url",
+                    "type": "string"
+                }
+            }
         },
         "dto.UserDetailOutput": {
             "type": "object",
@@ -2220,14 +2360,6 @@ var doc = `{
                     "type": "string"
                 },
                 "user_name": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.WechatEnterOutput": {
-            "type": "object",
-            "properties": {
-                "token": {
                     "type": "string"
                 }
             }

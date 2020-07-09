@@ -32,11 +32,37 @@ type UserModel interface {
 	AddRegisterInfo(input *dto.LoginRegisterInput, userId int64) (err error)
 	GetOpenIdByUserId(userId int64) (openId string, err error)
 	UpdateRedisToken(openId string, userId int64, mobile string) (token string)
+	UpdateProfile(input *dto.PutUserProfileInput) error
+	UpdateAvatUrl(avatarUrl string, userId int64) error
 }
 
 type userDatabase struct {
 	connection *sqlx.DB
 	redisPool  *redis.Pool
+}
+
+func (db *userDatabase) UpdateAvatUrl(avatarUrl string, userId int64) (err error) {
+	const cmd = `UPDATE mku_user_profile SET 
+					avatar_url = ?,
+					update_time = ?
+				WHERE 
+				    user_id = ? 
+				  	AND is_deleted = 0 `
+	_, err = db.connection.Exec(cmd, avatarUrl, time.Now().Unix(), userId)
+	return
+}
+
+func (db *userDatabase) UpdateProfile(input *dto.PutUserProfileInput) error {
+	const cmd = `UPDATE mku_user_profile SET 
+					user_name = :user_name,
+					gender = :gender, 
+					update_time = :update_time
+				WHERE 
+				    user_id = :user_id 
+				  	AND is_deleted = 0
+`
+	_, err := db.connection.NamedExec(cmd, input)
+	return err
 }
 
 func (db *userDatabase) UpdateRedisToken(openId string, userId int64, mobile string) (token string) {
@@ -161,7 +187,9 @@ func (db *userDatabase) FindUserByID(ID int64) (*dto.UserDetailOutput, error) {
 				mku_user_profile AS mup          
 					ON mu.id = mup.user_id   
 			WHERE
-				mu.id = ?`
+				mu.id = ?
+				AND mu.is_deleted = 0
+				AND mup.is_deleted = 0`
 	err := db.connection.Get(&u, cmd, ID)
 
 	return &u, err

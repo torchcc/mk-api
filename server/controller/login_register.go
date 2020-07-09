@@ -45,7 +45,7 @@ type loginRegisterController struct {
 // @Produce json
 // @Param token header string true "用户token"
 // @Param loginBody body dto.LoginRegisterInput true "captcha_code:图形验证码， sms_code:短信验证码"
-// @Success 200 {object} middleware.Response{data=string} "success"
+// @Success 200 {object} middleware.Response{data=dto.TokenOutput} "success"
 // @Router /login_register/ [post]
 func (c *loginRegisterController) LoginOrRegister(ctx *gin.Context) {
 	var loginPayload dto.LoginRegisterInput
@@ -54,12 +54,12 @@ func (c *loginRegisterController) LoginOrRegister(ctx *gin.Context) {
 		middleware.ResponseError(ctx, ecode.RequestErr, err)
 		return
 	}
-	err = c.service.LoginRegister(ctx, &loginPayload)
+	token, err := c.service.LoginRegister(ctx, &loginPayload)
 	if err != nil {
 		util.Log.Errorf("登录/注册出错, 参数：[%v], err: [%s]", loginPayload, err.Error())
 		middleware.ResponseError(ctx, ecode.RequestErr, err)
 	} else {
-		middleware.ResponseSuccess(ctx, nil)
+		middleware.ResponseSuccess(ctx, dto.TokenOutput{Token: token})
 	}
 }
 

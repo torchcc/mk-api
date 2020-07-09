@@ -27,6 +27,8 @@ type UserService interface {
 	SaveExaminee(userId int64, input *dto.PostExamineeInput) (id int64, err error)
 	RemoveExaminee(id int64, userId int64) error
 	ModifyExaminee(ctx *gin.Context, id int64, input *dto.PostExamineeInput) error
+	ModifyProfile(ctx *gin.Context, input *dto.PutUserProfileInput) error
+	UploadAvatar(ctx *gin.Context, avatarUrl string) error
 }
 
 type userService struct {
@@ -34,6 +36,20 @@ type userService struct {
 	addrModel     model.UserAddrModel
 	regionModel   model.RegionModel
 	examineeModel model.ExamineeModel
+}
+
+func (service *userService) UploadAvatar(ctx *gin.Context, avatarUrl string) error {
+	userId := ctx.GetInt64("userId")
+	return service.model.UpdateAvatUrl(avatarUrl, userId)
+}
+
+func (service *userService) ModifyProfile(ctx *gin.Context, input *dto.PutUserProfileInput) error {
+	input.UpdateTime = time.Now().Unix()
+	err := service.model.UpdateProfile(input)
+	if err != nil {
+		util.Log.Errorf("修改用户信息失败, input: [%v], err: [%s]", input, err.Error())
+	}
+	return err
 }
 
 func (service *userService) ModifyExaminee(ctx *gin.Context, id int64, input *dto.PostExamineeInput) error {

@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"mk-api/library/ecode"
+	"mk-api/library/util/cos"
 	"mk-api/server/dto"
 	"mk-api/server/middleware"
 	"mk-api/server/model"
@@ -24,7 +25,9 @@ func UserRegister(router *gin.RouterGroup) {
 		userService    service.UserService = service.NewUserService(userModel, addrModel, regionModel, examineeModel)
 		userController UserController      = NewUserController(userService)
 	)
-	router.GET("/profile", userController.UserProfile)
+	router.GET("/profile", userController.GETUserProfile)
+	router.PUT("/profile", userController.PutUserProfile)
+	router.POST("/profile/avatar", userController.UploadAvatar)
 
 	router.GET("/addrs", userController.ListUserAddr)
 	router.POST("/addrs", userController.PostUserAddr)
@@ -39,7 +42,9 @@ func UserRegister(router *gin.RouterGroup) {
 }
 
 type UserController interface {
-	UserProfile(ctx *gin.Context)
+	GETUserProfile(ctx *gin.Context)
+	PutUserProfile(ctx *gin.Context)
+	UploadAvatar(ctx *gin.Context)
 
 	ListUserAddr(ctx *gin.Context)
 	PostUserAddr(ctx *gin.Context)
@@ -55,6 +60,61 @@ type UserController interface {
 
 type userController struct {
 	service service.UserService
+}
+
+// PutExaminee godoc
+// @Summary 上传个人头像
+// @Description 上传个人头像
+// @Tags users
+// @accept multipart/form-data
+// @Produce  application/json
+// @Param token header string true "用户token"
+// @Param avatar formData file true "用户上传头像"
+// @Success 200 {object} middleware.Response{data=dto.UploadUserAvatarOutput} "success"
+// @Router /users/profile/avatar [post]
+func (c *userController) UploadAvatar(ctx *gin.Context) {
+	_, avatar, err := ctx.Request.FormFile("avatar")
+	if err != nil {
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+	err, filePath, _ := cos.Upload2QiNiu(avatar)
+	if err != nil {
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("接受返回值失败"))
+		return
+	}
+	err = c.service.UploadAvatar(ctx, filePath)
+	if err != nil {
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("修改数据库链接失败"))
+		return
+	}
+	middleware.ResponseSuccess(ctx, dto.UploadUserAvatarOutput{AvatarUrl: filePath})
+
+}
+
+// PutExaminee godoc
+// @Summary 修改个人信息
+// @Description 修改个人信息
+// @Tags users
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Param body body dto.PutUserProfileInput true "修改个人信息"
+// @Success 200 {object} middleware.Response{data=dto.ResourceID} "success"
+// @Router /users/profile [put]
+func (c *userController) PutUserProfile(ctx *gin.Context) {
+	var input dto.PutUserProfileInput
+	if err := util.ParseRequest(ctx, &input); err != nil {
+		util.Log.Errorf("参数绑定失败, err: [%s]", err)
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+	if err := c.service.ModifyProfile(ctx, &input); err != nil {
+		util.Log.Errorf("修改用户信息失败， payload: [%v]", input)
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("内部服务器出错"))
+		return
+	}
+	middleware.ResponseSuccess(ctx, dto.ResourceID{Id: input.UserId})
 }
 
 // PutExaminee godoc
@@ -172,7 +232,7 @@ func (c *userController) ListExaminee(ctx *gin.Context) {
 // @Param  token header string true "用户token"
 // @Success 200 {object} middleware.Response{data=dto.UserDetailOutput}
 // @Router /users/profile [get]
-func (c *userController) UserProfile(ctx *gin.Context) {
+func (c *userController) GETUserProfile(ctx *gin.Context) {
 	id := ctx.GetInt64("userId")
 	userDetail, err := c.service.Retrieve(id)
 	if _, ok := errors.Cause(err).(ecode.Codes); ok {

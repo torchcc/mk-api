@@ -512,6 +512,21 @@ definitions:
       timestamp:
         type: string
     type: object
+  dto.PutUserProfileInput:
+    properties:
+      gender:
+        description: 用户性别 1-男 2-女
+        type: integer
+      update_time:
+        description: 这个参数请忽略， 不用管
+        type: integer
+      user_id:
+        description: 用户id
+        type: integer
+      user_name:
+        description: 用户昵称
+        type: string
+    type: object
   dto.Region:
     properties:
       id:
@@ -558,8 +573,19 @@ definitions:
         description: 订单状态 0-待付款，2-待预约(指已经付款) 3-已退款 4-已关闭 5-待评价
         type: integer
     type: object
+  dto.TokenOutput:
+    properties:
+      token:
+        type: string
+    type: object
   dto.UpdateUserAddrInput:
     $ref: '#/definitions/dto.CreateUserAddrInput'
+  dto.UploadUserAvatarOutput:
+    properties:
+      avatar_url:
+        description: 头像url
+        type: string
+    type: object
   dto.UserDetailOutput:
     properties:
       avatar_url:
@@ -573,11 +599,6 @@ definitions:
       open_id:
         type: string
       user_name:
-        type: string
-    type: object
-  dto.WechatEnterOutput:
-    properties:
-      token:
         type: string
     type: object
   middleware.Response:
@@ -743,7 +764,7 @@ paths:
             - $ref: '#/definitions/middleware.Response'
             - properties:
                 data:
-                  type: string
+                  $ref: '#/definitions/dto.TokenOutput'
               type: object
       summary: 登录或者注册
       tags:
@@ -1404,6 +1425,68 @@ paths:
       summary: 个人中心->账户信息
       tags:
       - users
+    put:
+      consumes:
+      - application/json
+      description: 修改个人信息
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 修改个人信息
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PutUserProfileInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ResourceID'
+              type: object
+      summary: 修改个人信息
+      tags:
+      - users
+  /users/profile/avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 上传个人头像
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 用户上传头像
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UploadUserAvatarOutput'
+              type: object
+      summary: 上传个人头像
+      tags:
+      - users
   /wx/enter:
     get:
       description: 拿到code后的回调地址
@@ -1421,7 +1504,7 @@ paths:
             - $ref: '#/definitions/middleware.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/dto.WechatEnterOutput'
+                  $ref: '#/definitions/dto.TokenOutput'
               type: object
       summary: 拿到code后的回调地址
       tags:

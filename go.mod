@@ -23,6 +23,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.10.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
+	github.com/qiniu/api.v7/v7 v7.5.0
 	github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da
 	github.com/silenceper/wechat v2.0.1+incompatible
 	github.com/silenceper/wechat/v2 v2.0.0

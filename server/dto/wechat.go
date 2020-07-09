@@ -5,7 +5,7 @@ type JsApiTicketOutPut struct {
 	Signature string `json:"signature"`
 }
 
-type WechatEnterOutput struct {
+type TokenOutput struct {
 	Token string `json:"token"`
 }
 
