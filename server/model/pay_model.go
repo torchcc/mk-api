@@ -9,6 +9,7 @@ import (
 	"github.com/silenceper/wechat/v2/pay/notify"
 	"mk-api/server/dao"
 	"mk-api/server/dto"
+	"mk-api/server/util"
 )
 
 const (
@@ -91,6 +92,7 @@ func (db *payDatabase) SaveTradeBill(bill *dto.TradeBill) (id int64, err error) 
 	if err != nil {
 		return
 	}
+	util.Log.Infof("sql is: [%s], params is: [%v]", cmd, bill)
 	id, err = rs.LastInsertId()
 	return
 }

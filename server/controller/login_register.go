@@ -51,6 +51,7 @@ func (c *loginRegisterController) LoginOrRegister(ctx *gin.Context) {
 	var loginPayload dto.LoginRegisterInput
 	err := ctx.ShouldBindJSON(&loginPayload)
 	if err != nil {
+		util.Log.Warningf("登录出错，参数: [%v]", loginPayload)
 		middleware.ResponseError(ctx, ecode.RequestErr, err)
 		return
 	}

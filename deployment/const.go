@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path"
 	"runtime"
@@ -23,9 +24,11 @@ func init() {
 
 func getBranchName() {
 	BRANCH = os.Getenv("BRANCH")
+	fmt.Print("BRANCH in env is \t", BRANCH)
 	if BRANCH == "" {
 		BRANCH = "test"
 	}
+	fmt.Print("real BRANCH in env is \t", BRANCH)
 }
 
 func getDeployDir() {

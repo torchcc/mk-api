@@ -5,6 +5,7 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/silenceper/wechat/oauth"
+	"github.com/sirupsen/logrus"
 	"mk-api/library/ecode"
 	. "mk-api/server/dao"
 	"mk-api/server/model"
@@ -85,8 +86,12 @@ func (service *wechatService) handleUserExists(userId int64, mobile string, resT
 	token, err = redis.String(cli.Do("GET", userIdTokenKey))
 	if err != nil {
 		// token过期了
+		util.Log.WithFields(logrus.Fields{
+			"user_id": userId,
+			"mobile":  mobile,
+		}).Infof("token expired, user_id is: [%d], mobile is: [%s]", userId, mobile)
 		token = tokenUtil.GenerateUuid()
 		tokenUtil.SetToken(token, mobile, userId, resToken.OpenID, cli)
 	}
-	return
+	return token, nil
 }

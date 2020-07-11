@@ -215,7 +215,7 @@ func (service *orderService) makeWechatOrderNPrepay(ctx *gin.Context, order *dto
 
 	// 创建 mkb_trade_bill 条目
 	now := time.Now().Unix()
-	timeExpire := now + int64(time.Hour*2)
+	timeExpire := now + 3600*2
 
 	bill := &dto.TradeBill{
 		OrderId:    order.Id,
@@ -238,6 +238,7 @@ func (service *orderService) makeWechatOrderNPrepay(ctx *gin.Context, order *dto
 		util.Log.WithFields(logrus.Fields{
 			"order_id": order.Id,
 		}).Errorf("生成支付流水出错, err: [%s]", err.Error())
+		return nil, err
 	}
 
 	util.Log.WithFields(logrus.Fields{
