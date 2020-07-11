@@ -153,7 +153,7 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 
 	resToken, err := oau.GetUserAccessToken(code)
 	if err != nil || resToken.OpenID == "" {
-		util.Log.Errorf("failed to get access_token/open_id from wechat server !")
+		util.Log.Errorf("failed to get access_token/open_id from wechat server, err: [%s]", err.Error())
 		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("failed to get access_token/open_id from wechat server"))
 		return
 	}
