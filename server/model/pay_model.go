@@ -102,7 +102,7 @@ func (db *payDatabase) SuccessPaidResult2Bill(result *notify.PaidResult) (err er
 			UPDATE mkb_trade_bill SET 
 				status = :status,
 				transaction_id = :transaction_id,
-				time_end = :time_emd
+				time_end = :time_end
 			WHERE 
 				out_trade_no = :out_trade_no
 				AND is_deleted = 0
