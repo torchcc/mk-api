@@ -14,7 +14,7 @@ import (
 )
 
 type PayService interface {
-	WechatPayCallBack(ctx *gin.Context) gin.H
+	WechatPayCallBack(ctx *gin.Context) bool
 	CheckPayStatus(ctx *gin.Context, prepayId string) (status int8, err error)
 }
 
@@ -32,26 +32,13 @@ func (service *payService) CheckPayStatus(ctx *gin.Context, prepayId string) (st
 	return
 }
 
-func (service *payService) WechatPayCallBack(ctx *gin.Context) gin.H {
-	var (
-		err        error
-		failReturn = gin.H{
-			"return_code": "FAIL",
-			"return_msg":  "failed to verify sign/total_fee not matched, please retry!",
-		}
-
-		successReturn = gin.H{
-			"return_code": "SUCCESS",
-			"return_msg":  "OK",
-		}
-	)
-
-	util.Log.Info("wechat notify start...")
+func (service *payService) WechatPayCallBack(ctx *gin.Context) bool {
+	var err error
 
 	body, err := ioutil.ReadAll(ctx.Request.Body)
 	if err != nil {
 		util.Log.Errorf("read http body failed！err: [%s]", err.Error())
-		return failReturn
+		return false
 	}
 
 	util.Log.Infof("wechat pay notify body: [%s]", string(body))
@@ -60,12 +47,12 @@ func (service *payService) WechatPayCallBack(ctx *gin.Context) gin.H {
 	err = xml.Unmarshal(body, &result)
 	if err != nil {
 		util.Log.Errorf("read http body xml failed! err: [%s]", err.Error())
-		return failReturn
+		return false
 	}
 
 	if *result.ReturnCode == "FAIL" {
 		util.Log.Errorf("notify result's return_code is FAIL, err: [%s]", *result.ReturnMsg)
-		return failReturn
+		return false
 	}
 
 	// 这里加锁串行处理
@@ -78,36 +65,39 @@ func (service *payService) WechatPayCallBack(ctx *gin.Context) gin.H {
 		util.Log.WithFields(
 			logrus.Fields{"out_trade_no": result.OutTradeNo}).
 			Errorf("微信notify查询原订单出错, err: [%s]", err.Error())
-		return failReturn
+		return false
 	}
 	// 已经处理过， 直接返回SUCCESS
 	if bill.Status == consts.Success && bill.TimeEnd != 0 && bill.TransactionId != "" {
-		return successReturn
+		util.Log.WithFields(
+			logrus.Fields{"out_trade_no": result.OutTradeNo}).
+			Debug("微信notify, 已处理过该notify")
+		return true
 	}
 
 	// 回调的订单总价与数据库价格不符
 	if int(bill.TotalFee) != *result.TotalFee {
 		util.Log.Warning(" total fee of notify result is not equal to the one in db")
-		return failReturn
+		return false
 	}
 
 	// 进行签名校验
 	if !service.notify.PaidVerifySign(result) {
 		util.Log.Warning("notify result failed payVerifySign")
-		return failReturn
+		return false
 	}
 
 	// 更新数据库
 	if err = service.payModel.SuccessPaidResult2Bill(&result); err != nil {
 		util.Log.Errorf("SuccessPaidResult2Bill failed, err: [%s]", err.Error())
-		return failReturn
+		return false
 	}
 	if err = service.orderModel.UpdateOrderStatus(*result.OutTradeNo, consts.Success); err != nil {
 		util.Log.Errorf("UpdateOrderStatus failed, err: [%s]", err.Error())
-		return failReturn
+		return false
 
 	}
-	return successReturn
+	return true
 }
 
 func NewPayService(notify *notify.Notify, payModel model.PayModel, orderModel model.OrderModel) PayService {

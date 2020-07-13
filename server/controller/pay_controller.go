@@ -2,7 +2,7 @@ package controller
 
 import (
 	"errors"
-	"net/http"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	payConf "github.com/silenceper/wechat/v2/pay/config"
@@ -74,8 +74,15 @@ func (c *payController) CheckPayStatus(ctx *gin.Context) {
 
 // 微信支付回调 Notify
 func (c *payController) WechatPayCallback(ctx *gin.Context) {
-	resp := c.service.WechatPayCallBack(ctx)
-	ctx.XML(http.StatusOK, resp)
+	const AckSuccess = "<xml><return_code><![CDATA[SUCCESS]]></return_code></xml>"
+	const AckFail = "<xml><return_code><![CDATA[FAIL]]></return_code></xml>"
+	w := ctx.Writer
+	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+	if ok := c.service.WechatPayCallBack(ctx); ok {
+		_, _ = fmt.Fprint(w, AckSuccess)
+		return
+	}
+	_, _ = fmt.Fprint(w, AckFail)
 }
 
 func NewPayController(service service.PayService) PayController {
