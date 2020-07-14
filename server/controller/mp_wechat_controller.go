@@ -35,7 +35,6 @@ func WeChatRegister(router *gin.RouterGroup) {
 	router.GET("/js_ticket", wechatController.JsApiTicket)
 	router.GET("/enter_url", wechatController.GetEnterUrl)
 	router.GET("/enter", wechatController.Enter)
-
 }
 
 type WeChatController interface {
@@ -153,8 +152,9 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 
 	resToken, err := oau.GetUserAccessToken(code)
 	if err != nil || resToken.OpenID == "" {
-		util.Log.Errorf("failed to get access_token/open_id from wechat server, err: [%s]", err.Error())
-		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("failed to get access_token/open_id from wechat server"))
+		errStr := fmt.Sprintf("failed to get access_token/open_id from wechat server, err: [%s]", err.Error())
+		util.Log.Error(errStr)
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New(errStr))
 		return
 	}
 
