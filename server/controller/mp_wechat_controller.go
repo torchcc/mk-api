@@ -149,10 +149,11 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("failed to get code from wechat server"))
 		return
 	}
+	util.Log.Debugf("微信的code是： %s", code)
 
 	resToken, err := oau.GetUserAccessToken(code)
 	if err != nil || resToken.OpenID == "" {
-		errStr := fmt.Sprintf("failed to get access_token/open_id from wechat server, err: [%s]", err.Error())
+		errStr := fmt.Sprintf("failed to get access_token/open_id from wechat server, err: [%#v]", err)
 		util.Log.Error(errStr)
 		middleware.ResponseError(ctx, ecode.ServerErr, errors.New(errStr))
 		return
