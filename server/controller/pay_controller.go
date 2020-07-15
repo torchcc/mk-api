@@ -76,13 +76,12 @@ func (c *payController) CheckPayStatus(ctx *gin.Context) {
 func (c *payController) WechatPayCallback(ctx *gin.Context) {
 	const AckSuccess = "<xml><return_code><![CDATA[SUCCESS]]></return_code></xml>"
 	const AckFail = "<xml><return_code><![CDATA[FAIL]]></return_code></xml>"
-	w := ctx.Writer
-	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+	// w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	if ok := c.service.WechatPayCallBack(ctx); ok {
-		_, _ = fmt.Fprint(w, AckSuccess)
+		_, _ = fmt.Fprint(ctx.Writer, AckSuccess)
 		return
 	}
-	_, _ = fmt.Fprint(w, AckFail)
+	_, _ = fmt.Fprint(ctx.Writer, AckFail)
 }
 
 func NewPayController(service service.PayService) PayController {
