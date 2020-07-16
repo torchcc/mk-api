@@ -74,12 +74,11 @@ func (c *payController) CheckPayStatus(ctx *gin.Context) {
 
 // 微信支付回调 Notify
 func (c *payController) WechatPayCallback(ctx *gin.Context) {
-	const AckSuccess = "<xml><return_code><![CDATA[SUCCESS]]></return_code></xml>"
-	const S = "<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>"
+	const AckSuccess = "<xml><return_code><![CDATA[SUCCESS]]></return_code>\n<return_msg><![CDATA[OK]]></return_msg></xml>"
 	const AckFail = "<xml><return_code><![CDATA[FAIL]]></return_code></xml>"
 	// ctx.Writer.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	if ok := c.service.WechatPayCallBack(ctx); ok {
-		_, _ = fmt.Fprint(ctx.Writer, S)
+		_, _ = fmt.Fprint(ctx.Writer, AckSuccess)
 		return
 	}
 	_, _ = fmt.Fprint(ctx.Writer, AckFail)
