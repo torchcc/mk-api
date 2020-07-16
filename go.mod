@@ -5,7 +5,9 @@ go 1.13
 require (
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+	github.com/buger/jsonparser v1.0.0 // indirect
 	github.com/bwmarrin/snowflake v0.3.0
+	github.com/garyburd/redigo v1.6.0 // indirect
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-openapi/spec v0.19.8 // indirect
 	github.com/go-openapi/swag v0.19.9 // indirect
@@ -17,6 +19,7 @@ require (
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/uuid v1.1.1
+	github.com/hundredlee/wechat_pusher v0.0.0-20170713154332-458e30caeff3
 	github.com/jmoiron/sqlx v1.2.1-0.20200615141059-0794cb1f47ee
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/mailru/easyjson v0.7.1 // indirect
@@ -24,6 +27,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/qiniu/api.v7/v7 v7.5.0
+	github.com/robfig/cron v1.2.0 // indirect
 	github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da
 	github.com/silenceper/wechat v2.0.1+incompatible
 	github.com/silenceper/wechat/v2 v2.0.0
