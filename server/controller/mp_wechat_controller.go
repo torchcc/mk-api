@@ -6,16 +6,14 @@ import (
 	"io"
 	"net/http"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"github.com/silenceper/wechat"
-	"github.com/silenceper/wechat/cache"
-	"github.com/silenceper/wechat/message"
+	"github.com/silenceper/wechat/v2/officialaccount"
 	"mk-api/library/ecode"
 	"mk-api/server/conf"
+	"mk-api/server/dao"
 	"mk-api/server/dto"
 	"mk-api/server/middleware"
 	"mk-api/server/model"
@@ -40,14 +38,13 @@ func WeChatRegister(router *gin.RouterGroup) {
 type WeChatController interface {
 	DockWithWeChatServer(ctx *gin.Context)
 	JsApiTicket(ctx *gin.Context)
-	Echo(ctx *gin.Context)
+	// Echo(ctx *gin.Context)
 	GetEnterUrl(ctx *gin.Context)
 	Enter(ctx *gin.Context)
 }
 
 type wechatController struct {
-	cfg     *wechat.Config
-	wc      *wechat.Wechat
+	affAcc  *officialaccount.OfficialAccount
 	service service.WechatService
 }
 
@@ -106,7 +103,7 @@ func (c *wechatController) JsApiTicket(ctx *gin.Context) {
 		return
 	}
 
-	js := c.wc.GetJs()
+	js := c.affAcc.GetJs()
 	cfg, err := js.GetConfig(consts.UrlPrefix + uri)
 	if err != nil {
 		util.Log.Errorf("failed to get JsApiTicket, Param: %s, err: %v", uri, err)
@@ -125,7 +122,7 @@ func (c *wechatController) JsApiTicket(ctx *gin.Context) {
 // @Router /wx/enter_url [get]
 func (c *wechatController) GetEnterUrl(ctx *gin.Context) {
 	uri := ctx.Query("uri")
-	oau := c.wc.GetOauth()
+	oau := c.affAcc.GetOauth()
 	url, err := oau.GetRedirectURL(consts.UrlPrefix+"/wx/enter?uri="+uri, "snsapi_userinfo", "")
 	if err != nil {
 		util.Log.Errorf("fail to launch a oauth2 to wechat server: %v", err)
@@ -142,7 +139,7 @@ func (c *wechatController) GetEnterUrl(ctx *gin.Context) {
 // @Success 200 {object} middleware.Response{data=dto.TokenOutput} "token"
 // @Router /wx/enter [get]
 func (c *wechatController) Enter(ctx *gin.Context) {
-	oau := c.wc.GetOauth()
+	oau := c.affAcc.GetOauth()
 	code := ctx.Query("code")
 	if code == "" {
 		util.Log.Errorf("failed to get code from wechat server !")
@@ -170,55 +167,32 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 	middleware.ResponseSuccess(ctx, dto.TokenOutput{Token: token})
 }
 
-func (c *wechatController) Echo(ctx *gin.Context) {
-
-	// 传入request和responseWriter
-	server := c.wc.GetServer(ctx.Request, ctx.Writer)
-	// 设置接收消息的处理方法
-	server.SetMessageHandler(func(msg message.MixMessage) *message.Reply {
-
-		// 回复消息：演示回复用户发送的消息
-		text := message.NewText(msg.Content)
-		return &message.Reply{MsgType: message.MsgTypeText, MsgData: text}
-	})
-
-	// 处理消息接收以及回复
-	err := server.Serve()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	// 发送回复的消息
-	_ = server.Send()
-
-}
+// func (c *wechatController) Echo(ctx *gin.Context) {
+//
+// 	// 传入request和responseWriter
+// 	server := c.wc.GetServer(ctx.Request, ctx.Writer)
+// 	// 设置接收消息的处理方法
+// 	server.SetMessageHandler(func(msg message.MixMessage) *message.Reply {
+//
+// 		// 回复消息：演示回复用户发送的消息
+// 		text := message.NewText(msg.Content)
+// 		return &message.Reply{MsgType: message.MsgTypeText, MsgData: text}
+// 	})
+//
+// 	// 处理消息接收以及回复
+// 	err := server.Serve()
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return
+// 	}
+// 	// 发送回复的消息
+// 	_ = server.Send()
+//
+// }
 
 func NewWechatController(service service.WechatService) WeChatController {
-	// 创建一个wechat对象
-	rdOpts := cache.RedisOpts{
-		Host:        conf.C.RedisWechat.Host + ":" + strconv.Itoa(conf.C.RedisWechat.Port),
-		Password:    conf.C.RedisWechat.Password,
-		Database:    conf.C.RedisWechat.Db,
-		MaxIdle:     conf.C.RedisWechat.MaxIdle,
-		MaxActive:   conf.C.RedisWechat.MaxActive,
-		IdleTimeout: int32(conf.C.RedisWechat.IdleTimeout),
-	}
-	redisCache := cache.NewRedis(&rdOpts)
-
-	cfg := &wechat.Config{
-		AppID:          conf.C.WeChat.AppID,
-		AppSecret:      conf.C.WeChat.AppSecret,
-		Token:          conf.C.WeChat.Token,
-		EncodingAESKey: conf.C.WeChat.EncodingAESKey,
-		PayMchID:       conf.C.WeChat.PayMchID,
-		PayNotifyURL:   conf.C.WeChat.PayNotifyURL,
-		PayKey:         conf.C.WeChat.PayKey,
-		Cache:          redisCache,
-	}
-
 	return &wechatController{
-		cfg:     cfg,
-		wc:      wechat.NewWechat(cfg),
+		affAcc:  dao.AffAcc,
 		service: service,
 	}
 }

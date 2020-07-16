@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gomodule/redigo/redis"
-	"github.com/silenceper/wechat/oauth"
+	"github.com/silenceper/wechat/v2/officialaccount/oauth"
 	"github.com/sirupsen/logrus"
 	"mk-api/library/ecode"
 	. "mk-api/server/dao"
