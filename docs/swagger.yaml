@@ -958,6 +958,38 @@ paths:
       summary: 获取订单详情
       tags:
       - orders
+  /pay/scnd_pay:
+    post:
+      consumes:
+      - application/json
+      description: 根据订单id发起二次支付,返回前端调起微信支付的必须参数
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 创建订单的请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResourceID'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PostOrderOutput'
+              type: object
+      summary: 根据订单id发起二次支付
+      tags:
+      - pay
   /pay/status:
     get:
       consumes:

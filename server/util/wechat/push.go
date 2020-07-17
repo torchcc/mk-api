@@ -1,4 +1,4 @@
-package wechat_push
+package wechat
 
 // import "mk-api/server/dao"
 

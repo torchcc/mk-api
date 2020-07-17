@@ -2,8 +2,13 @@ package service
 
 import (
 	"encoding/xml"
+	"errors"
 	"io/ioutil"
 	"sync"
+	"time"
+
+	wo "github.com/silenceper/wechat/v2/pay/order"
+	"mk-api/library/ecode"
 
 	"github.com/gin-gonic/gin"
 	"github.com/silenceper/wechat/v2/pay/notify"
@@ -11,17 +16,46 @@ import (
 	"mk-api/server/model"
 	"mk-api/server/util"
 	"mk-api/server/util/consts"
+	wcUtil "mk-api/server/util/wechat"
 )
 
 type PayService interface {
 	WechatPayCallBack(ctx *gin.Context) bool
 	CheckPayStatus(ctx *gin.Context, prepayId string) (status int8, err error)
+	Launch2ndPay(ctx *gin.Context, orderId int64) (*wo.Config, error)
 }
 
 type payService struct {
 	payModel   model.PayModel
 	orderModel model.OrderModel
 	notify     *notify.Notify
+}
+
+func (service *payService) Launch2ndPay(ctx *gin.Context, orderId int64) (cfg *wo.Config, err error) {
+	payStatus, err := service.orderModel.FindOrderPayStatusById(orderId)
+	if err != nil {
+		_ = ctx.Error(err)
+		util.Log.WithFields(logrus.Fields{"order_id": orderId}).
+			Errorf("failed to get order pay status, err: [%s]", err)
+		return nil, ecode.NothingFound
+	}
+	if payStatus.TimeExpire < time.Now().Unix() || payStatus.Status != 0 {
+
+		err = errors.New("该订单已经过期， 请重新下单")
+		util.Log.WithFields(logrus.Fields{"order_id": orderId}).
+			Warning(err.Error())
+		_ = ctx.Error(err)
+		return nil, ecode.RequestErr
+	}
+	cfg, err = wcUtil.Launch2ndPay(payStatus.NonceStr, payStatus.PrepayId)
+	if err != nil {
+		util.Log.WithFields(logrus.Fields{"order_id": orderId}).
+			Errorf("failed to calc paySign, err: [%s]", err.Error())
+		_ = ctx.Error(err)
+		return nil, ecode.ServerErr
+	}
+	return cfg, nil
+
 }
 
 func (service *payService) CheckPayStatus(ctx *gin.Context, prepayId string) (status int8, err error) {

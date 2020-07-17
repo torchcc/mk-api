@@ -30,3 +30,10 @@ type CheckPayStatusOutput struct {
 	// 支付状态 0-待支付 2-支付成功 4-订单已关闭
 	Status int8 `json:"status"`
 }
+
+type OrderPayStatus struct {
+	PrepayId   string `json:"prepay_id" db:"prepay_id"`
+	NonceStr   string `json:"nonce_str" db:"nonce_str"`
+	Status     int8   `json:"status" db:"status"`
+	TimeExpire int64  `json:"time_expire" db:"time_expire"`
+}

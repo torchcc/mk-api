@@ -16,10 +16,30 @@ type OrderModel interface {
 	ListOrder(input *dto.ListOrderInput, userId int64) ([]*dto.ListOrderOutputEle, error)
 	FindOrderDetailById(id int64, pkgModel PackageModel) (*dto.RetrieveOrderOutput, error)
 	DeleteOrderByIdNUserId(userId int64, id int64) error
+	FindOrderPayStatusById(orderId int64) (*dto.OrderPayStatus, error)
 }
 
 type orderDatabase struct {
 	connection *sqlx.DB
+}
+
+func (db *orderDatabase) FindOrderPayStatusById(orderId int64) (*dto.OrderPayStatus, error) {
+	var output dto.OrderPayStatus
+	const cmd = `SELECT 
+					mo.status,
+					mb.prepay_id,
+					mb.nonce_str,
+					mb.time_expire
+				FROM 
+					mko_order AS mo 
+					INNER JOIN mkb_trade_bill AS mb ON mo.id = mb.order_id 
+				WHERE 
+					mo.id = ?
+					AND mo.is_deleted = 0
+					AND mb.is_deleted = 0
+`
+	err := db.connection.Get(&output, cmd, orderId)
+	return &output, err
 }
 
 func (db *orderDatabase) DeleteOrderByIdNUserId(userId int64, id int64) error {
