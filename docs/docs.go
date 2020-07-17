@@ -1462,6 +1462,47 @@ var doc = `{
                 }
             }
         },
+        "/users/profile/mobile": {
+            "get": {
+                "description": "获取用户手机号码",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "获取用户手机号码",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.GetUserMobileOutput"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/wx/enter": {
             "get": {
                 "description": "拿到code后的回调地址",
@@ -1923,6 +1964,14 @@ var doc = `{
                 },
                 "town_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.GetUserMobileOutput": {
+            "type": "object",
+            "properties": {
+                "mobile": {
+                    "type": "string"
                 }
             }
         },

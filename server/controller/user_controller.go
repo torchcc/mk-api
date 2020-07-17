@@ -28,6 +28,7 @@ func UserRegister(router *gin.RouterGroup) {
 	router.GET("/profile", userController.GETUserProfile)
 	router.PUT("/profile", userController.PutUserProfile)
 	router.POST("/profile/avatar", userController.UploadAvatar)
+	router.GET("/profile/mobile", userController.GetUserMobile)
 
 	router.GET("/addrs", userController.ListUserAddr)
 	router.POST("/addrs", userController.PostUserAddr)
@@ -45,6 +46,7 @@ type UserController interface {
 	GETUserProfile(ctx *gin.Context)
 	PutUserProfile(ctx *gin.Context)
 	UploadAvatar(ctx *gin.Context)
+	GetUserMobile(ctx *gin.Context)
 
 	ListUserAddr(ctx *gin.Context)
 	PostUserAddr(ctx *gin.Context)
@@ -60,6 +62,19 @@ type UserController interface {
 
 type userController struct {
 	service service.UserService
+}
+
+// PutExaminee godoc
+// @Summary 获取用户手机号码
+// @Description 获取用户手机号码
+// @Tags users
+// @Produce  application/json
+// @Param token header string true "用户token"
+// @Success 200 {object} middleware.Response{data=dto.GetUserMobileOutput} "success"
+// @Router /users/profile/mobile [get]
+func (c *userController) GetUserMobile(ctx *gin.Context) {
+	mobile := ctx.GetString("mobile")
+	middleware.ResponseSuccess(ctx, dto.GetUserMobileOutput{Mobile: mobile})
 }
 
 // PutExaminee godoc
@@ -89,7 +104,6 @@ func (c *userController) UploadAvatar(ctx *gin.Context) {
 		return
 	}
 	middleware.ResponseSuccess(ctx, dto.UploadUserAvatarOutput{AvatarUrl: filePath})
-
 }
 
 // PutExaminee godoc

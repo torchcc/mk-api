@@ -253,6 +253,11 @@ definitions:
     - province_id
     - town_id
     type: object
+  dto.GetUserMobileOutput:
+    properties:
+      mobile:
+        type: string
+    type: object
   dto.JsApiTicketOutPut:
     properties:
       signature:
@@ -1517,6 +1522,30 @@ paths:
                   $ref: '#/definitions/dto.UploadUserAvatarOutput'
               type: object
       summary: 上传个人头像
+      tags:
+      - users
+  /users/profile/mobile:
+    get:
+      description: 获取用户手机号码
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.GetUserMobileOutput'
+              type: object
+      summary: 获取用户手机号码
       tags:
       - users
   /wx/enter:

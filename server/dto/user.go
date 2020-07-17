@@ -46,3 +46,7 @@ type UploadUserAvatarOutput struct {
 	// 头像url
 	AvatarUrl string `json:"avatar_url"`
 }
+
+type GetUserMobileOutput struct {
+	Mobile string `json:"mobile"`
+}
