@@ -1,7 +1,7 @@
 {
     "env": {
         "zookeeper": {
-            "host": "172.24.0.2:2182"
+            "host": "p-zookeeper:2182"
         },
         "deploy": "prod"
     }
