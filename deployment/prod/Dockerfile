@@ -9,6 +9,7 @@ ENV \
     ENV_DEPLOY=1 \
     TZ=Asia/Shanghai \
     BRANCH=prod\
+    PORT=8071\
     SERVICE_NAME=mk-api
 
 COPY ./ /src/$SERVICE_NAME
@@ -23,6 +24,6 @@ RUN \
  && swag init \
  && go build -o app .
 
-EXPOSE 8081
+EXPOSE 8071
 
 CMD ["/src/mk-api/app"]

@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"mk-api/deployment"
 	"mk-api/server/middleware"
 	"mk-api/server/router"
 	"mk-api/server/validator"
@@ -13,14 +14,25 @@ func main() {
 		middleware.Secure(),
 		middleware.Options(),
 	)
-	port := os.Getenv("PORT")
 
 	// 注册自定义校验器
 	validator.Init()
 
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8081"
 	}
-	_ = server.Run("0.0.0.0:" + port)
+
+	var host string
+
+	switch deployment.BRANCH {
+	case "test":
+		host = "0.0.0.0"
+	case "prod":
+		host = "127.0.0.1"
+	default:
+		host = "0.0.0.0"
+	}
+	_ = server.Run(host + ":" + port)
 
 }
