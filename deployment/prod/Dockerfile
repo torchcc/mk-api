@@ -6,9 +6,6 @@ ENV \
     GOOS=linux \
     GOARCH=amd64 \
     GOPROXY=https://goproxy.cn,direct \
-    ENV_DEPLOY=1 \
-    BRANCH=prod\
-    PORT=8071\
     SERVICE_NAME=mk-api
 
 VOLUME /etc/localtime /etc/localtime
@@ -30,8 +27,14 @@ RUN go build -o app .
 # 接下来创建一个小镜像
 ###################
 FROM scratch
+ENV \
+    ENV_DEPLOY=1 \
+    BRANCH=prod\
+    PORT=8071\
+    SERVICE_NAME=mk-api
 
-COPY ./server/static /server/static
+COPY ./server/static /src/mk-api/server/static
+COPY ./deployment  /src/mk-api/deployment
 
 # 从builder镜像中把/src/mk-api/app 拷贝到当前目录
 COPY --from=builder /src/mk-api/app /src/mk-api/
