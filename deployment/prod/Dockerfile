@@ -7,11 +7,11 @@ ENV \
     GOARCH=amd64 \
     GOPROXY=https://goproxy.cn,direct \
     ENV_DEPLOY=1 \
-    TZ=Asia/Shanghai \
     BRANCH=prod\
     PORT=8071\
     SERVICE_NAME=mk-api
 
+VOLUME /etc/localtime /etc/localtime
 # 移动到工作目录
 WORKDIR /src/$SERVICE_NAME/
 
@@ -24,9 +24,7 @@ RUN go mod download
 COPY . .
 
 # 将我们的代码编译成二进制可执行文
-RUN \
-    apk add --no-cache tzdata \
- && go build -o app .
+RUN go build -o app .
 
 ###################
 # 接下来创建一个小镜像
@@ -35,8 +33,8 @@ FROM scratch
 
 COPY ./server/static /server/static
 
-# 从builder镜像中把/dist/app 拷贝到当前目录
-COPY --from=builder /src/$SERVICE_NAME/app /
+# 从builder镜像中把/src/mk-api/app 拷贝到当前目录
+COPY --from=builder /src/mk-api/app /src/mk-api/
 
 EXPOSE 8071
 
