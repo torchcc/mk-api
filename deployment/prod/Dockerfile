@@ -7,18 +7,22 @@ ENV \
     GOARCH=amd64 \
     GOPROXY=https://goproxy.cn,direct \
     ENV_DEPLOY=1 \
-    BRANCH=test \
+    TZ=Asia/Shanghai \
+    BRANCH=prod\
     SERVICE_NAME=mk-api
 
-COPY ./ /src/
+COPY ./ /src/$SERVICE_NAME
 
 WORKDIR /src/$SERVICE_NAME/
 
 RUN \
-    if ! [ -f "go.mod" ]; then go mod init mk-api; fi \
+    apk add --no-cache tzdata \
+ && if ! [ -f "go.mod" ]; then go mod init mk-api; fi \
  && go mod tidy \
+ && go get -u github.com/swaggo/swag/cmd/swag \
+ && swag init \
  && go build -o app .
 
-EXPOSE 8888
+EXPOSE 8081
 
 CMD ["/src/mk-api/app"]
