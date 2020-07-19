@@ -19,6 +19,7 @@ WORKDIR /src/$SERVICE_NAME/
 VOLUME /etc/localtime /etc/localtime
 
 RUN \
+ apk add --no-cache tzdata \
  if ! [ -f "go.mod" ]; then go mod init mk-api; fi \
  && go mod tidy \
  && go build -o app .
