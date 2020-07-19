@@ -1,0 +1,30 @@
+FROM golang:1.13.10-alpine
+
+ENV \
+    GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64 \
+    GOPROXY=https://goproxy.cn,direct \
+    ENV_DEPLOY=1 \
+    TZ=Asia/Shanghai \
+    BRANCH=prod\
+    PORT=8071\
+    SERVICE_NAME=mk-api
+
+# 可用就是体积比较大
+COPY ./ /src/$SERVICE_NAME
+
+WORKDIR /src/$SERVICE_NAME/
+
+VOLUME /etc/localtime /etc/localtime
+
+RUN \
+ apk add --no-cache tzdata \
+ if ! [ -f "go.mod" ]; then go mod init mk-api; fi \
+ && go mod tidy \
+ && go build -o app .
+
+EXPOSE 8071
+
+CMD ["/src/mk-api/app"]
