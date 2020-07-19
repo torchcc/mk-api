@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 
-	"mk-api/deployment"
 	"mk-api/server/middleware"
 	"mk-api/server/router"
 	"mk-api/server/validator"
@@ -23,16 +22,6 @@ func main() {
 		port = "8081"
 	}
 
-	var host string
-
-	switch deployment.BRANCH {
-	case "test":
-		host = "0.0.0.0"
-	case "prod":
-		host = "0.0.0.0"
-	default:
-		host = "0.0.0.0"
-	}
-	_ = server.Run(host + ":" + port)
+	_ = server.Run("0.0.0.0:" + port)
 
 }
