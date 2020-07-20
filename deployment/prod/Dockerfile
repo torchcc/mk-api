@@ -31,6 +31,7 @@ ENV \
     ENV_DEPLOY=1 \
     BRANCH=prod\
     PORT=8071\
+    GIN_MODE=release \
     TZ=Asia/Shanghai \
     SERVICE_NAME=mk-api
 
