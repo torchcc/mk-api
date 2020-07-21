@@ -37,7 +37,7 @@ func NewSuperConfig(configs *map[string]interface{}) (s *SuperConfig) {
 
 	conn, _, err := zk.Connect(validCfg.ZKServers, time.Second)
 	if err != nil {
-		panic(err)
+		panic("failed to connect to zk, err is " + err.Error())
 	}
 
 	for k, v := range *configs {
