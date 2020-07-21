@@ -2,6 +2,7 @@ package dao
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -52,6 +53,7 @@ func NewRedis(conf *conf.RedisConfig) *Redis {
 }
 
 func NewRedisPool(conf *conf.RedisConfig) *redis.Pool {
+	fmt.Printf("conf is %#v, creating redis pool.....", conf)
 	server := conf.Host + ":" + strconv.Itoa(conf.Port)
 	maxIdl, maxActive := 1, 5
 	if conf.MaxIdle != 0 {
@@ -70,6 +72,8 @@ func NewRedisPool(conf *conf.RedisConfig) *redis.Pool {
 			if conf.Password != "" {
 				if _, err := c.Do("AUTH", conf.Password); err != nil {
 					c.Close()
+					fmt.Printf("NewRedisPool failed, params is [%v], err is [%s]", conf, err.Error())
+					panic("failed to create redis pool !")
 					return nil, err
 				}
 			}
@@ -78,6 +82,10 @@ func NewRedisPool(conf *conf.RedisConfig) *redis.Pool {
 		},
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
 			_, err := c.Do("PING")
+			if err != nil {
+				fmt.Printf("NewRedisPool failed, params is [%v], err is [%s]", conf, err.Error())
+				panic("failed to PING redis pool !")
+			}
 			return err
 		},
 		MaxIdle:     maxIdl,

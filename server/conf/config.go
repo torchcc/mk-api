@@ -1,6 +1,8 @@
 package conf
 
 import (
+	"fmt"
+
 	"mk-api/library/superconf"
 )
 
@@ -78,4 +80,5 @@ func init() {
 	sc := superconf.NewSuperConfig(&allConfigs)
 	cfg.Local = *(sc.Config)
 	C = &cfg
+	fmt.Printf("all config in server is : %#v", cfg)
 }
