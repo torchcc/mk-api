@@ -121,7 +121,10 @@ func (db *packageDatabase) ListPackage(input *dto.ListPackageInput) ([]dto.ListP
 		whereStmt += " AND mh.level = :level "
 	}
 	if input.CategoryId != 0 {
-		whereStmt += " AND mc.id = :category_id"
+		whereStmt += " AND EXISTS(SELECT id FROM mkp_package_category mpc WHERE pkg_id=mp.id AND mpc.category_id=:category_id AND mpc.is_deleted = 0) "
+	}
+	if input.DiseaseId != 0 {
+		whereStmt += " AND EXISTS(SELECT id FROM mkp_package_disease mpd WHERE pkg_id=mp.id AND mpd.disease_id=:disease_id AND mpd.is_deleted = 0) "
 	}
 	if input.MinPrice != 0 {
 		whereStmt += " AND mp.price_real >= :min_price "
@@ -145,24 +148,15 @@ func (db *packageDatabase) ListPackage(input *dto.ListPackageInput) ([]dto.ListP
 				mp.name,
 				mh.name AS hospital_name,
 				mp.avatar_url,
-				mc.name AS category_name,
-				mc.id AS category_id,
 				mh.level
 			FROM 
 				mkp_package AS mp
 			INNER JOIN 
 				mkh_hospital AS mh 
 					ON mp.hospital_id = mh.id AND mh.is_deleted = 0
-			INNER JOIN 
-				mkp_package_category AS mpc 
-					ON mp.id = mpc.pkg_id AND mpc.is_deleted = 0 
-			INNER JOIN 
-				mkp_category AS mc 
-					ON mc.id = mpc.category_id AND mc.is_deleted = 0
 			WHERE 
 				mp.is_deleted = 0 
 				%s
-			-- GROUP BY mc.name
 				%s
 			LIMIT :start, :offset
 `

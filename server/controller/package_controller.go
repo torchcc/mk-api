@@ -110,11 +110,11 @@ func (c *packageController) GetPackage(ctx *gin.Context) {
 // @Param page_size query int false "每页多少条"
 // @Param page_no query int false "页码"
 // @Param level query string false "医院等级， 0-不限 1-公立三甲 2-公立医院 3-民营医院 4-专业机构"
-// @Param category_id query int false "套餐类别id"
+// @Param category_id query int false "套餐类别id, 见字典项接口"
 // @Param min_price query int false "价格区间左值, 0表示最小"
 // @Param max_price query int false "价格区间左值, 0表示无上限"
 // @Param target query int false "适用人群 0-不限 1-男士 2-女未婚 3-女已婚"
-// @Param disease query int false "高发疾病 0-不限 1-食物不耐受检测，2-骨关节疾病体检 3-健康防癌体检 4-幽门螺旋杆菌检测 5-甲状腺检测 6-糖尿病检测"
+// @Param disease_id query int false "高发疾病, 见字典项接口"
 // @Param order_by query int false "优先排序 0-默认排序，1-低价优先 2 高价优先"
 // @Success 200 {object} middleware.Response{data=dto.PaginateListOutput{list=[]dto.ListPackageOutputEle}}
 // @Router /pkg [get]

@@ -7,18 +7,18 @@ type ListPackageInput struct {
 	PageSize int64 `json:"page_size,default=10" form:"page_size,default=10" binding:"min=1,max=100"`
 
 	// 医院等级， 0-不限 1-公立三甲 2-公立医院 3-民营医院 4-专业机构
-	Level int8 `json:"level" form:"level" binding:"oneof=0 1 2 3 4"`
+	Level int8 `json:"level" form:"level" binding:"oneof=0 1 2 3 4" db:"level"`
 
 	// 套餐分类 id, 0-不限
 	CategoryId int64 `json:"category_id" form:"category_id" binding:"min=0" db:"category_id"`
-	// 价格区间左值
-	MinPrice int64 `json:"min_price" form:"min_price" binding:"min=0,max=5000"`
-	// 价格区间右值 0 表示无限下
-	MaxPrice int64 `json:"max_price" form:"max_price" binding:"min=0,gtefield=MinPrice"`
+	// 价格区间左值,0 表示不限 单位分
+	MinPrice int64 `json:"min_price" form:"min_price" binding:"min=0,max=5000" db:"min_price"`
+	// 价格区间右值 0 表示不限 单位分
+	MaxPrice int64 `json:"max_price" form:"max_price" binding:"min=0,max=10000000" db:"max_price"`
 	// 适用人群 0-不限 1-男士 2-女未婚 3-女已婚
-	Target int8 `json:"target" form:"target" binding:"oneof=0 1 2 3"`
-	// 检测目标高发疾病 0-不限 1-食物不耐受检测，2-骨关节疾病体检 3-健康防癌体检 4-幽门螺旋杆菌检测 5-甲状腺检测 6-糖尿病检测
-	Disease int8 `json:"disease" form:"disease"`
+	Target int8 `json:"target" form:"target" binding:"oneof=0 1 2 3" db:"target"`
+	// 检测目标高发疾病id
+	DiseaseId int8 `json:"disease_id,default=0" form:"disease_id,default=0" db:"disease_id"`
 	// 优先排序 0-默认排序，1-低价优先 2 高价优先
 	OrderBy int8 `json:"order_by" form:"order_by" binding:"oneof=0 1 2"`
 }
@@ -33,10 +33,6 @@ type ListPackageOutputEle struct {
 	HospitalName string `json:"hospital_name" db:"hospital_name"`
 	// 套餐头像
 	AvatarUrl string `json:"avatar_url" db:"avatar_url"`
-	// 套餐类别
-	CategoryId int64 `json:"category_id" db:"category_id"`
-	// 类别名称
-	CategoryName string `json:"category_name" db:"category_name"`
 	// 医院等级， 0-不限 1-公立三甲 2-公立医院 3-民营医院 4-专业机构
 	Level int8 `json:"level" binding:"oneof=0 1 2 3 4" db:"level"`
 	// 已经预约的单数, 这个暂时需要前端用hidden隐藏起来
