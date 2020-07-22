@@ -25,14 +25,14 @@ type packageDatabase struct {
 
 func (db *packageDatabase) ListCategory() ([]*dto.Category, error) {
 	output := make([]*dto.Category, 0, 16)
-	const cmd = `SELECT id, name FROM mkp_category WHERE is_deleted = 0`
+	const cmd = `SELECT id, name FROM mkp_category WHERE is_deleted = 0 LIMIT 200`
 	err := db.connection.Select(&output, cmd)
 	return output, err
 }
 
 func (db *packageDatabase) ListDisease() ([]*dto.Disease, error) {
 	output := make([]*dto.Disease, 0, 16)
-	const cmd = `SELECT id, name FROM mkp_disease WHERE is_deleted = 0`
+	const cmd = `SELECT id, name FROM mkp_disease WHERE is_deleted = 0 LIMIT 200`
 	err := db.connection.Select(&output, cmd)
 	return output, err
 }
