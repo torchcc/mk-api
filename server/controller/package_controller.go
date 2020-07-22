@@ -20,17 +20,59 @@ func PackageRegister(router *gin.RouterGroup) {
 		packageService    service.PackageService = service.NewPackageService(packageModel)
 		packageController PackageController      = NewPackageController(packageService)
 	)
-	router.GET("/", packageController.ListPackage)
-	router.GET("/:id", packageController.GetPackage)
+	router.GET("/pkg", packageController.ListPackage)
+	router.GET("/categories", packageController.ListCategory)
+	router.GET("/diseases", packageController.ListDisease)
+	router.GET("/pkg/:id", packageController.GetPackage)
 }
 
 type PackageController interface {
 	ListPackage(ctx *gin.Context)
 	GetPackage(ctx *gin.Context)
+	ListDisease(ctx *gin.Context)
+	ListCategory(ctx *gin.Context)
 }
 
 type packageController struct {
 	service service.PackageService
+}
+
+// DiseaseList godoc
+// @Summary 获取专项疾病列表
+// @Description 获取专项疾病列表
+// @Tags packages
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Success 200 {object} middleware.Response{data=[]dto.Disease}
+// @Router /diseases [get]
+func (c *packageController) ListDisease(ctx *gin.Context) {
+	output, err := c.service.ListDisease()
+	if err != nil {
+		util.Log.Errorf("failed to query disease list, err: [%s]", err.Error())
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("获取套餐专项疾病失败"))
+		return
+	}
+	middleware.ResponseSuccess(ctx, output)
+}
+
+// CategoryList godoc
+// @Summary 获取套餐种类列表
+// @Description 获取套餐种类列表
+// @Tags packages
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Success 200 {object} middleware.Response{data=[]dto.Category}
+// @Router /categories [get]
+func (c *packageController) ListCategory(ctx *gin.Context) {
+	output, err := c.service.ListCategory()
+	if err != nil {
+		util.Log.Errorf("failed to query category list, err: [%s]", err.Error())
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("获取套餐种类失败疾病失败"))
+		return
+	}
+	middleware.ResponseSuccess(ctx, output)
 }
 
 // GetPackageDetail godoc
@@ -75,7 +117,7 @@ func (c *packageController) GetPackage(ctx *gin.Context) {
 // @Param disease query int false "高发疾病 0-不限 1-食物不耐受检测，2-骨关节疾病体检 3-健康防癌体检 4-幽门螺旋杆菌检测 5-甲状腺检测 6-糖尿病检测"
 // @Param order_by query int false "优先排序 0-默认排序，1-低价优先 2 高价优先"
 // @Success 200 {object} middleware.Response{data=dto.PaginateListOutput{list=[]dto.ListPackageOutputEle}}
-// @Router /pkg/ [get]
+// @Router /pkg [get]
 func (c *packageController) ListPackage(ctx *gin.Context) {
 	var input dto.ListPackageInput
 	err := ctx.ShouldBindQuery(&input)

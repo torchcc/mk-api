@@ -20,10 +20,20 @@ const (
 type PackageService interface {
 	ListPackage(ctx *gin.Context, input *dto.ListPackageInput) (data *dto.PaginateListOutput, err error)
 	RetrievePackage(id int64) (data *dto.GetPackageOutPut, err error)
+	ListDisease() ([]*dto.Disease, error)
+	ListCategory() ([]*dto.Category, error)
 }
 
 type packageService struct {
 	packageModel model.PackageModel
+}
+
+func (service *packageService) ListCategory() ([]*dto.Category, error) {
+	return service.packageModel.ListCategory()
+}
+
+func (service *packageService) ListDisease() ([]*dto.Disease, error) {
+	return service.packageModel.ListDisease()
 }
 
 func (service *packageService) RetrievePackage(id int64) (*dto.GetPackageOutPut, error) {

@@ -77,6 +77,15 @@ definitions:
     - pkg_count
     - pkg_id
     type: object
+  dto.Category:
+    properties:
+      id:
+        description: 类别(专项疾病)id
+        type: integer
+      name:
+        description: 类别(专项疾病)名称
+        type: string
+    type: object
   dto.CheckPayStatusOutput:
     properties:
       status:
@@ -111,6 +120,8 @@ definitions:
           type: integer
         type: array
     type: object
+  dto.Disease:
+    $ref: '#/definitions/dto.Category'
   dto.Examinee:
     properties:
       examine_date:
@@ -742,6 +753,62 @@ paths:
       summary: 往购物车增添一个套餐
       tags:
       - cart
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: 获取套餐种类列表
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.Category'
+                  type: array
+              type: object
+      summary: 获取套餐种类列表
+      tags:
+      - packages
+  /diseases:
+    get:
+      consumes:
+      - application/json
+      description: 获取专项疾病列表
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.Disease'
+                  type: array
+              type: object
+      summary: 获取专项疾病列表
+      tags:
+      - packages
   /login_register/:
     post:
       consumes:

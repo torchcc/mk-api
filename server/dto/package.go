@@ -120,3 +120,12 @@ type PkgTargetNPrice struct {
 	Price  float64 `db:"price_real"`
 	Target int8    `db:"target"`
 }
+
+type Category struct {
+	// 类别(专项疾病)id
+	Id int64 `json:"id" db:"id"`
+	// 类别(专项疾病)名称
+	Name string `json:"name" db:"name"`
+}
+
+type Disease Category

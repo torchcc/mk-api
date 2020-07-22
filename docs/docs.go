@@ -174,6 +174,100 @@ var doc = `{
                 }
             }
         },
+        "/categories": {
+            "get": {
+                "description": "获取套餐种类列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "packages"
+                ],
+                "summary": "获取套餐种类列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.Category"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/diseases": {
+            "get": {
+                "description": "获取专项疾病列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "packages"
+                ],
+                "summary": "获取专项疾病列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.Disease"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/login_register/": {
             "post": {
                 "description": "登录或者注册",
@@ -1720,6 +1814,19 @@ var doc = `{
                 }
             }
         },
+        "dto.Category": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "类别(专项疾病)id",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "类别(专项疾病)名称",
+                    "type": "string"
+                }
+            }
+        },
         "dto.CheckPayStatusOutput": {
             "type": "object",
             "properties": {
@@ -1769,6 +1876,9 @@ var doc = `{
                     }
                 }
             }
+        },
+        "dto.Disease": {
+            "$ref": "#/definitions/dto.Category"
         },
         "dto.Examinee": {
             "type": "object",

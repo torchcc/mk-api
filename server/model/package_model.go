@@ -15,10 +15,26 @@ type PackageModel interface {
 	FindPackageAttr(pkgId int64) (attrs []dto.PackageAttribute, err error)
 	FindPackagePriceNTargetById(id int64) (output *dto.PkgTargetNPrice, err error)
 	FindPkgItemNameByPkgId(pkgId int64) ([]*dto.PkgItemName, error)
+	ListDisease() ([]*dto.Disease, error)
+	ListCategory() ([]*dto.Category, error)
 }
 
 type packageDatabase struct {
 	connection *sqlx.DB
+}
+
+func (db *packageDatabase) ListCategory() ([]*dto.Category, error) {
+	output := make([]*dto.Category, 0, 16)
+	const cmd = `SELECT id, name FROM mkp_category WHERE is_deleted = 0`
+	err := db.connection.Select(&output, cmd)
+	return output, err
+}
+
+func (db *packageDatabase) ListDisease() ([]*dto.Disease, error) {
+	output := make([]*dto.Disease, 0, 16)
+	const cmd = `SELECT id, name FROM mkp_disease WHERE is_deleted = 0`
+	err := db.connection.Select(&output, cmd)
+	return output, err
 }
 
 func (db *packageDatabase) FindPkgItemNameByPkgId(pkgId int64) ([]*dto.PkgItemName, error) {

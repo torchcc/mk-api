@@ -53,7 +53,7 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	}
 
 	// package_register
-	pkgRegisterRouteGroup := router.Group("/pkg")
+	pkgRegisterRouteGroup := router.Group("")
 	pkgRegisterRouteGroup.Use(
 		middleware.TokenRequired(),
 	)
