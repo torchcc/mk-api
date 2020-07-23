@@ -7,6 +7,8 @@ type GetCartOutputElem struct {
 	AvatarUrl string `json:"avatar_url" db:"avatar_url"`
 	// 套餐id
 	PackageId int64 `json:"pkg_id" db:"pkg_id"`
+	// 套餐目标人群 0-均可 1-男士 2-女未婚 3-女已婚
+	Target int8 `json:"target" db:"target"`
 	// 套餐名字
 	PackageName string `json:"name" db:"pkg_name"`
 	// 医院id

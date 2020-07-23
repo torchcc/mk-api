@@ -210,6 +210,9 @@ definitions:
       pkg_price:
         description: 套餐单价
         type: number
+      target:
+        description: 套餐目标人群 0-均可 1-男士 2-女未婚 3-女已婚
+        type: integer
       update_time:
         description: 更新时间
         type: integer
@@ -332,12 +335,6 @@ definitions:
     properties:
       avatar_url:
         description: 套餐头像
-        type: string
-      category_id:
-        description: 套餐类别
-        type: integer
-      category_name:
-        description: 类别名称
         type: string
       hospital_id:
         type: integer
@@ -1093,7 +1090,7 @@ paths:
       summary: 查询订单支付状态
       tags:
       - pay
-  /pkg/:
+  /pkg:
     get:
       consumes:
       - application/json
@@ -1116,7 +1113,7 @@ paths:
         in: query
         name: level
         type: string
-      - description: 套餐类别id
+      - description: 套餐类别id, 见字典项接口
         in: query
         name: category_id
         type: integer
@@ -1132,9 +1129,9 @@ paths:
         in: query
         name: target
         type: integer
-      - description: 高发疾病 0-不限 1-食物不耐受检测，2-骨关节疾病体检 3-健康防癌体检 4-幽门螺旋杆菌检测 5-甲状腺检测 6-糖尿病检测
+      - description: 高发疾病, 见字典项接口
         in: query
-        name: disease
+        name: disease_id
         type: integer
       - description: 优先排序 0-默认排序，1-低价优先 2 高价优先
         in: query

@@ -736,7 +736,7 @@ var doc = `{
                 }
             }
         },
-        "/pkg/": {
+        "/pkg": {
             "get": {
                 "description": "获取套餐列表",
                 "consumes": [
@@ -777,7 +777,7 @@ var doc = `{
                     },
                     {
                         "type": "integer",
-                        "description": "套餐类别id",
+                        "description": "套餐类别id, 见字典项接口",
                         "name": "category_id",
                         "in": "query"
                     },
@@ -801,8 +801,8 @@ var doc = `{
                     },
                     {
                         "type": "integer",
-                        "description": "高发疾病 0-不限 1-食物不耐受检测，2-骨关节疾病体检 3-健康防癌体检 4-幽门螺旋杆菌检测 5-甲状腺检测 6-糖尿病检测",
-                        "name": "disease",
+                        "description": "高发疾病, 见字典项接口",
+                        "name": "disease_id",
                         "in": "query"
                     },
                     {
@@ -1999,6 +1999,10 @@ var doc = `{
                     "description": "套餐单价",
                     "type": "number"
                 },
+                "target": {
+                    "description": "套餐目标人群 0-均可 1-男士 2-女未婚 3-女已婚",
+                    "type": "integer"
+                },
                 "update_time": {
                     "description": "更新时间",
                     "type": "integer"
@@ -2171,14 +2175,6 @@ var doc = `{
             "properties": {
                 "avatar_url": {
                     "description": "套餐头像",
-                    "type": "string"
-                },
-                "category_id": {
-                    "description": "套餐类别",
-                    "type": "integer"
-                },
-                "category_name": {
-                    "description": "类别名称",
                     "type": "string"
                 },
                 "hospital_id": {
