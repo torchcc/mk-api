@@ -292,6 +292,7 @@ func (db *orderDatabase) SaveOrder(order *dto.Order, items []*dto.OrderItem) (id
 
 	defer func() { // shi
 		if p := recover(); p != nil {
+			util.Log.Panicf("save order 的时候panic了， %#v", p)
 			tx.Rollback()
 			panic(p) // re-throw panic after Rollback
 		} else if err != nil {
