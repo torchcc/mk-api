@@ -296,7 +296,7 @@ func (db *orderDatabase) SaveOrder(order *dto.Order, items []*dto.OrderItem) (id
 			tx.Rollback()
 			panic(p) // re-throw panic after Rollback
 		} else if err != nil {
-			util.Log.Info("rollback")
+			util.Log.Errorf("failed to save order rolling back, err is %s", err.Error())
 			tx.Rollback() // err is non-nil; don't change it
 		} else {
 			err = tx.Commit() // err is nil; if Commit returns error update err
