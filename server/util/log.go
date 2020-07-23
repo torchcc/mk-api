@@ -33,7 +33,7 @@ func init() {
 	if BRANCH := os.Getenv("BRANCH"); BRANCH == "test" || BRANCH == "local" {
 		xlog.Level = logrus.DebugLevel
 	} else {
-		xlog.Level = logrus.InfoLevel
+		xlog.Level = logrus.DebugLevel
 	}
 
 	// xlog.Formatter = &logrus.JSONFormatter{}

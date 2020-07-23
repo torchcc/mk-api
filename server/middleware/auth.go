@@ -7,6 +7,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"mk-api/library/ecode"
 	. "mk-api/server/dao"
+	"mk-api/server/util"
 )
 
 // TokenAuthMiddleware 检查request header 的token， 必须是注册(绑定手机)并且登录的用户 request才能往下进行
@@ -38,6 +39,7 @@ func MobileBoundRequired() gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
+		util.Log.Debugf("成功从redis中获取用户的信息, mobile: %s, user_id: %d, open_id: %s", mobile, userId, openId)
 		ctx.Set("userId", userId)
 		ctx.Set("mobile", mobile)
 		ctx.Set("openId", openId)

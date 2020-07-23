@@ -148,6 +148,7 @@ func (c *orderController) PostOrder(ctx *gin.Context) {
 
 	cfg, err := c.service.CreateOrder(ctx, &input)
 	if err != nil {
+		util.Log.Errorf("创建订单失败, err: [%v]", err)
 		switch err.(type) {
 		case ecode.Codes:
 			if ecode.Equal(err.(ecode.Codes), ecode.RequestErr) {
