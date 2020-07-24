@@ -17,10 +17,27 @@ type OrderModel interface {
 	FindOrderDetailById(id int64, pkgModel PackageModel) (*dto.RetrieveOrderOutput, error)
 	DeleteOrderByIdNUserId(userId int64, id int64) error
 	FindOrderPayStatusById(orderId int64) (*dto.OrderPayStatus, error)
+	UpdateOrderItem(input *dto.PutOrderItemInput) error
 }
 
 type orderDatabase struct {
 	connection *sqlx.DB
+}
+
+func (db *orderDatabase) UpdateOrderItem(input *dto.PutOrderItemInput) error {
+	const cmd = `
+				UPDATE mko_order_item SET 
+					examinee_name = :examinee_name,
+					examinee_mobile = :examinee_mobile,
+					id_card_no = :id_card_no,
+					gender = :gender,
+					is_married = :is_married,
+					examine_date = :examine_date,
+					update_time = UNIX_TIMESTAMP(NOW())
+				WHERE id = :id AND is_deleted = 0
+`
+	_, err := db.connection.NamedExec(cmd, input)
+	return err
 }
 
 func (db *orderDatabase) FindOrderPayStatusById(orderId int64) (*dto.OrderPayStatus, error) {

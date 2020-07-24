@@ -156,3 +156,12 @@ type OItemWithPkgBrief struct {
 	CreateTime       int64   `json:"create_time" db:"create_time"`
 	Examinee
 }
+
+type PutOrderItemInput struct {
+	// 要修改的order_item 的ID
+	Id int64 `json:"order_item_id" db:"id"  binding:"required"`
+	// 该order_item 所属的套餐id
+	PackageId int64 `json:"pkg_id" db:"pkg_id"  binding:"required"`
+	// 体检人信息
+	Examinee
+}

@@ -33,10 +33,12 @@ func OrderRegister(router *gin.RouterGroup) {
 		orderService    service.OrderService = service.NewOrderService(orderModel, packageModel, cartModel, payModel, wechatPay)
 		orderController OrderController      = NewOrderController(orderService)
 	)
-	router.POST("/", orderController.PostOrder)
-	router.GET("/", orderController.ListOrder)
-	router.GET("/:id", orderController.GetOrder)
-	router.DELETE("/:id", orderController.DeleteOrder)
+	router.POST("/orders/", orderController.PostOrder)
+	router.GET("/orders/", orderController.ListOrder)
+	router.GET("/orders/:id", orderController.GetOrder)
+	router.DELETE("/orders/:id", orderController.DeleteOrder)
+
+	router.PUT("/order_items/", orderController.PutOrderItem)
 }
 
 type OrderController interface {
@@ -44,10 +46,43 @@ type OrderController interface {
 	ListOrder(ctx *gin.Context)
 	GetOrder(ctx *gin.Context)
 	DeleteOrder(ctx *gin.Context)
+
+	PutOrderItem(ctx *gin.Context)
 }
 
 type orderController struct {
 	service service.OrderService
+}
+
+// UpdateOrderItem godoc
+// @Summary 更新orderItem的体检人信息
+// @Description 更新orderItem的体检人信息
+// @Tags orders
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Param body body dto.PutOrderItemInput true "修改的orderItem的体检人信息"
+// @Success 200 {object} middleware.Response{data=dto.ResourceID}
+// @Router /order_items/ [put]
+func (c *orderController) PutOrderItem(ctx *gin.Context) {
+	var input dto.PutOrderItemInput
+	err := util.ParseRequest(ctx, &input)
+	if err != nil {
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+	err = c.service.ModifyOrderItem(ctx, &input)
+	if err != nil {
+		if _, ok := err.(ecode.Codes); ok {
+			middleware.ResponseError(ctx, ecode.RequestErr, ctx.Errors.Last())
+			util.Log.Errorf("failed to update order item, input is [%v], err is [%c]", input, ctx.Errors.Last())
+			return
+		}
+		util.Log.Errorf("failed to update order item, input is [%v], err is [%c]", input, err)
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("internal server error"))
+		return
+	}
+	middleware.ResponseSuccess(ctx, dto.ResourceID{Id: input.Id})
 }
 
 // DeleteOrder godoc

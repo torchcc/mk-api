@@ -72,7 +72,7 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	}
 
 	// order_register
-	orderRegisterRouteGroup := router.Group("/orders")
+	orderRegisterRouteGroup := router.Group("")
 	orderRegisterRouteGroup.Use(
 		middleware.MobileBoundRequired(),
 	)

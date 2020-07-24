@@ -27,6 +27,7 @@ type OrderService interface {
 	ListOrder(ctx *gin.Context, input *dto.ListOrderInput) (*dto.PaginateListOutput, error)
 	RetrieveOrder(ctx *gin.Context, id int64) (*dto.RetrieveOrderOutput, error)
 	RemoveOrder(ctx *gin.Context, id int64) error
+	ModifyOrderItem(ctx *gin.Context, input *dto.PutOrderItemInput) error
 }
 
 type orderService struct {
@@ -35,6 +36,46 @@ type orderService struct {
 	packageModel model.PackageModel
 	payModel     model.PayModel
 	wechatPay    *pay.Pay
+}
+
+func (service *orderService) ModifyOrderItem(ctx *gin.Context, input *dto.PutOrderItemInput) error {
+	var err error
+	// 此处只取target， 因为价格不可变
+	priceNTargetInfo, err := service.packageModel.FindPackagePriceNTargetById(input.PackageId)
+	if err != nil {
+		util.Log.Errorf("failed to get pkg target info, pkg_id is: [%d], err: [%s]", input.PackageId, err.Error())
+		return err
+	}
+
+	if priceNTargetInfo.Target != AnyGender {
+		_, isMale, _, _ := id_card.GetCitizenNoInfo([]byte(input.IdCardNo))
+		if (priceNTargetInfo.Target == MALE) != isMale {
+			var errStr string
+			switch priceNTargetInfo.Target {
+			case MALE:
+				errStr = `此为'男性'套餐，女性人员是无法体检的，请悉知`
+			case UnMarriedFemale, MarriedFemale:
+				errStr = `此为'女性'套餐，男性人员是无法体检的，请悉知`
+			}
+			_ = ctx.Error(errors.New(errStr))
+			return ecode.RequestErr
+		}
+	}
+	// 鉴定体检日期
+	tomorrow := xtime.TomorrowStartAt()
+	if input.ExamineDate < tomorrow {
+		_ = ctx.Error(errors.New("需至少提前一天预约体检"))
+		return ecode.RequestErr
+	} else if input.ExamineDate > math.MaxInt32 {
+		_ = ctx.Error(errors.New("体检日期必须是以秒为单位的时间戳"))
+		return ecode.RequestErr
+	}
+
+	err = service.orderModel.UpdateOrderItem(input)
+	if err != nil {
+		util.Log.Errorf("failed to update order item, input is [%#v], err: [%s]", input, err.Error())
+	}
+	return err
 }
 
 func (service *orderService) RemoveOrder(ctx *gin.Context, id int64) error {

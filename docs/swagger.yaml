@@ -531,6 +531,41 @@ definitions:
       timestamp:
         type: string
     type: object
+  dto.PutOrderItemInput:
+    properties:
+      examine_date:
+        description: 体检日期 时间戳， 精确到 日
+        type: integer
+      examinee_mobile:
+        description: 体检人电话
+        type: string
+      examinee_name:
+        description: 体检人姓名
+        type: string
+      gender:
+        description: 性别 1-男 2-女
+        type: integer
+      id_card_no:
+        description: 身份证号码
+        type: string
+      is_married:
+        description: 婚否 1-是 2-否
+        type: integer
+      order_item_id:
+        description: 要修改的order_item 的ID
+        type: integer
+      pkg_id:
+        description: 该order_item 所属的套餐id
+        type: integer
+    required:
+    - examine_date
+    - examinee_mobile
+    - examinee_name
+    - gender
+    - id_card_no
+    - order_item_id
+    - pkg_id
+    type: object
   dto.PutUserProfileInput:
     properties:
       gender:
@@ -896,6 +931,38 @@ paths:
       summary: 获取短信验证码
       tags:
       - login
+  /order_items/:
+    put:
+      consumes:
+      - application/json
+      description: 更新orderItem的体检人信息
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 修改的orderItem的体检人信息
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PutOrderItemInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ResourceID'
+              type: object
+      summary: 更新orderItem的体检人信息
+      tags:
+      - orders
   /orders/:
     get:
       consumes:

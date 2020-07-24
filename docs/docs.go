@@ -404,6 +404,59 @@ var doc = `{
                 }
             }
         },
+        "/order_items/": {
+            "put": {
+                "description": "更新orderItem的体检人信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "更新orderItem的体检人信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "修改的orderItem的体检人信息",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PutOrderItemInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ResourceID"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/orders/": {
             "get": {
                 "description": "获取订单列表",
@@ -2448,6 +2501,52 @@ var doc = `{
                 },
                 "timestamp": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.PutOrderItemInput": {
+            "type": "object",
+            "required": [
+                "examine_date",
+                "examinee_mobile",
+                "examinee_name",
+                "gender",
+                "id_card_no",
+                "order_item_id",
+                "pkg_id"
+            ],
+            "properties": {
+                "examine_date": {
+                    "description": "体检日期 时间戳， 精确到 日",
+                    "type": "integer"
+                },
+                "examinee_mobile": {
+                    "description": "体检人电话",
+                    "type": "string"
+                },
+                "examinee_name": {
+                    "description": "体检人姓名",
+                    "type": "string"
+                },
+                "gender": {
+                    "description": "性别 1-男 2-女",
+                    "type": "integer"
+                },
+                "id_card_no": {
+                    "description": "身份证号码",
+                    "type": "string"
+                },
+                "is_married": {
+                    "description": "婚否 1-是 2-否",
+                    "type": "integer"
+                },
+                "order_item_id": {
+                    "description": "要修改的order_item 的ID",
+                    "type": "integer"
+                },
+                "pkg_id": {
+                    "description": "该order_item 所属的套餐id",
+                    "type": "integer"
                 }
             }
         },
