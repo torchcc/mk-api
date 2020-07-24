@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"math"
 	"strconv"
 	"time"
 
@@ -118,6 +120,9 @@ func (service *orderService) CreateOrder(ctx *gin.Context, input *dto.PostOrderI
 			if cItem.Examinees[i].ExamineDate < tomorrow {
 				_ = ctx.Error(errors.New("需至少提前一天预约体检"))
 				return nil, ecode.RequestErr
+			} else if cItem.Examinees[i].ExamineDate > math.MaxInt32 {
+				_ = ctx.Error(errors.New("体检日期必须是以秒为单位的时间戳"))
+				return nil, ecode.RequestErr
 			}
 
 			orderItem := &dto.OrderItem{
@@ -151,8 +156,9 @@ func (service *orderService) CreateOrder(ctx *gin.Context, input *dto.PostOrderI
 	// 雪花算法产生 outTradeNo
 	outTradeNo, err := token.GenerateSnowflake()
 	if err != nil {
-		util.Log.WithFields(logrus.Fields{"userId": userId}).Errorf("雪花算法出错， 请求体信息: [%v]", input)
-		return nil, ecode.ServerErr
+		errStr := fmt.Sprintf("failed to generate snowflake, input: [%v], err: [%s]", input, err.Error())
+		util.Log.WithFields(logrus.Fields{"userId": userId}).Errorf(errStr)
+		return nil, errors.New(errStr)
 	}
 
 	order := dto.Order{
@@ -168,18 +174,21 @@ func (service *orderService) CreateOrder(ctx *gin.Context, input *dto.PostOrderI
 
 	order.Id, err = service.orderModel.SaveOrder(&order, orderItems)
 	if err != nil {
-		util.Log.WithFields(logrus.Fields{"userId": userId}).Errorf("创建订单出错, 请求参数: [%v]", input)
-		return nil, ecode.ServerErr
+		errStr := fmt.Sprintf("failed to create order, input: [%v], err: [%s]", input, err.Error())
+		util.Log.WithFields(logrus.Fields{"userId": userId}).Errorf(errStr)
+		return nil, errors.New(errStr)
 	}
 
 	cfg, err := service.makeWechatOrderNPrepay(ctx, &order)
 	if err != nil {
-		return nil, ecode.ServerErr
+		errStr := fmt.Sprintf("failed to make wechat order and prepay, input: [%v], err: [%s]", input, err.Error())
+		util.Log.WithFields(logrus.Fields{"userId": userId}).Errorf(errStr)
+		return nil, errors.New(errStr)
 	}
 
 	// 最后生成预付单后才删除购物车
 	if err = service.cartModel.RemoveCartEntries(cartIds); err != nil {
-		util.Log.Errorf("更新购物车条目出错, err: [%s]", err)
+		util.Log.Errorf("更新购物车条目出错, err: [%s]", err.Error())
 	}
 	return cfg, nil
 }

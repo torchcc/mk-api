@@ -148,7 +148,7 @@ func (c *orderController) PostOrder(ctx *gin.Context) {
 
 	cfg, err := c.service.CreateOrder(ctx, &input)
 	if err != nil {
-		util.Log.Errorf("创建订单失败, err: [%v]", err)
+		util.Log.Errorf("controller failed to create order, err: [%s]", err.Error())
 		switch err.(type) {
 		case ecode.Codes:
 			if ecode.Equal(err.(ecode.Codes), ecode.RequestErr) {
@@ -156,7 +156,7 @@ func (c *orderController) PostOrder(ctx *gin.Context) {
 				return
 			}
 		}
-		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("服务器错误"))
+		middleware.ResponseError(ctx, ecode.ServerErr, err)
 		return
 	}
 	middleware.ResponseSuccess(ctx, cfg)
