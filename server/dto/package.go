@@ -21,6 +21,8 @@ type ListPackageInput struct {
 	DiseaseId int8 `json:"disease_id,default=0" form:"disease_id,default=0" db:"disease_id"`
 	// 优先排序 0-默认排序，1-低价优先 2 高价优先
 	OrderBy int8 `json:"order_by" form:"order_by" binding:"oneof=0 1 2"`
+	// 按套餐名字搜索
+	Name string `json:"name" form:"name" db:"name"`
 }
 
 type ListPackageOutputEle struct {
@@ -37,6 +39,10 @@ type ListPackageOutputEle struct {
 	Level int8 `json:"level" binding:"oneof=0 1 2 3 4" db:"level"`
 	// 已经预约的单数, 这个暂时需要前端用hidden隐藏起来
 	Sold int64 `json:"sold"`
+	// 门市价, 原价, 单位分
+	PriceOriginal float64 `json:"price_original" db:"price_original"`
+	// 真实价格， 现价格， 单位分
+	PriceReal float64 `json:"price_real" db:"price_real"`
 }
 
 type GetPackageOutPut struct {

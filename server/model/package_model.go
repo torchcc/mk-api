@@ -120,6 +120,9 @@ func (db *packageDatabase) ListPackage(input *dto.ListPackageInput) ([]dto.ListP
 	if input.Level != 0 {
 		whereStmt += " AND mh.level = :level "
 	}
+	if input.Name != "" {
+		whereStmt += " AND mp.name LIKE '%" + input.Name + "%' "
+	}
 	if input.CategoryId != 0 {
 		whereStmt += " AND EXISTS(SELECT id FROM mkp_package_category mpc WHERE pkg_id=mp.id AND mpc.category_id=:category_id AND mpc.is_deleted = 0) "
 	}
@@ -148,6 +151,8 @@ func (db *packageDatabase) ListPackage(input *dto.ListPackageInput) ([]dto.ListP
 				mp.name,
 				mh.name AS hospital_name,
 				mp.avatar_url,
+				mp.price_original,
+				mp.price_real,
 				mh.level
 			FROM 
 				mkp_package AS mp
