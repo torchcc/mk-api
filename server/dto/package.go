@@ -12,9 +12,9 @@ type ListPackageInput struct {
 	// 套餐分类 id, 0-不限
 	CategoryId int64 `json:"category_id" form:"category_id" binding:"min=0" db:"category_id"`
 	// 价格区间左值,0 表示不限 单位分
-	MinPrice int64 `json:"min_price" form:"min_price" binding:"min=0,max=5000" db:"min_price"`
+	MinPrice int64 `json:"min_price" form:"min_price" binding:"min=0,max=3000000" db:"min_price"`
 	// 价格区间右值 0 表示不限 单位分
-	MaxPrice int64 `json:"max_price" form:"max_price" binding:"min=0,max=10000000" db:"max_price"`
+	MaxPrice int64 `json:"max_price" form:"max_price" binding:"min=0,max=100000000" db:"max_price"`
 	// 适用人群 0-不限 1-男士 2-女未婚 3-女已婚
 	Target int8 `json:"target" form:"target" binding:"oneof=0 1 2 3" db:"target"`
 	// 检测目标高发疾病id
