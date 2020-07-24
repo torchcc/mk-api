@@ -5,6 +5,59 @@
         "license": {}
     },
     "paths": {
+        "/cancel_order/": {
+            "put": {
+                "description": "尚未支付的状态下取消订单",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "尚未支付的状态下取消订单",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "取消订单的请求体",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CancelOrderInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ResourceID"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/cart/": {
             "get": {
                 "description": "获取购物车里面的pkg列表",
@@ -1816,6 +1869,26 @@
                 "pkg_price": {
                     "description": "套餐单价",
                     "type": "number"
+                }
+            }
+        },
+        "dto.CancelOrderInput": {
+            "type": "object",
+            "required": [
+                "cancel_reason_id",
+                "order_id"
+            ],
+            "properties": {
+                "cancel_reason_id": {
+                    "description": "取消原因id, 1-支付时出故障，支付不了， 2-付款时 余额限制了 3-买多了/不想买了 4-信息写错，重新下单 5-朋友/网上评价不好 6-计划有变，时间按排不上，7-其他",
+                    "type": "integer"
+                },
+                "order_id": {
+                    "type": "integer"
+                },
+                "remark": {
+                    "description": "取消的问题描述",
+                    "type": "string"
                 }
             }
         },

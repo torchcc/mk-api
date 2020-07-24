@@ -57,6 +57,20 @@ definitions:
           $ref: '#/definitions/dto.PkgItemName'
         type: array
     type: object
+  dto.CancelOrderInput:
+    properties:
+      cancel_reason_id:
+        description: 取消原因id, 1-支付时出故障，支付不了， 2-付款时 余额限制了 3-买多了/不想买了 4-信息写错，重新下单 5-朋友/网上评价不好 6-计划有变，时间按排不上，7-其他
+        type: integer
+      order_id:
+        type: integer
+      remark:
+        description: 取消的问题描述
+        type: string
+    required:
+    - cancel_reason_id
+    - order_id
+    type: object
   dto.CartItem:
     properties:
       cart_id:
@@ -701,6 +715,38 @@ info:
   contact: {}
   license: {}
 paths:
+  /cancel_order/:
+    put:
+      consumes:
+      - application/json
+      description: 尚未支付的状态下取消订单
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 取消订单的请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CancelOrderInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ResourceID'
+              type: object
+      summary: 尚未支付的状态下取消订单
+      tags:
+      - orders
   /cart/:
     delete:
       consumes:

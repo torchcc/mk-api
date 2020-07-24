@@ -18,10 +18,30 @@ type OrderModel interface {
 	DeleteOrderByIdNUserId(userId int64, id int64) error
 	FindOrderPayStatusById(orderId int64) (*dto.OrderPayStatus, error)
 	UpdateOrderItem(input *dto.PutOrderItemInput) error
+	CancelOrder(input *dto.CancelOrderInput) error
 }
 
 type orderDatabase struct {
 	connection *sqlx.DB
+}
+
+func (db *orderDatabase) CancelOrder(input *dto.CancelOrderInput) error {
+	cmd := `
+			UPDATE mko_order SET
+			status = 4,
+			cancel_reason_id = :cancel_reason_id,
+			%s
+			update_time = UNIX_TIMESTAMP(NOW())
+			WHERE 
+			id = :id AND status = 0 AND is_deleted = 0
+`
+	remarkStmt := ""
+	if input.Remark != "" {
+		remarkStmt = "remark = :remark, "
+	}
+	cmd = fmt.Sprintf(cmd, remarkStmt)
+	_, err := db.connection.NamedExec(cmd, input)
+	return err
 }
 
 func (db *orderDatabase) UpdateOrderItem(input *dto.PutOrderItemInput) error {

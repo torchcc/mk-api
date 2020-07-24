@@ -28,6 +28,7 @@ type OrderService interface {
 	RetrieveOrder(ctx *gin.Context, id int64) (*dto.RetrieveOrderOutput, error)
 	RemoveOrder(ctx *gin.Context, id int64) error
 	ModifyOrderItem(ctx *gin.Context, input *dto.PutOrderItemInput) error
+	CancelOrder(ctx *gin.Context, input *dto.CancelOrderInput) error
 }
 
 type orderService struct {
@@ -36,6 +37,10 @@ type orderService struct {
 	packageModel model.PackageModel
 	payModel     model.PayModel
 	wechatPay    *pay.Pay
+}
+
+func (service *orderService) CancelOrder(ctx *gin.Context, input *dto.CancelOrderInput) error {
+	return service.orderModel.CancelOrder(input)
 }
 
 func (service *orderService) ModifyOrderItem(ctx *gin.Context, input *dto.PutOrderItemInput) error {

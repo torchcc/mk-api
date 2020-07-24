@@ -161,7 +161,15 @@ type PutOrderItemInput struct {
 	// 要修改的order_item 的ID
 	Id int64 `json:"order_item_id" db:"id"  binding:"required"`
 	// 该order_item 所属的套餐id
-	PackageId int64 `json:"pkg_id" db:"pkg_id"  binding:"required"`
+	PackageId int64 `json:"pkg_id" db:"pkg_id" binding:"required"`
 	// 体检人信息
 	Examinee
+}
+
+type CancelOrderInput struct {
+	Id int64 `json:"order_id" db:"id"  binding:"required"`
+	// 取消原因id, 1-支付时出故障，支付不了， 2-付款时 余额限制了 3-买多了/不想买了 4-信息写错，重新下单 5-朋友/网上评价不好 6-计划有变，时间按排不上，7-其他
+	CancelReasonId int64 `json:"cancel_reason_id" binding:"required,min=1,max=7" db:"cancel_reason_id"`
+	// 取消的问题描述
+	Remark string `json:"remark" db:"remark"`
 }

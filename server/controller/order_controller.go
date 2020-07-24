@@ -37,6 +37,7 @@ func OrderRegister(router *gin.RouterGroup) {
 	router.GET("/orders/", orderController.ListOrder)
 	router.GET("/orders/:id", orderController.GetOrder)
 	router.DELETE("/orders/:id", orderController.DeleteOrder)
+	router.PUT("/cancel_order/", orderController.CancelOrder)
 
 	router.PUT("/order_items/", orderController.PutOrderItem)
 }
@@ -46,12 +47,40 @@ type OrderController interface {
 	ListOrder(ctx *gin.Context)
 	GetOrder(ctx *gin.Context)
 	DeleteOrder(ctx *gin.Context)
+	CancelOrder(ctx *gin.Context)
 
 	PutOrderItem(ctx *gin.Context)
 }
 
 type orderController struct {
 	service service.OrderService
+}
+
+// CancelOrder godoc
+// @Summary 尚未支付的状态下取消订单
+// @Description 尚未支付的状态下取消订单
+// @Tags orders
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Param body body dto.CancelOrderInput true "取消订单的请求体"
+// @Success 200 {object} middleware.Response{data=dto.ResourceID}
+// @Router /cancel_order/ [put]
+func (c *orderController) CancelOrder(ctx *gin.Context) {
+	var input dto.CancelOrderInput
+	err := util.ParseRequest(ctx, &input)
+	if err != nil {
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+	err = c.service.CancelOrder(ctx, &input)
+	if err != nil {
+		util.Log.Errorf("controller failed to cancel order, input: [%v], err: [%s]", input, err.Error())
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("internal server error"))
+		return
+	}
+	middleware.ResponseSuccess(ctx, dto.ResourceID{Id: input.Id})
+
 }
 
 // UpdateOrderItem godoc
