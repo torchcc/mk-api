@@ -2176,6 +2176,14 @@
                     "description": "套餐名字",
                     "type": "string"
                 },
+                "price_original": {
+                    "description": "门市价, 原价, 单位分",
+                    "type": "number"
+                },
+                "price_real": {
+                    "description": "真实价格， 现价格， 单位分",
+                    "type": "number"
+                },
                 "sold": {
                     "description": "已经预约的单数, 这个暂时需要前端用hidden隐藏起来",
                     "type": "integer"

@@ -120,6 +120,7 @@ func (db *packageDatabase) ListPackage(input *dto.ListPackageInput) ([]dto.ListP
 	if input.Level != 0 {
 		whereStmt += " AND mh.level = :level "
 	}
+	// TODO name 防止注入
 	if input.Name != "" {
 		whereStmt += " AND mp.name LIKE '%" + input.Name + "%' "
 	}
