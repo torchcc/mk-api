@@ -130,6 +130,7 @@ definitions:
   dto.DeleteCartEntriesInput:
     properties:
       cart_ids:
+        description: 要删除的购物车cart_id列表
         items:
           type: integer
         type: array
@@ -758,7 +759,7 @@ paths:
         name: token
         required: true
         type: string
-      - description: 加购的套餐id
+      - description: 要删除的cart_id列表
         in: body
         name: cart_ids
         required: true

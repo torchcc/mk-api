@@ -29,5 +29,6 @@ type PostCartInput struct {
 }
 
 type DeleteCartEntriesInput struct {
+	// 要删除的购物车cart_id列表
 	CartIds []int64 `json:"cart_ids" db:"cart_ids"`
 }

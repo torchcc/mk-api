@@ -196,7 +196,7 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "description": "加购的套餐id",
+                        "description": "要删除的cart_id列表",
                         "name": "cart_ids",
                         "in": "body",
                         "required": true,
@@ -1996,6 +1996,7 @@ var doc = `{
             "type": "object",
             "properties": {
                 "cart_ids": {
+                    "description": "要删除的购物车cart_id列表",
                     "type": "array",
                     "items": {
                         "type": "integer"

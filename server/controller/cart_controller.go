@@ -41,7 +41,7 @@ type cartController struct {
 // @Accept json
 // @Produce json
 // @Param  token header string true "用户token"
-// @Param  cart_ids body dto.DeleteCartEntriesInput true "加购的套餐id"
+// @Param  cart_ids body dto.DeleteCartEntriesInput true "要删除的cart_id列表"
 // @Success 200 {object} middleware.Response{data=string}
 // @Router /cart/ [delete]
 func (c *cartController) DeleteCartEntriesByIds(ctx *gin.Context) {
