@@ -321,6 +321,56 @@ var doc = `{
                 }
             }
         },
+        "/location": {
+            "post": {
+                "description": "上报用户经纬度",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "上报用户经纬度",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "上报用户经纬度",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PostLocInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/login_register/": {
             "post": {
                 "description": "登录或者注册",
@@ -2533,6 +2583,17 @@ var doc = `{
                 "relation": {
                     "description": "体检人与本人的关系 0 本人， 1 父亲， 2 兄弟姐妹， 3 儿子， 4 女儿， 5 母亲， 6 夫妻， 7 其他",
                     "type": "integer"
+                }
+            }
+        },
+        "dto.PostLocInput": {
+            "type": "object",
+            "properties": {
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
                 }
             }
         },

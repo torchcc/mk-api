@@ -25,7 +25,11 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	router.Use(middlewares...)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
+	// location Register
+	locRegisterRouteGroup := router.Group("/location")
+	locRegisterRouteGroup.Use(
+		middleware.TokenRequired(),
+	)
 	// users
 	userRouteGroup := router.Group("/users")
 	userRouteGroup.Use(
@@ -33,7 +37,7 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	)
 
 	{
-		controller.UserRegister(userRouteGroup)
+		controller.UserRegister(userRouteGroup, locRegisterRouteGroup)
 	}
 
 	// wechat

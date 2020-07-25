@@ -16,7 +16,7 @@ import (
 )
 
 // users 路由注册
-func UserRegister(router *gin.RouterGroup) {
+func UserRegister(router, locRouter *gin.RouterGroup) {
 	var (
 		userModel      model.UserModel     = model.NewUserModel()
 		addrModel      model.UserAddrModel = model.NewUserAddrModel()
@@ -40,6 +40,8 @@ func UserRegister(router *gin.RouterGroup) {
 	router.POST("/examinees", userController.PostExaminee)
 	router.DELETE("/examinees/:id", userController.DelExaminee)
 	router.PUT("/examinees/:id", userController.PutExaminee)
+
+	locRouter.POST("/", userController.PostLocation)
 }
 
 type UserController interface {
@@ -58,10 +60,37 @@ type UserController interface {
 	PostExaminee(ctx *gin.Context)
 	DelExaminee(ctx *gin.Context)
 	PutExaminee(ctx *gin.Context)
+
+	PostLocation(ctx *gin.Context)
 }
 
 type userController struct {
 	service service.UserService
+}
+
+// PostLocation godoc
+// @Summary 上报用户经纬度
+// @Description 上报用户经纬度
+// @Tags users
+// @Produce  application/json
+// @Param token header string true "用户token"
+// @Param body body dto.PostLocInput true "上报用户经纬度"
+// @Success 200 {object} middleware.Response{data=string} "success"
+// @Router /location [post]
+func (c *userController) PostLocation(ctx *gin.Context) {
+	userId := ctx.GetInt64("userId")
+	var input dto.PostLocInput
+	err := ctx.ShouldBindJSON(&input)
+	if err != nil {
+		util.Log.Warningf("location param error, [%s]", err)
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+	util.Log.WithFields(logrus.Fields{"longitude": input.Longitude,
+		"latitude": input.Latitude,
+		"user_id":  userId,
+	}).Infof("location gotten")
+	middleware.ResponseSuccess(ctx, "ok")
 }
 
 // PutExaminee godoc

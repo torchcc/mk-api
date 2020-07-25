@@ -518,6 +518,13 @@ definitions:
     - id_card_no
     - is_married
     type: object
+  dto.PostLocInput:
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+    type: object
   dto.PostOrderInput:
     properties:
       cart_items:
@@ -897,6 +904,36 @@ paths:
       summary: 获取专项疾病列表
       tags:
       - packages
+  /location:
+    post:
+      description: 上报用户经纬度
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 上报用户经纬度
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PostLocInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: 上报用户经纬度
+      tags:
+      - users
   /login_register/:
     post:
       consumes:

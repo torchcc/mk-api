@@ -50,3 +50,8 @@ type UploadUserAvatarOutput struct {
 type GetUserMobileOutput struct {
 	Mobile string `json:"mobile"`
 }
+
+type PostLocInput struct {
+	Longitude float64 `json:"longitude" db:"longitude"`
+	Latitude  float64 `json:"latitude" db:"latitude"`
+}
