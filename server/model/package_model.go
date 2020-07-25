@@ -94,6 +94,7 @@ func (db *packageDatabase) FindPackageBasicInfo(id int64) (*dto.PackageBasicInfo
 				mp.price_original,
 				mp.price_real,
 				mp.brief,
+       			mp.sold,
 				mp.comment,
 				mp.tips
 			FROM 
@@ -154,6 +155,7 @@ func (db *packageDatabase) ListPackage(input *dto.ListPackageInput) ([]dto.ListP
 				mp.avatar_url,
 				mp.price_original,
 				mp.price_real,
+				mp.sold,
 				mh.level
 			FROM 
 				mkp_package AS mp

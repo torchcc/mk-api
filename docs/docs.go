@@ -2439,6 +2439,10 @@ var doc = `{
                     "description": "实际价格",
                     "type": "number"
                 },
+                "sold": {
+                    "description": "已经预约的数量",
+                    "type": "integer"
+                },
                 "target": {
                     "description": "套餐目标人群 0-不限 1-男 2-未婚女 3-已婚女",
                     "type": "integer"

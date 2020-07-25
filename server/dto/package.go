@@ -38,7 +38,7 @@ type ListPackageOutputEle struct {
 	// 医院等级， 0-不限 1-公立三甲 2-公立医院 3-民营医院 4-专业机构
 	Level int8 `json:"level" binding:"oneof=0 1 2 3 4" db:"level"`
 	// 已经预约的单数, 这个暂时需要前端用hidden隐藏起来
-	Sold int64 `json:"sold"`
+	Sold int64 `json:"sold" db:"sold"`
 	// 门市价, 原价, 单位分
 	PriceOriginal float64 `json:"price_original" db:"price_original"`
 	// 真实价格， 现价格， 单位分
@@ -69,6 +69,8 @@ type PackageBasicInfo struct {
 	PriceOriginal float64 `json:"price_original" db:"price_original"`
 	// 实际价格
 	PriceReal float64 `json:"price_real" db:"price_real"`
+	// 已经预约的数量
+	Sold int64 `json:"sold" db:"sold"`
 	// 套餐简介
 	Brief string `json:"brief" db:"brief"`
 	// 套餐详细介绍
