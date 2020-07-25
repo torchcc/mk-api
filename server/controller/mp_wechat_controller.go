@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/silenceper/wechat/v2/officialaccount"
+	"github.com/silenceper/wechat/v2/officialaccount/menu"
 	"mk-api/library/ecode"
 	"mk-api/server/conf"
 	"mk-api/server/dao"
@@ -33,6 +34,8 @@ func WeChatRegister(router *gin.RouterGroup) {
 	router.GET("/js_ticket", wechatController.JsApiTicket)
 	router.GET("/enter_url", wechatController.GetEnterUrl)
 	router.GET("/enter", wechatController.Enter)
+	router.POST("/menu", wechatController.CreateMenu)
+	router.GET("/menu", wechatController.ListMenu)
 }
 
 type WeChatController interface {
@@ -41,11 +44,46 @@ type WeChatController interface {
 	// Echo(ctx *gin.Context)
 	GetEnterUrl(ctx *gin.Context)
 	Enter(ctx *gin.Context)
+	CreateMenu(ctx *gin.Context)
+	ListMenu(ctx *gin.Context)
 }
 
 type wechatController struct {
 	affAcc  *officialaccount.OfficialAccount
 	service service.WechatService
+}
+
+func (c *wechatController) ListMenu(ctx *gin.Context) {
+	m := dao.AffAcc.GetMenu()
+	menus, err := m.GetMenu()
+	if err != nil {
+		util.Log.Errorf("failed to get menu, err: [%s]", err.Error())
+		middleware.ResponseError(ctx, ecode.ServerErr, err)
+		return
+	}
+	middleware.ResponseSuccess(ctx, menus)
+}
+
+func (c *wechatController) CreateMenu(ctx *gin.Context) {
+	m := dao.AffAcc.GetMenu()
+	buttons := []*menu.Button{&menu.Button{
+		Type:       "view",
+		Name:       "预约体检",
+		Key:        "signUp4Exam",
+		URL:        "https://www.mkhealth.club",
+		MediaID:    "",
+		AppID:      conf.C.WeChat.AppID,
+		PagePath:   "",
+		SubButtons: nil,
+	}}
+
+	err := m.SetMenu(buttons)
+	if err != nil {
+		util.Log.Errorf("failed to create menu, err: [%s]", err)
+		middleware.ResponseError(ctx, ecode.ServerErr, err)
+		return
+	}
+	middleware.ResponseSuccess(ctx, "ok")
 }
 
 // DockWechat godoc

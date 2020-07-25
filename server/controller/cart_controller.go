@@ -77,7 +77,7 @@ func (c *cartController) PostOnePkg2Cart(ctx *gin.Context) {
 		middleware.ResponseError(ctx, ecode.RequestErr, errors.New("套餐id出错"))
 		return
 	}
-	if err := c.service.CreateCart(ctx, input.PkgId); err != nil {
+	if err := c.service.CreateCart(ctx, input.PkgId, input.PkgCount); err != nil {
 		util.Log.Errorf("加购物车出错, err: [%s]", err.Error())
 		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("加购物车出错"))
 	} else {

@@ -491,9 +491,14 @@ definitions:
     type: object
   dto.PostCartInput:
     properties:
+      pkg_count:
+        description: 加购物的套餐的数量
+        type: integer
       pkg_id:
         description: 要添加的套餐id
         type: integer
+    required:
+    - pkg_count
     type: object
   dto.PostExamineeInput:
     properties:

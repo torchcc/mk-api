@@ -2528,7 +2528,14 @@
         },
         "dto.PostCartInput": {
             "type": "object",
+            "required": [
+                "pkg_count"
+            ],
             "properties": {
+                "pkg_count": {
+                    "description": "加购物的套餐的数量",
+                    "type": "integer"
+                },
                 "pkg_id": {
                     "description": "要添加的套餐id",
                     "type": "integer"

@@ -26,6 +26,8 @@ type GetCartOutputElem struct {
 type PostCartInput struct {
 	// 要添加的套餐id
 	PkgId int64 `json:"pkg_id"`
+	// 加购物的套餐的数量
+	PkgCount int64 `json:"pkg_count" db:"pkg_count" binding:"required,max=500"`
 }
 
 type DeleteCartEntriesInput struct {

@@ -12,7 +12,7 @@ import (
 
 type CartService interface {
 	RetrieveCart(ctx *gin.Context) ([]dto.GetCartOutputElem, error)
-	CreateCart(ctx *gin.Context, pkgId int64) (err error)
+	CreateCart(ctx *gin.Context, pkgId int64, pkgCount int64) (err error)
 	RemoveCartEntries(input *dto.DeleteCartEntriesInput) (err error)
 }
 
@@ -25,10 +25,10 @@ func (service *cartService) RemoveCartEntries(input *dto.DeleteCartEntriesInput)
 	return service.cartModel.RemoveCartEntries(input.CartIds)
 }
 
-func (service *cartService) CreateCart(ctx *gin.Context, pkgId int64) (err error) {
+func (service *cartService) CreateCart(ctx *gin.Context, pkgId int64, pkgCount int64) (err error) {
 	userId := ctx.GetInt64("userId")
 	if id := service.cartModel.FindCartItemId(userId, pkgId); id != 0 {
-		err = service.cartModel.IncrementPkgCount(id)
+		err = service.cartModel.IncrementPkgCount(id, pkgCount)
 		return
 	}
 	_, err = service.packageModel.FindPackagePriceNTargetById(pkgId)
@@ -36,7 +36,7 @@ func (service *cartService) CreateCart(ctx *gin.Context, pkgId int64) (err error
 		util.Log.Errorf("套餐不存在，pkg_id: [%v], err: [%v]", pkgId, err)
 		err = errors.New("套餐不存在")
 	} else {
-		err = service.cartModel.CreateCart(userId, pkgId)
+		err = service.cartModel.CreateCart(userId, pkgId, pkgCount)
 	}
 	return
 }
