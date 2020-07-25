@@ -152,6 +152,7 @@ func (c *userController) PutUserProfile(ctx *gin.Context) {
 		middleware.ResponseError(ctx, ecode.RequestErr, err)
 		return
 	}
+	input.UserId = ctx.GetInt64("userId")
 	if err := c.service.ModifyProfile(ctx, &input); err != nil {
 		util.Log.Errorf("修改用户信息失败， payload: [%v]", input)
 		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("内部服务器出错"))
