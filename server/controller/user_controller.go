@@ -122,7 +122,7 @@ func (c *userController) UploadAvatar(ctx *gin.Context) {
 		middleware.ResponseError(ctx, ecode.RequestErr, err)
 		return
 	}
-	err, filePath, _ := cos.Upload2QiNiu(avatar)
+	err, filePath, _ := cos.Upload2Tx(avatar)
 	if err != nil {
 		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("接受返回值失败"))
 		return
