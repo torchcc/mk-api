@@ -210,7 +210,7 @@ func (service *orderService) CreateOrder(ctx *gin.Context, input *dto.PostOrderI
 	}
 
 	order := dto.Order{
-		OutTradeNo: outTradeNo.Int64(),
+		OutTradeNo: outTradeNo.String(),
 		UserId:     userId,
 		Mobile:     input.SubscriberMobile,
 		OpenId:     ctx.GetString("openId"),
@@ -253,7 +253,7 @@ func (service *orderService) makeWechatOrderNPrepay(ctx *gin.Context, order *dto
 		TotalFee:   strconv.Itoa(int(order.Amount)),
 		CreateIP:   ctx.ClientIP(),
 		Body:       "迈康-体检套餐",
-		OutTradeNo: strconv.FormatInt(order.OutTradeNo, 10),
+		OutTradeNo: order.OutTradeNo,
 		OpenID:     ctx.GetString("openId"),
 		TradeType:  "JSAPI",
 		SignType:   "MD5",

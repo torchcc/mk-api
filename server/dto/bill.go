@@ -4,7 +4,7 @@ type TradeBill struct {
 	Id            int64  `json:"id" db:"id"`
 	TransactionId string `json:"transaction_id" db:"transaction_id"`
 	OrderId       int64  `json:"order_id" db:"order_id"`
-	OutTradeNo    int64  `json:"out_trade_no" db:"out_trade_no"`
+	OutTradeNo    string `json:"out_trade_no" db:"out_trade_no"`
 	PrepayId      string `json:"prepay_id" db:"prepay_id"`
 	NonceStr      string `json:"nonce_str" db:"nonce_str"`
 	TotalFee      int64  `json:"total_fee" db:"total_fee"`
@@ -19,7 +19,7 @@ type TradeBill struct {
 }
 
 type UpdateBillInput struct {
-	OutTradeNo    int64  `json:"out_trade_no" db:"out_trade_no"`
+	OutTradeNo    string `json:"out_trade_no" db:"out_trade_no"`
 	TransactionId string `json:"transaction_id" db:"transaction_id"`
 	TimeEnd       int64  `json:"time_end" db:"time_end"`
 	UpdateTime    int64  `json:"update_time" db:"update_time"`

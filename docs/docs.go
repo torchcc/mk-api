@@ -2339,7 +2339,7 @@ var doc = `{
                 },
                 "out_trade_no": {
                     "description": "订单号",
-                    "type": "integer"
+                    "type": "string"
                 },
                 "status": {
                     "description": "订单状态 0-待付款，2-待预约(指已经付款) 3-已退款 4-已关闭 5-待评价",
@@ -2770,7 +2770,7 @@ var doc = `{
                 },
                 "out_trade_no": {
                     "description": "订单号",
-                    "type": "integer"
+                    "type": "string"
                 },
                 "remark": {
                     "description": "订单备注",

@@ -58,7 +58,7 @@ type OrderItem struct {
 
 type Order struct {
 	Id         int64   `json:"id" db:"id"`
-	OutTradeNo int64   `json:"out_trade_no" db:"out_trade_no"`
+	OutTradeNo string  `json:"out_trade_no" db:"out_trade_no"`
 	UserId     int64   `json:"user_id" db:"user_id"`
 	Mobile     string  `json:"mobile" db:"mobile"`
 	OpenId     string  `json:"open_id" db:"open_id"`
@@ -81,7 +81,7 @@ type ListOrderOutputEle struct {
 	// 订单id
 	OrderId int64 `json:"order_id" db:"order_id"`
 	// 订单号
-	OutTradeNo int64 `json:"out_trade_no" db:"out_trade_no"`
+	OutTradeNo string `json:"out_trade_no" db:"out_trade_no"`
 	// 订单状态 0-待付款，2-待预约(指已经付款) 3-已退款 4-已关闭 5-待评价
 	Status int8 `json:"status" db:"status"`
 	// 订单总价
@@ -111,7 +111,7 @@ type RetrieveOrderOutput struct {
 	// 订单id
 	OrderId int64 `json:"order_id" db:"order_id"`
 	// 订单号
-	OutTradeNo int64 `json:"out_trade_no" db:"out_trade_no"`
+	OutTradeNo string `json:"out_trade_no" db:"out_trade_no"`
 	// 订单状态 0-待付款，2-待预约(指已经付款) 3-已退款 4-已关闭 5-待评价
 	Status int8 `json:"status" db:"status"`
 	// 订单总价
