@@ -15,7 +15,7 @@ import (
 
 type WechatService interface {
 	// UserExists(openId string) (bool, error)
-	CheckUserNSetToken(resToken *oauth.ResAccessToken, oau *oauth.Oauth) (string, error)
+	CheckUserNSetToken(resToken *oauth.ResAccessToken, oau *oauth.Oauth) (token string, retMobile string, err error)
 }
 
 type wechatService struct {
@@ -28,7 +28,7 @@ func NewWechatService(userModel model.UserModel) WechatService {
 	}
 }
 
-func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken, oau *oauth.Oauth) (token string, err error) {
+func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken, oau *oauth.Oauth) (token string, retMobile string, err error) {
 	// open_id.x123xua:{user_id: usr, mobile}
 	// user_id_token.1232: token
 	// token.xxx: {user_id: id, mobile: mobile}
@@ -42,13 +42,15 @@ func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken,
 		util.Log.Debugf("该用户存在， open_id_key 为 [%s]", openIdKey)
 		userId, _ := redis.Int64(cli.Do("HGET", openIdKey, "user_id"))
 		mobile, _ := redis.String(cli.Do("HGET", openIdKey, "mobile"))
-		return service.handleUserExists(userId, mobile, resToken, cli)
+		token, err = service.handleUserExists(userId, mobile, resToken, cli)
+		return token, mobile, err
 	}
 
 	// mysql has openId-userInfo
 	userId, mobile, err := service.model.FindUserByOpenId(resToken.OpenID)
 	if err == nil {
-		return service.handleUserExists(userId, mobile, resToken, cli)
+		token, err = service.handleUserExists(userId, mobile, resToken, cli)
+		return token, mobile, err
 	}
 
 	// user Does not exists
@@ -68,15 +70,16 @@ func (service *wechatService) CheckUserNSetToken(resToken *oauth.ResAccessToken,
 	userId, err = service.model.Save(&u)
 	if err != nil {
 		util.Log.Errorf("创建用户失败: err: %v, openId: %s", err, resToken.OpenID)
-		return "", ecode.ServerErr
+		return "", "", ecode.ServerErr
 	}
 	// 设置 open_id.x123xua:{user_id: usr, mobile}
 	tokenUtil.SetOpenIdUserInfo(openIdKey, userId, "", cli)
 
 	// 设置 user_id_token.1232: token
 	// 设置 token.xxx: {user_id: id, mobile: mobile}
-	tokenUtil.SetToken(tokenUtil.GenerateUuid(), "", userId, resToken.OpenID, cli)
-	return
+	token = tokenUtil.GenerateUuid()
+	tokenUtil.SetToken(token, "", userId, resToken.OpenID, cli)
+	return token, "", nil
 }
 
 // 设置 user_id_token.1232: token

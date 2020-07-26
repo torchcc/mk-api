@@ -194,7 +194,7 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 		return
 	}
 
-	token, err := c.service.CheckUserNSetToken(&resToken, oau)
+	token, mobile, err := c.service.CheckUserNSetToken(&resToken, oau)
 
 	if err != nil {
 		util.Log.Errorf("查询用户设置token失败， open_id: %s, err: %v",
@@ -202,7 +202,12 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 		middleware.ResponseError(ctx, ecode.ServerErr, err)
 		return
 	}
-	middleware.ResponseSuccess(ctx, dto.TokenOutput{Token: token})
+	util.Log.Debugf("handle enter logic done, token is [%s], mobile is [%s]", token, mobile)
+	var mobileVerified int8 = 1
+	if mobile == "" {
+		mobileVerified = 0
+	}
+	middleware.ResponseSuccess(ctx, dto.TokenOutput{Token: token, MobileVerified: mobileVerified})
 }
 
 // func (c *wechatController) Echo(ctx *gin.Context) {
