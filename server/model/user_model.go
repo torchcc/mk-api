@@ -119,9 +119,9 @@ func (db *userDatabase) Save(u *User) (id int64, err error) {
 	defer func() { // shi
 		if p := recover(); p != nil {
 			tx.Rollback()
-			panic(p) // re-throw panic after Rollback
+			util.Log.Panicf("save user 的时候panic了， %#v, param: [%#v]", p, u)
 		} else if err != nil {
-			util.Log.Info("rollback")
+			util.Log.Errorf("failed to save user rolling back, err is [%s], param is [%v]", err.Error(), u)
 			tx.Rollback() // err is non-nil; don't change it
 		} else {
 			err = tx.Commit() // err is nil; if Commit returns error update err

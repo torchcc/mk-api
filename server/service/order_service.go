@@ -132,6 +132,7 @@ func (service *orderService) CreateOrder(ctx *gin.Context, input *dto.PostOrderI
 
 		// 检查套餐是否存在
 		priceNTargetInfo, err := service.packageModel.FindPackagePriceNTargetById(cItem.PackageId)
+		util.Log.Debugf("ordering, the pkg_id is [%d], price and target info is [%v]", cItem.PackageId, priceNTargetInfo)
 		if err != nil {
 			_ = ctx.Error(err)
 			util.Log.WithFields(logrus.Fields{"userId": userId}).Errorf("套餐不存在: [%v]", input)
