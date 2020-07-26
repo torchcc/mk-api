@@ -2785,6 +2785,10 @@ var doc = `{
         "dto.TokenOutput": {
             "type": "object",
             "properties": {
+                "mobile_verified": {
+                    "description": "是否已经验证了手机号码",
+                    "type": "integer"
+                },
                 "token": {
                     "type": "string"
                 }
