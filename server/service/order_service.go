@@ -187,12 +187,13 @@ func (service *orderService) CreateOrder(ctx *gin.Context, input *dto.PostOrderI
 
 		for i := 0; i < diff; i++ {
 			orderItem := &dto.OrderItem{
-				UserId:     userId,
-				OrderId:    0,
-				PackageId:  cItem.PackageId,
-				CreateTime: time.Now().Unix(),
-				UpdateTime: time.Now().Unix(),
-				Examinee:   &dto.Examinee{},
+				UserId:       userId,
+				OrderId:      0,
+				PackageId:    cItem.PackageId,
+				PackagePrice: priceNTargetInfo.Price,
+				CreateTime:   time.Now().Unix(),
+				UpdateTime:   time.Now().Unix(),
+				Examinee:     &dto.Examinee{},
 			}
 			orderItems = append(orderItems, orderItem)
 			amount += priceNTargetInfo.Price
