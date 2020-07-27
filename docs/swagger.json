@@ -1036,6 +1036,59 @@
                 }
             }
         },
+        "/refund_order/": {
+            "put": {
+                "description": "已经支付的状态下申请退款",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "已经支付的状态下申请退款",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户token",
+                        "name": "token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "对订单申请退款的请求体",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RefundOrderInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/middleware.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ResourceID"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/regions/": {
             "get": {
                 "description": "根据parent_id获取行政区域列表",
@@ -2693,6 +2746,26 @@
                 },
                 "user_name": {
                     "description": "用户昵称",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RefundOrderInput": {
+            "type": "object",
+            "required": [
+                "order_id",
+                "refund_reason_id"
+            ],
+            "properties": {
+                "order_id": {
+                    "type": "integer"
+                },
+                "refund_reason_id": {
+                    "description": "退款原因id 3-买多了/不想买了 4-信息写错，重新下单 5-朋友/网上评价不好 6-计划有变，时间按排不上，7-其他",
+                    "type": "integer"
+                },
+                "refund_reason_remark": {
+                    "description": "退款具体原因描述",
                     "type": "string"
                 }
             }

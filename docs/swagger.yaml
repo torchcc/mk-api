@@ -611,6 +611,20 @@ definitions:
         description: 用户昵称
         type: string
     type: object
+  dto.RefundOrderInput:
+    properties:
+      order_id:
+        type: integer
+      refund_reason_id:
+        description: 退款原因id 3-买多了/不想买了 4-信息写错，重新下单 5-朋友/网上评价不好 6-计划有变，时间按排不上，7-其他
+        type: integer
+      refund_reason_remark:
+        description: 退款具体原因描述
+        type: string
+    required:
+    - order_id
+    - refund_reason_id
+    type: object
   dto.Region:
     properties:
       id:
@@ -1358,6 +1372,38 @@ paths:
       summary: 获取单个套餐详情
       tags:
       - packages
+  /refund_order/:
+    put:
+      consumes:
+      - application/json
+      description: 已经支付的状态下申请退款
+      parameters:
+      - description: 用户token
+        in: header
+        name: token
+        required: true
+        type: string
+      - description: 对订单申请退款的请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RefundOrderInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/middleware.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ResourceID'
+              type: object
+      summary: 已经支付的状态下申请退款
+      tags:
+      - orders
   /regions/:
     get:
       consumes:

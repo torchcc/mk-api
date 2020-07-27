@@ -29,6 +29,7 @@ type OrderService interface {
 	RemoveOrder(ctx *gin.Context, id int64) error
 	ModifyOrderItem(ctx *gin.Context, input *dto.PutOrderItemInput) error
 	CancelOrder(ctx *gin.Context, input *dto.CancelOrderInput) error
+	RefundOrder(ctx *gin.Context, input *dto.RefundOrderInput) error
 }
 
 type orderService struct {
@@ -37,6 +38,22 @@ type orderService struct {
 	packageModel model.PackageModel
 	payModel     model.PayModel
 	wechatPay    *pay.Pay
+}
+
+func (service *orderService) RefundOrder(ctx *gin.Context, input *dto.RefundOrderInput) error {
+	rows, err := service.orderModel.RefundOrder(input)
+	if err != nil {
+		util.Log.Error(err.Error())
+		return err
+	}
+	if rows != 1 {
+		errStr := fmt.Sprintf("this order is not in paid status, cannot be refund, params: [%#v]", input)
+		util.Log.Warningf(errStr)
+		_ = ctx.Error(errors.New("该订单不是处于已付款状态， 不能申请退款"))
+		return ecode.RequestErr
+	}
+	// TODO 这里发一个异步消息推送， 通知客服人员处理退款订单
+	return err
 }
 
 func (service *orderService) CancelOrder(ctx *gin.Context, input *dto.CancelOrderInput) error {

@@ -19,10 +19,32 @@ type OrderModel interface {
 	FindOrderPayStatusById(orderId int64) (*dto.OrderPayStatus, error)
 	UpdateOrderItem(input *dto.PutOrderItemInput) error
 	CancelOrder(input *dto.CancelOrderInput) error
+	RefundOrder(input *dto.RefundOrderInput) (int64, error)
 }
 
 type orderDatabase struct {
 	connection *sqlx.DB
+}
+
+func (db *orderDatabase) RefundOrder(input *dto.RefundOrderInput) (int64, error) {
+	const cmd = `
+			UPDATE mko_order SET 
+				refund_reason_id = :refund_reason_id,
+				refund_reason_remark = :refund_reason_remark
+			WHERE id = :id AND is_deleted = 0 AND status = 2
+`
+	rs, err := db.connection.NamedExec(cmd, input)
+	if err != nil {
+		errStr := fmt.Sprintf("failed to update refund reason, err: [%s]", err)
+		return 0, errors.New(errStr)
+	}
+	rows, err := rs.RowsAffected()
+	if err != nil {
+		errStr := fmt.Sprintf("failed to get rows effected, err: [%s]", err)
+		return 0, errors.New(errStr)
+	}
+	return rows, err
+
 }
 
 func (db *orderDatabase) CancelOrder(input *dto.CancelOrderInput) error {

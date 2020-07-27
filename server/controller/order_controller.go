@@ -38,6 +38,7 @@ func OrderRegister(router *gin.RouterGroup) {
 	router.GET("/orders/:id", orderController.GetOrder)
 	router.DELETE("/orders/:id", orderController.DeleteOrder)
 	router.PUT("/cancel_order/", orderController.CancelOrder)
+	router.PUT("/refund_order/", orderController.RefundOrder)
 
 	router.PUT("/order_items/", orderController.PutOrderItem)
 }
@@ -48,12 +49,46 @@ type OrderController interface {
 	GetOrder(ctx *gin.Context)
 	DeleteOrder(ctx *gin.Context)
 	CancelOrder(ctx *gin.Context)
+	RefundOrder(ctx *gin.Context)
 
 	PutOrderItem(ctx *gin.Context)
 }
 
 type orderController struct {
 	service service.OrderService
+}
+
+// RefundOrder godoc
+// @Summary 已经支付的状态下申请退款
+// @Description 已经支付的状态下申请退款
+// @Tags orders
+// @Accept  json
+// @Produce  json
+// @Param token header string true "用户token"
+// @Param body body dto.RefundOrderInput true "对订单申请退款的请求体"
+// @Success 200 {object} middleware.Response{data=dto.ResourceID}
+// @Router /refund_order/ [put]
+func (c *orderController) RefundOrder(ctx *gin.Context) {
+	var input dto.RefundOrderInput
+	err := util.ParseRequest(ctx, &input)
+	if err != nil {
+		middleware.ResponseError(ctx, ecode.RequestErr, err)
+		return
+	}
+	err = c.service.RefundOrder(ctx, &input)
+
+	if err != nil {
+		if _, ok := err.(ecode.Codes); ok {
+			middleware.ResponseError(ctx, ecode.RequestErr, ctx.Errors.Last())
+			return
+		}
+
+		util.Log.Errorf("controller failed to refund order, input: [%v], err: [%s]", input, err.Error())
+		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("internal server error"))
+		return
+	}
+	middleware.ResponseSuccess(ctx, dto.ResourceID{Id: input.Id})
+
 }
 
 // CancelOrder godoc

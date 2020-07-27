@@ -173,3 +173,11 @@ type CancelOrderInput struct {
 	// 取消的问题描述
 	Remark string `json:"remark" db:"remark"`
 }
+
+type RefundOrderInput struct {
+	Id int64 `json:"order_id" db:"id"  binding:"required"`
+	// 退款原因id 3-买多了/不想买了 4-信息写错，重新下单 5-朋友/网上评价不好 6-计划有变，时间按排不上，7-其他
+	RefundReasonId int64 `json:"refund_reason_id" binding:"required,min=1,max=7" db:"refund_reason_id"`
+	// 退款具体原因描述
+	RefundReasonRemark string `json:"refund_reason_remark" db:"refund_reason_remark"`
+}
