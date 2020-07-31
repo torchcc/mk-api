@@ -30,10 +30,10 @@ type orderDatabase struct {
 }
 
 func (db *orderDatabase) FindOrderInfo2NotifyClientByOutTradeNo(outTradeNo string) *dto.OInfo4PaidNotify {
-	var output *dto.OInfo4PaidNotify
+	var output dto.OInfo4PaidNotify
 	const cmd = `SELECT id, open_id, out_trade_no, amount FROM mko_order WHERE out_trade_no = ? AND is_deleted = 0`
-	_ = db.connection.Get(output, cmd, outTradeNo)
-	return output
+	_ = db.connection.Get(&output, cmd, outTradeNo)
+	return &output
 }
 
 func (db *orderDatabase) FindRefundReasonIdByOrderId(orderId int64) int64 {
