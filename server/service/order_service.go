@@ -18,6 +18,7 @@ import (
 	"mk-api/server/util"
 	"mk-api/server/util/consts"
 	"mk-api/server/util/token"
+	wxUtil "mk-api/server/util/wechat"
 	"mk-api/server/util/xtime"
 	"mk-api/server/validator/id_card"
 )
@@ -41,13 +42,25 @@ type orderService struct {
 }
 
 func (service *orderService) RefundOrder(ctx *gin.Context, input *dto.RefundOrderInput) error {
+	// 检查该订单是否已经申请过退款
+	refundReasonId := service.orderModel.FindRefundReasonIdByOrderId(input.Id)
+	if refundReasonId != 0 {
+		_ = ctx.Error(errors.New("您已经发起过退款申请，工作人员将会及时审核，请耐心等待"))
+		return ecode.RequestErr
+	}
+
 	_, err := service.orderModel.RefundOrder(input)
 	if err != nil {
 		util.Log.Error(err.Error())
 		return err
 	}
 
-	// TODO 这里发一个异步消息推送， 通知客服人员处理退款订单
+	// 异步通知客服处理退款订单
+	go func() {
+		outTradeNo, _ := service.orderModel.FindOutTradeNoByOrderId(input.Id)
+		wxUtil.RefundLaunchedNotifyStaff(conf.C.RecvOpenIds, outTradeNo)
+	}()
+
 	return err
 }
 

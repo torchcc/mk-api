@@ -20,10 +20,34 @@ type OrderModel interface {
 	UpdateOrderItem(input *dto.PutOrderItemInput) error
 	CancelOrder(input *dto.CancelOrderInput) error
 	RefundOrder(input *dto.RefundOrderInput) (int64, error)
+	FindOutTradeNoByOrderId(orderId int64) (string, error)
+	FindRefundReasonIdByOrderId(orderId int64) int64
+	FindOrderInfo2NotifyClientByOutTradeNo(outTradeNo string) *dto.OInfo4PaidNotify
 }
 
 type orderDatabase struct {
 	connection *sqlx.DB
+}
+
+func (db *orderDatabase) FindOrderInfo2NotifyClientByOutTradeNo(outTradeNo string) *dto.OInfo4PaidNotify {
+	var output *dto.OInfo4PaidNotify
+	const cmd = `SELECT id, open_id, out_trade_no, amount FROM mko_order WHERE out_trade_no = ? AND is_deleted = 0`
+	_ = db.connection.Get(output, cmd, outTradeNo)
+	return output
+}
+
+func (db *orderDatabase) FindRefundReasonIdByOrderId(orderId int64) int64 {
+	var refundReasonId int64
+	const cmd = `SELECT refund_reason_id FROM mko_order WHERE id = ? AND is_deleted = 0`
+	_ = db.connection.Get(&refundReasonId, cmd, orderId)
+	return refundReasonId
+}
+
+func (db *orderDatabase) FindOutTradeNoByOrderId(orderId int64) (string, error) {
+	var outTradeNo string
+	const cmd = `SELECT out_trade_no FROM mko_order WHERE id = ? AND is_deleted = 0`
+	err := db.connection.Get(&outTradeNo, cmd, orderId)
+	return outTradeNo, err
 }
 
 func (db *orderDatabase) RefundOrder(input *dto.RefundOrderInput) (int64, error) {

@@ -19,6 +19,7 @@ type Config struct {
 	MongoLog    MongoConfig
 	WeChat      WechatConfig
 	// GenerateOrderKafka kafka.Config
+	RecvOpenIds []string // 运营人员open列表
 }
 
 type MysqlConfig struct {
@@ -76,6 +77,7 @@ func init() {
 	allConfigs["/superconf/union/redis/wechat"] = &cfg.RedisWechat
 	allConfigs["/superconf/union/mongo/log"] = &cfg.MongoLog
 	allConfigs["/superconf/third_party/wechat"] = &cfg.WeChat
+	allConfigs["/superconf/third_party/receiver_open_ids"] = &cfg.RecvOpenIds
 
 	sc := superconf.NewSuperConfig(&allConfigs)
 	cfg.Local = *(sc.Config)

@@ -9,6 +9,7 @@ import (
 
 	wo "github.com/silenceper/wechat/v2/pay/order"
 	"mk-api/library/ecode"
+	"mk-api/server/conf"
 
 	"github.com/gin-gonic/gin"
 	"github.com/silenceper/wechat/v2/pay/notify"
@@ -129,8 +130,17 @@ func (service *payService) WechatPayCallBack(ctx *gin.Context) bool {
 	if err = service.orderModel.UpdateOrderStatus(*result.OutTradeNo, consts.Success); err != nil {
 		util.Log.Errorf("UpdateOrderStatus failed, err: [%s]", err.Error())
 		return false
-
 	}
+
+	go func() {
+		// 微信推送通知运营处理付款订单
+		wcUtil.OrderPaidNotifyStaff(conf.C.RecvOpenIds, *result.OutTradeNo, float64(bill.TotalFee)*0.01, time.Now().Unix())
+
+		// 微信推送给客户下单成功
+		o := service.orderModel.FindOrderInfo2NotifyClientByOutTradeNo(*result.OutTradeNo)
+		wcUtil.OrderPaidNotifyClient(o.OpenId, o.OutTradeNo, o.Amount, o.Id, time.Now().Unix())
+	}()
+
 	return true
 }
 

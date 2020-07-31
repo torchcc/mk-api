@@ -181,3 +181,10 @@ type RefundOrderInput struct {
 	// 退款具体原因描述
 	RefundReasonRemark string `json:"refund_reason_remark" db:"refund_reason_remark"`
 }
+
+type OInfo4PaidNotify struct {
+	Id         int64   `json:"order_id" db:"id"`
+	OpenId     string  `json:"open_id" db:"open_id"`
+	OutTradeNo string  `json:"out_trade_no" db:"out_trade_no"`
+	Amount     float64 `json:"amount" db:"amount"`
+}
