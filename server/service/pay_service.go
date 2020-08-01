@@ -138,7 +138,7 @@ func (service *payService) WechatPayCallBack(ctx *gin.Context) bool {
 
 		// 微信推送给客户下单成功
 		o := service.orderModel.FindOrderInfo2NotifyClientByOutTradeNo(*result.OutTradeNo)
-		wcUtil.OrderPaidNotifyClient(o.OpenId, o.OutTradeNo, o.Amount, o.Id, time.Now().Unix())
+		wcUtil.OrderPaidNotifyClient(o.OpenId, o.OutTradeNo, o.Amount*0.01, o.Id, time.Now().Unix())
 	}()
 
 	return true
