@@ -119,7 +119,7 @@ func OrderPaidNotifyClient(openId, outTradeNo string, amount float64, orderId, p
 				Color: "",
 			},
 			"keyword4": { // 订单金额
-				Value: strconv.FormatFloat(amount, 'f', -1, 64) + " 元",
+				Value: strconv.FormatFloat(amount, 'f', 2, 64) + " 元",
 				Color: "",
 			},
 			"remark": {
