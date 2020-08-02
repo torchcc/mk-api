@@ -65,7 +65,7 @@ func (c *wechatController) WXMsgReceive(ctx *gin.Context) {
 		util.Log.Errorf("[消息接收] - XML数据包解析失败: %v\n", err)
 		return
 	}
-	util.Log.Debugf("[消息接收] - 收到消息, 消息类型为: %v, 消息内容为: %v\n", msg.MsgType, msg.Content)
+	util.Log.Infof("[消息接收] - 收到消息, 消息类型为: %v, 消息内容为: %v\n", msg.MsgType, msg.Content)
 	c.WXMsgReply(ctx, &msg)
 }
 
