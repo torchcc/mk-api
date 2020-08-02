@@ -2,16 +2,19 @@ package controller
 
 import (
 	"crypto/sha1"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/silenceper/wechat/v2/officialaccount"
 	"github.com/silenceper/wechat/v2/officialaccount/menu"
+	"github.com/silenceper/wechat/v2/officialaccount/message"
 	"mk-api/library/ecode"
 	"mk-api/server/conf"
 	"mk-api/server/dao"
@@ -31,6 +34,7 @@ func WeChatRegister(router *gin.RouterGroup) {
 		wechatController WeChatController      = NewWechatController(wechatService)
 	)
 	router.GET("/", wechatController.DockWithWeChatServer)
+	router.POST("/", wechatController.WXMsgReceive)
 	router.GET("/js_ticket", wechatController.JsApiTicket)
 	router.GET("/enter_url", wechatController.GetEnterUrl)
 	router.GET("/enter", wechatController.Enter)
@@ -41,7 +45,7 @@ func WeChatRegister(router *gin.RouterGroup) {
 type WeChatController interface {
 	DockWithWeChatServer(ctx *gin.Context)
 	JsApiTicket(ctx *gin.Context)
-	// Echo(ctx *gin.Context)
+	WXMsgReceive(ctx *gin.Context)
 	GetEnterUrl(ctx *gin.Context)
 	Enter(ctx *gin.Context)
 	CreateMenu(ctx *gin.Context)
@@ -51,6 +55,35 @@ type WeChatController interface {
 type wechatController struct {
 	affAcc  *officialaccount.OfficialAccount
 	service service.WechatService
+}
+
+// 接收微信消息
+func (c *wechatController) WXMsgReceive(ctx *gin.Context) {
+	var msg message.MixMessage
+	err := ctx.ShouldBindXML(&msg)
+	if err != nil {
+		util.Log.Errorf("[消息接收] - XML数据包解析失败: %v\n", err)
+		return
+	}
+	util.Log.Debugf("[消息接收] - 收到消息, 消息类型为: %v, 消息内容为: %v\n", msg.MsgType, msg.Content)
+	c.WXMsgReply(ctx, &msg)
+}
+
+func (c *wechatController) WXMsgReply(ctx *gin.Context, mixMessage *message.MixMessage) {
+	// if mixMessage.MsgType == message.MsgTypeText {
+	tcMsg := message.NewTransferCustomer("")
+	tcMsg.MsgType = message.MsgTypeTransfer
+	tcMsg.CreateTime = time.Now().Unix()
+	tcMsg.FromUserName = mixMessage.ToUserName
+	tcMsg.ToUserName = mixMessage.FromUserName
+	msg, err := xml.Marshal(tcMsg)
+	if err != nil {
+		util.Log.Errorf("[消息回复] - 将对象进行XML编码出错: %v\n", err)
+		return
+	}
+	_, _ = ctx.Writer.Write(msg)
+	// }
+
 }
 
 func (c *wechatController) ListMenu(ctx *gin.Context) {
@@ -209,29 +242,6 @@ func (c *wechatController) Enter(ctx *gin.Context) {
 	}
 	middleware.ResponseSuccess(ctx, dto.TokenOutput{Token: token, MobileVerified: mobileVerified})
 }
-
-// func (c *wechatController) Echo(ctx *gin.Context) {
-//
-// 	// 传入request和responseWriter
-// 	server := c.wc.GetServer(ctx.Request, ctx.Writer)
-// 	// 设置接收消息的处理方法
-// 	server.SetMessageHandler(func(msg message.MixMessage) *message.Reply {
-//
-// 		// 回复消息：演示回复用户发送的消息
-// 		text := message.NewText(msg.Content)
-// 		return &message.Reply{MsgType: message.MsgTypeText, MsgData: text}
-// 	})
-//
-// 	// 处理消息接收以及回复
-// 	err := server.Serve()
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		return
-// 	}
-// 	// 发送回复的消息
-// 	_ = server.Send()
-//
-// }
 
 func NewWechatController(service service.WechatService) WeChatController {
 	return &wechatController{
