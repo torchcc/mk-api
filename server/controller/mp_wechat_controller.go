@@ -69,7 +69,7 @@ func (c *wechatController) WXMsgReceive(ctx *gin.Context) {
 }
 
 func (c *wechatController) WXMsgReply(ctx *gin.Context, mixMessage *message.MixMessage) {
-	if mixMessage.MsgType == message.EventClick {
+	if mixMessage.MsgType == message.MsgTypeEvent {
 		switch mixMessage.EventKey {
 		case "examineNotice":
 			examNotice(ctx, mixMessage)
