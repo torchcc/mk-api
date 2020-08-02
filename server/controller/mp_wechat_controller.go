@@ -65,25 +65,66 @@ func (c *wechatController) WXMsgReceive(ctx *gin.Context) {
 		util.Log.Errorf("[消息接收] - XML数据包解析失败: %v\n", err)
 		return
 	}
-	util.Log.Infof("[消息接收] - 收到消息, 消息类型为: %v, 消息内容为: %v\n", msg.MsgType, msg.Content)
 	c.WXMsgReply(ctx, &msg)
 }
 
 func (c *wechatController) WXMsgReply(ctx *gin.Context, mixMessage *message.MixMessage) {
-	// if mixMessage.MsgType == message.MsgTypeText {
+	if mixMessage.MsgType == message.EventClick {
+		switch mixMessage.EventKey {
+		case "examineNotice":
+			examNotice(ctx, mixMessage)
+		case "onlineCustomService":
+			onlineCustomService(ctx, mixMessage)
+		default:
+			responseEmptyStr(ctx, mixMessage)
+		}
+		return
+	}
+	responseEmptyStr(ctx, mixMessage)
+
+}
+
+// 响应空字符串
+func responseEmptyStr(ctx *gin.Context, mixMessage *message.MixMessage) {
+	_, _ = ctx.Writer.Write([]byte(""))
+}
+
+// 点击体检需知
+func examNotice(ctx *gin.Context, mixMessage *message.MixMessage) {
+	const content = `体检须知
+1、 体检当天早晨须空腹。 建议着装休闲，宽松，方便检时操作及更换衣物。
+2、体检前三天注意不要吃油腻、不易消化的食物体检前一天晚上8点之后不再进餐(12点之后不 可饮水),保证睡眠;避免剧烈运动和情绪激动,以保证体检结果的准确性 
+3、参加X线检查,请勿穿着带有金属饰物或配件的衣物,孕妇及半年内准备怀孕的受检者请勿做X线检查及妇科检查。 
+4、如检査盆腔的子宮及其附件、膀胱、前列腺等脏器时,检查前需保留膀胱尿液,可在检査前2小时饮温开水1000毫升左右,检查前2-4小时内不要小便。 
+6、已婚女性检査妇科前需先排空尿液,经期请勿 做妇科检查,可预约时间再检查(7天之内)。未婚女性请勿做妇科检查。 
+7、有眼压、眼底、裂隙灯检查项目请勿戴隐形眼镜,如戴隐形眼镜请自备眼药水和镜盒。`
+
+	respMsg := message.NewText(content)
+	respMsg.SetMsgType(message.MsgTypeText)
+	respMsg.SetFromUserName(mixMessage.ToUserName)
+	respMsg.SetToUserName(mixMessage.FromUserName)
+	respMsg.SetCreateTime(time.Now().Unix())
+	msg, err := xml.Marshal(respMsg)
+	if err != nil {
+		util.Log.Errorf("[消息回复] - 将对象进行XML编码出错: %v\n", err)
+		return
+	}
+	_, _ = ctx.Writer.Write(msg)
+}
+
+// 点击在线客服
+func onlineCustomService(ctx *gin.Context, mixMessage *message.MixMessage) {
 	tcMsg := message.NewTransferCustomer("")
-	tcMsg.MsgType = message.MsgTypeTransfer
-	tcMsg.CreateTime = time.Now().Unix()
-	tcMsg.FromUserName = mixMessage.ToUserName
-	tcMsg.ToUserName = mixMessage.FromUserName
+	tcMsg.SetMsgType(message.MsgTypeTransfer)
+	tcMsg.SetCreateTime(time.Now().Unix())
+	tcMsg.SetFromUserName(mixMessage.ToUserName)
+	tcMsg.SetToUserName(mixMessage.FromUserName)
 	msg, err := xml.Marshal(tcMsg)
 	if err != nil {
 		util.Log.Errorf("[消息回复] - 将对象进行XML编码出错: %v\n", err)
 		return
 	}
 	_, _ = ctx.Writer.Write(msg)
-	// }
-
 }
 
 func (c *wechatController) ListMenu(ctx *gin.Context) {
