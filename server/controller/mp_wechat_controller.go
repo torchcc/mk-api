@@ -13,7 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/silenceper/wechat/v2/officialaccount"
-	"github.com/silenceper/wechat/v2/officialaccount/menu"
 	"github.com/silenceper/wechat/v2/officialaccount/message"
 	"mk-api/library/ecode"
 	"mk-api/server/conf"
@@ -27,65 +26,27 @@ import (
 )
 
 const (
-	aboutAppointment = "详细请联系人工客服或致电客服热线：0668-2853837"
+	aboutAppointment = `详细请回复"人工"联系人工客服或致电客服热线：0668-2853837`
 	aboutInvoice     = `如个人购买客户需开具发票，请点击“人工客服”后，发送开票订单号,发票抬头公司全称、税号，发票接收地址，收件人信息等信息。
 发票3-5个工作日内，快递为您寄出。`
-	aboutRefund = `<div class="content">
-                <div style="margin-bottom: 20px;">
-                  <p>改退说明</p>
-                  <ul>
-                    <li>
-                      <span>退款：</span>
-                      如客户预约成功后选择退款，需扣除套餐实付金额的10%作为服务费。
-                    </li>
-                    <li>
-                      <span>改期:</span>
-                      每位客户拥有3次改期机会，无需支付任何费用的权益。3次后再改期，需扣除套餐实付金额的10%作为服务费。
-                    </li>
-                    <li>
-                      <span>补偿：</span>
-                      客户预约好体检时间后，由迈康体检网的原因造成客户体检当天无法进行体检，迈康体检网会补偿不超过支付金额的10%作为补偿费用。
-                    </li>
-                  </ul>
-                </div>
+	aboutRefund = `改退说明
+1、退款： 如客户预约成功后选择退款，需扣除套餐实付金额的10%作为服务费。
+2、改期: 每位客户拥有3次改期机会，无需支付任何费用的权益。3次后再改期，需扣除套餐实付金额的10%作为服务费。
+3、补偿： 客户预约好体检时间后，由迈康体检网的原因造成客户体检当天无法进行体检，迈康体检网会补偿不超过支付金额的10%作为补偿费用。
+弃检变更
+1、弃检： 当您预约套餐时，即表示接受检测的所有项目。如因自身原因放弃体检套餐中的检查项目，网站将不予退款处理。
+2、变更： 套餐里的体检项目，可能会由于体检中心设备或其他原因，体检中心会自动帮您更换同价位其他项目或升级项目，望您能理解和支持。`
 
-                <div>
-                  <p>弃检变更</p>
-                  <ul>
-                    <li>
-                      <span>弃检：</span>
-                      当您预约套餐时，即表示接受检测的所有项目。如因自身原因放弃体检套餐中的检查项目，网站将不予退款处理。
-                    </li>
-                    <li>
-                      <span>变更：</span>
-                      套餐里的体检项目，可能会由于体检中心设备或其他原因，体检中心会自动帮您更换同价位其他项目或升级项目，望您能理解和支持。
-                    </li>
-                  </ul>
-                </div>
-              </div>`
-	noticeBeforeExam = `<div class="content">
-                <div style="margin-bottom: 20px;">
-<p>体检须知</p>
-<ul>
-<li>1、 体检当天早晨须空腹。 建议着装休闲，宽松，方便检时操作及更换衣物。</li>
-<li>2、体检前三天注意不要吃油腻、不易消化的食物体检前一天晚上8点之后不再进餐(12点之后不 可饮水),保证睡眠;避免剧烈运动和情绪激动,以保证体检结果的准确性 </li>
-<li>3、参加X线检查,请勿穿着带有金属饰物或配件的衣物,孕妇及半年内准备怀孕的受检者请勿做X线检查及妇科检查。 </li>
-<li>4、如检査盆腔的子宮及其附件、膀胱、前列腺等脏器时,检查前需保留膀胱尿液,可在检査前2小时饮温开水1000毫升左右,检查前2-4小时内不要小便。 </li>
-<li>6、已婚女性检査妇科前需先排空尿液,经期请勿 做妇科检查,可预约时间再检查(7天之内)。未婚女性请勿做妇科检查。 </li>
-<li>7、有眼压、眼底、裂隙灯检查项目请勿戴隐形眼镜,如戴隐形眼镜请自备眼药水和镜盒。</li>
-                  </ul>
-                </div>
-              </div>`
 	commonQuestion = `猜您想问
-<a href="weixin://bizmsgmenu?msgmenucontent=人工&msgmenuid=999">0.人工客服</a>
-<a href="weixin://bizmsgmenu?msgmenucontent=预约相关&msgmenuid=1">1.预约相关</a>
-<a href="weixin://bizmsgmenu?msgmenucontent=开具发票&msgmenuid=2">2.开具发票</a>
-<a href="weixin://bizmsgmenu?msgmenucontent=关于退款&msgmenuid=3">3.关于退款</a>
-<a href="weixin://bizmsgmenu?msgmenucontent=检前注意事项&msgmenuid=4">4.检前注意事项</a>
+<a href="weixin://bizmsgmenu?msgmenucontent=人工&msgmenuid=9">0、人工客服</a>
+<a href="weixin://bizmsgmenu?msgmenucontent=预约相关&msgmenuid=1">1、预约相关</a>
+<a href="weixin://bizmsgmenu?msgmenucontent=开具发票&msgmenuid=2">2、开具发票</a>
+<a href="weixin://bizmsgmenu?msgmenucontent=关于退款&msgmenuid=3">3、关于退款</a>
+<a href="weixin://bizmsgmenu?msgmenucontent=检前注意事项&msgmenuid=4">4、检前注意事项</a>
 `
 	greetings       = "Hello， 感谢您关注迈康体检， 我们时刻关注您的健康。\n<a href='https://www.mkhealth.club/'>点次选购体检套餐和预约体检</a>\n\n如需人工服务，回复\"人工\"开始咨询，人工客服时间为7:30-20:00"
 	plainExamNotice = `体检须知
-1、 体检当天早晨须空腹。 建议着装休闲，宽松，方便检时操作及更换衣物。
+1、体检当天早晨须空腹。 建议着装休闲，宽松，方便检时操作及更换衣物。
 2、体检前三天注意不要吃油腻、不易消化的食物体检前一天晚上8点之后不再进餐(12点之后不 可饮水),保证睡眠;避免剧烈运动和情绪激动,以保证体检结果的准确性 
 3、参加X线检查,请勿穿着带有金属饰物或配件的衣物,孕妇及半年内准备怀孕的受检者请勿做X线检查及妇科检查。 
 4、如检査盆腔的子宮及其附件、膀胱、前列腺等脏器时,检查前需保留膀胱尿液,可在检査前2小时饮温开水1000毫升左右,检查前2-4小时内不要小便。 
@@ -105,7 +66,6 @@ func WeChatRegister(router *gin.RouterGroup) {
 	router.GET("/js_ticket", wechatController.JsApiTicket)
 	router.GET("/enter_url", wechatController.GetEnterUrl)
 	router.GET("/enter", wechatController.Enter)
-	router.POST("/menu", wechatController.CreateMenu)
 	router.GET("/menu", wechatController.ListMenu)
 }
 
@@ -115,7 +75,6 @@ type WeChatController interface {
 	WXMsgReceive(ctx *gin.Context)
 	GetEnterUrl(ctx *gin.Context)
 	Enter(ctx *gin.Context)
-	CreateMenu(ctx *gin.Context)
 	ListMenu(ctx *gin.Context)
 }
 
@@ -149,14 +108,14 @@ func (c *wechatController) WXMsgReply(ctx *gin.Context, mixMessage *message.MixM
 		case "onlineCustomService":
 			onlineCustomService(ctx, mixMessage)
 		default:
-			responseEmptyStr(ctx, mixMessage)
+			responseEmptyStr(ctx)
 		}
 		return
 	}
 
 	if mixMessage.MsgType == message.MsgTypeText {
 		switch mixMessage.Content {
-		case "人工", "客服":
+		case "人工":
 			onlineCustomService(ctx, mixMessage)
 		case "预约相关":
 			replyText(ctx, mixMessage, aboutAppointment)
@@ -165,7 +124,7 @@ func (c *wechatController) WXMsgReply(ctx *gin.Context, mixMessage *message.MixM
 		case "关于退款":
 			replyText(ctx, mixMessage, aboutRefund)
 		case "检前注意事项":
-			replyText(ctx, mixMessage, noticeBeforeExam)
+			replyText(ctx, mixMessage, plainExamNotice)
 		default:
 			replyText(ctx, mixMessage, commonQuestion) // 自助客服
 		}
@@ -175,7 +134,7 @@ func (c *wechatController) WXMsgReply(ctx *gin.Context, mixMessage *message.MixM
 }
 
 // 响应空字符串,注意是响应体是空字符串，不是content是空字符串
-func responseEmptyStr(ctx *gin.Context, mixMessage *message.MixMessage) {
+func responseEmptyStr(ctx *gin.Context) {
 	_, _ = ctx.Writer.Write([]byte(""))
 }
 
@@ -217,28 +176,6 @@ func (c *wechatController) ListMenu(ctx *gin.Context) {
 		return
 	}
 	middleware.ResponseSuccess(ctx, menus)
-}
-
-func (c *wechatController) CreateMenu(ctx *gin.Context) {
-	m := dao.AffAcc.GetMenu()
-	buttons := []*menu.Button{&menu.Button{
-		Type:       "view",
-		Name:       "预约体检",
-		Key:        "signUp4Exam",
-		URL:        "https://www.mkhealth.club",
-		MediaID:    "",
-		AppID:      conf.C.WeChat.AppID,
-		PagePath:   "",
-		SubButtons: nil,
-	}}
-
-	err := m.SetMenu(buttons)
-	if err != nil {
-		util.Log.Errorf("failed to create menu, err: [%s]", err)
-		middleware.ResponseError(ctx, ecode.ServerErr, err)
-		return
-	}
-	middleware.ResponseSuccess(ctx, "ok")
 }
 
 // DockWechat godoc
