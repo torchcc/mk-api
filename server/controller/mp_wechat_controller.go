@@ -38,11 +38,11 @@ const (
 2、变更： 套餐里的体检项目，可能会由于体检中心设备或其他原因，体检中心会自动帮您更换同价位其他项目或升级项目，望您能理解和支持。`
 
 	commonQuestion = `猜您想问
-<a href="weixin://bizmsgmenu?msgmenucontent=人工&msgmenuid=9">0、人工客服</a>
-<a href="weixin://bizmsgmenu?msgmenucontent=预约相关&msgmenuid=1">1、预约相关</a>
-<a href="weixin://bizmsgmenu?msgmenucontent=开具发票&msgmenuid=2">2、开具发票</a>
-<a href="weixin://bizmsgmenu?msgmenucontent=关于退款&msgmenuid=3">3、关于退款</a>
-<a href="weixin://bizmsgmenu?msgmenucontent=检前注意事项&msgmenuid=4">4、检前注意事项</a>
+<a href="weixin://bizmsgmenu?msgmenucontent=人工客服&msgmenuid=1">1、人工客服</a>
+<a href="weixin://bizmsgmenu?msgmenucontent=预约相关&msgmenuid=2">2、预约相关</a>
+<a href="weixin://bizmsgmenu?msgmenucontent=开具发票&msgmenuid=3">3、开具发票</a>
+<a href="weixin://bizmsgmenu?msgmenucontent=关于退款&msgmenuid=4">4、关于退款</a>
+<a href="weixin://bizmsgmenu?msgmenucontent=检前注意事项&msgmenuid=5">5、检前注意事项</a>
 `
 	greetings       = "Hello， 感谢您关注迈康体检， 我们时刻关注您的健康。\n<a href='https://www.mkhealth.club/'>点次选购体检套餐和预约体检</a>\n\n如需人工服务，回复\"人工\"开始咨询，人工客服时间为7:30-20:00"
 	plainExamNotice = `体检须知
