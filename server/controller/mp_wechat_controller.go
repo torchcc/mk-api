@@ -117,7 +117,6 @@ func (c *wechatController) WXMsgReply(ctx *gin.Context, mixMessage *message.MixM
 		switch mixMessage.Content {
 		case "人工":
 			onlineCustomService(ctx, mixMessage)
-			replyText(ctx, mixMessage, "正在排队转接人工，请耐心等待")
 		case "预约相关":
 			replyText(ctx, mixMessage, aboutAppointment)
 		case "开具发票":
