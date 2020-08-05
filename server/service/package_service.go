@@ -84,10 +84,15 @@ func (service *packageService) ListPackage(ctx *gin.Context, input *dto.ListPack
 		util.Log.Errorf("查询套餐列表出错, err: [%s]", err.Error())
 		return &data, err
 	}
-	data.PageSize = int64(len(list))
-	if data.PageSize == input.PageSize+1 {
+	var length int
+	if len(list) == int(input.PageSize)+1 {
 		data.HasNext = 1
+		length = len(list) - 1
+	} else {
+		length = len(list)
 	}
+	list = list[:length]
+	data.PageSize = int64(len(list))
 	data.PageNo = input.PageNo
 	data.List = list
 	return &data, err

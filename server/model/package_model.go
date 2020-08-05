@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -169,7 +170,6 @@ func (db *packageDatabase) ListPackage(input *dto.ListPackageInput) ([]dto.ListP
 			LIMIT :start, :offset
 `
 	cmd = fmt.Sprintf(cmd, whereStmt, orderByStmt)
-	util.Log.Infof("查询套餐列表sql: [%s], 参数: [%v]", cmd, input)
 	params := struct {
 		Start  int64 `json:"start"`
 		Offset int64 `json:"offset"`
@@ -177,6 +177,8 @@ func (db *packageDatabase) ListPackage(input *dto.ListPackageInput) ([]dto.ListP
 	}{
 		Start: start, Offset: offset, ListPackageInput: *input,
 	}
+	str, _ := json.Marshal(params)
+	util.Log.Infof("查询套餐列表sql: [%s], 参数: [%v]", cmd, string(str))
 	rows, err := db.connection.NamedQuery(cmd, params)
 	if err != nil {
 		util.Log.Errorf("查询套餐列表出错, sql: [%s], 参数： [%v], err: [%s]", cmd, input, err.Error())

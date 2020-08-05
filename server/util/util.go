@@ -36,3 +36,10 @@ func ParseRequest(c *gin.Context, input interface{}) error {
 	}
 	return nil
 }
+
+func Min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
