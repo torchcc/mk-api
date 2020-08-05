@@ -1,6 +1,8 @@
 package router
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -22,6 +24,10 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	docs.SwaggerInfo.BasePath = ""
 
 	router := gin.Default()
+	if deployment.BRANCH == "prod" {
+		gin.SetMode(gin.ReleaseMode)
+		fmt.Println("setting gin to run in release mode.. done !")
+	}
 	router.Use(middlewares...)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -107,8 +113,10 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 
 func getHost() (host string) {
 	switch deployment.BRANCH {
-	case "test", "prod":
+	case "prod":
 		host = "106.53.124.190:8071"
+	case "test":
+		host = "106.53.124.190:8081"
 	case "local":
 		host = "localhost:8081"
 	}
