@@ -45,6 +45,7 @@ ADD https://curl.haxx.se/ca/cacert.pem /etc/ssl/certs/
 
 COPY ./server/static /src/mk-api/server/static
 COPY ./deployment  /src/mk-api/deployment
+RUN export GIN_MODE=release
 
 # 从builder镜像中把/src/mk-api/app 拷贝到当前目录
 COPY --from=builder /src/mk-api/app /src/mk-api/
