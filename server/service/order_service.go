@@ -135,10 +135,15 @@ func (service *orderService) ListOrder(ctx *gin.Context, input *dto.ListOrderInp
 		util.Log.Errorf("查询订单列表出错, err: [%s]", err)
 		return &data, err
 	}
-	data.PageSize = int64(len(list))
-	if data.PageSize == input.PageSize+1 {
+	var length int
+	if len(list) == int(input.PageSize)+1 {
 		data.HasNext = 1
+		length = len(list) - 1
+	} else {
+		length = len(list)
 	}
+	list = list[:length]
+	data.PageSize = int64(length)
 	data.PageNo = input.PageNo
 	data.List = list
 	return &data, err

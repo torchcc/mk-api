@@ -92,7 +92,7 @@ func (service *packageService) ListPackage(ctx *gin.Context, input *dto.ListPack
 		length = len(list)
 	}
 	list = list[:length]
-	data.PageSize = int64(len(list))
+	data.PageSize = int64(length)
 	data.PageNo = input.PageNo
 	data.List = list
 	return &data, err
