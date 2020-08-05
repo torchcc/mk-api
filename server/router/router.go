@@ -22,12 +22,12 @@ func InitRouter(middlewares ...gin.HandlerFunc) *gin.Engine {
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 	docs.SwaggerInfo.Host = getHost()
 	docs.SwaggerInfo.BasePath = ""
-
-	router := gin.Default()
 	if deployment.BRANCH == "prod" {
 		gin.SetMode(gin.ReleaseMode)
 		fmt.Println("setting gin to run in release mode.. done !")
 	}
+	router := gin.Default()
+
 	router.Use(middlewares...)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
