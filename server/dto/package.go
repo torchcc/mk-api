@@ -65,7 +65,7 @@ func (input *ListPackageInput) GetListKey() string {
 	if input.Name != "" {
 		keys = append(keys, input.Name)
 	}
-	return consts.CachePackage + "_LIST_" + util.MD5V([]byte(strings.Join(keys, "_")))
+	return consts.CachePackage + ".LIST." + util.MD5V([]byte(strings.Join(keys, "_")))
 }
 
 type ListPackageOutputEle struct {

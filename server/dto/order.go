@@ -100,7 +100,7 @@ func (input *ListOrderInput) GetListKey(userId int64) string {
 		keys = append(keys, strconv.Itoa(int(input.Status)))
 	}
 
-	return consts.CacheOrder + "_LIST_" + util.MD5V([]byte(strings.Join(keys, "_")))
+	return consts.CacheOrder + ".LIST." + util.MD5V([]byte(strings.Join(keys, "_")))
 }
 
 type ListOrderOutputEle struct {

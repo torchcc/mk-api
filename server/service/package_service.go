@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"sort"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	. "mk-api/server/dao"
@@ -77,19 +78,32 @@ func (service *packageService) ListDisease() ([]*dto.Disease, error) {
 }
 
 func (service *packageService) RetrievePackage(id int64) (*dto.GetPackageOutPut, error) {
-	var data dto.GetPackageOutPut
+	var output dto.GetPackageOutPut
+
+	// try to get result from redis
+	key := consts.CachePackage + "." + strconv.FormatInt(id, 10)
+	if Rdb.ApiCache.Exists(key) {
+		data, err := Rdb.ApiCache.Get(key)
+		if err != nil {
+			util.Log.Warningf("failed to retrieve package from redis, err: %s", err.Error())
+		} else {
+			util.Log.Debugf("hit redis when retrieving package !")
+			_ = json.Unmarshal(data, &output)
+			return &output, nil
+		}
+	}
 
 	basicInfo, err := service.packageModel.FindPackageBasicInfo(id)
 	if err != nil {
 		util.Log.Errorf("获取套餐基本信息出错, id: [%d], err: [%s]", id, err.Error())
-		return &data, err
+		return &output, err
 	}
-	data.BasicInfo = basicInfo
+	output.BasicInfo = basicInfo
 
 	attrs, err := service.packageModel.FindPackageAttr(id)
 	if err != nil {
 		util.Log.Errorf("获取套餐属性出错, id: [%d], err: [%s]", id, err.Error())
-		return &data, err
+		return &output, err
 	}
 
 	var (
@@ -111,10 +125,13 @@ func (service *packageService) RetrievePackage(id int64) (*dto.GetPackageOutPut,
 	sort.Sort(dto.PackageAttributes(items))
 	sort.Sort(dto.PackageAttributes(notices))
 	sort.Sort(dto.PackageAttributes(procedure))
-	data.Items = items
-	data.Notices = notices
-	data.Procedure = procedure
-	return &data, err
+	output.Items = items
+	output.Notices = notices
+	output.Procedure = procedure
+
+	go Rdb.ApiCache.SetEx(key, output, consts.PackageOneDuration)
+
+	return &output, err
 }
 
 func (service *packageService) ListPackage(ctx *gin.Context, input *dto.ListPackageInput) (*dto.PaginateListOutput, error) {

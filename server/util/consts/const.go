@@ -13,10 +13,10 @@ const (
 )
 
 const (
-	CacheCategory = "CATEGORY"
-	CacheDisease  = "DISEASE"
-	CachePackage  = "PACKAGE"
-	CacheOrder    = "ORDER"
+	CacheCategory = "string.CATEGORY"
+	CacheDisease  = "string.DISEASE"
+	CachePackage  = "string.PACKAGE"
+	CacheOrder    = "string.ORDER"
 )
 
 // Api Cache Duration
@@ -24,5 +24,6 @@ const (
 	CategoryListDuration = time.Minute * 15
 	DiseaseListDuration  = time.Minute * 15
 	PackageListDuration  = time.Minute * 10
-	OrderListDuration    = time.Minute * 10
+	PackageOneDuration   = time.Minute * 10
+	OrderListDuration    = time.Second * 2
 )
