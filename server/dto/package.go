@@ -1,5 +1,13 @@
 package dto
 
+import (
+	"strconv"
+	"strings"
+
+	"mk-api/server/util"
+	"mk-api/server/util/consts"
+)
+
 type ListPackageInput struct {
 	// 页码, 不传默认第一页
 	PageNo int64 `json:"page_no,default=1" form:"page_no,default=1" binding:"min=1"`
@@ -18,11 +26,46 @@ type ListPackageInput struct {
 	// 适用人群 0-不限 1-男士 2-女未婚 3-女已婚
 	Target int8 `json:"target" form:"target" binding:"oneof=0 1 2 3" db:"target"`
 	// 检测目标高发疾病id
-	DiseaseId int8 `json:"disease_id,default=0" form:"disease_id,default=0" db:"disease_id"`
+	DiseaseId int64 `json:"disease_id,default=0" form:"disease_id,default=0" db:"disease_id"`
 	// 优先排序 0-默认排序，1-低价优先 2 高价优先
 	OrderBy int8 `json:"order_by" form:"order_by" binding:"oneof=0 1 2"`
 	// 按套餐名字搜索
 	Name string `json:"name" form:"name" db:"name"`
+}
+
+func (input *ListPackageInput) GetPkgsKey() string {
+	keys := make([]string, 0, 8)
+	if input.PageNo != 0 {
+		keys = append(keys, strconv.FormatInt(input.PageNo, 10))
+	}
+	if input.PageSize != 0 {
+		keys = append(keys, strconv.FormatInt(input.PageSize, 10))
+	}
+	if input.Level != 0 {
+		keys = append(keys, strconv.Itoa(int(input.Level)))
+	}
+	if input.CategoryId != 0 {
+		keys = append(keys, strconv.FormatInt(input.CategoryId, 10))
+	}
+	if input.MinPrice != 0 {
+		keys = append(keys, strconv.FormatInt(input.MinPrice, 10))
+	}
+	if input.MaxPrice != 0 {
+		keys = append(keys, strconv.FormatInt(input.MaxPrice, 10))
+	}
+	if input.Target != 0 {
+		keys = append(keys, strconv.Itoa(int(input.Target)))
+	}
+	if input.DiseaseId != 0 {
+		keys = append(keys, strconv.FormatInt(input.DiseaseId, 10))
+	}
+	if input.OrderBy != 0 {
+		keys = append(keys, strconv.Itoa(int(input.OrderBy)))
+	}
+	if input.Name != "" {
+		keys = append(keys, input.Name)
+	}
+	return consts.CachePackage + "_LIST_" + util.MD5V([]byte(strings.Join(keys, "_")))
 }
 
 type ListPackageOutputEle struct {

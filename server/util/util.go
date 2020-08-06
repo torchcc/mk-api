@@ -1,6 +1,8 @@
 package util
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -42,4 +44,10 @@ func Min(x, y int) int {
 		return x
 	}
 	return y
+}
+
+func MD5V(str []byte) string {
+	h := md5.New()
+	h.Write(str)
+	return hex.EncodeToString(h.Sum(nil))
 }

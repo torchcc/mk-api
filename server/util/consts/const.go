@@ -17,3 +17,10 @@ const (
 	CacheDisease  = "DISEASE"
 	CachePackage  = "PACKAGE"
 )
+
+// Api Cache Duration
+const (
+	CategoryListDuration = time.Minute * 15
+	DiseaseListDuration  = time.Minute * 15
+	PackageListDuration  = time.Minute * 10
+)

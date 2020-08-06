@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -10,4 +11,9 @@ func TestIsMobile(t *testing.T) {
 	for _, v := range s {
 		t.Log(IsMobile(v))
 	}
+}
+
+func TestMD5V(t *testing.T) {
+	a := "hello"
+	fmt.Print("hello is ..", MD5V([]byte(a)))
 }
