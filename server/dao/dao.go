@@ -22,13 +22,13 @@ var AffAcc *officialaccount.OfficialAccount
 
 // Register your redis-cli
 type Rdbs struct {
-	TokenRdb  *Redis
+	ApiCache  *Redis
 	TokenRdbP *redis.Pool
 }
 
 func init() {
 	Db = NewMySQLx(&conf.C.MysqlWrite)
-	Rdb.TokenRdb = NewRedis(&conf.C.RedisToken)
+	Rdb.ApiCache = NewRedis(&conf.C.RedisApiCache)
 	Rdb.TokenRdbP = NewRedisPool(&conf.C.RedisToken)
 	GoCache = NewGoCache()
 	AffAcc = NewOfficialAccount()

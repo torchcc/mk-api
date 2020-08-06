@@ -102,21 +102,15 @@ func (r *Redis) SetConn(conn *redis.Pool) {
 }
 
 // Get 获取一个值
-func (r *Redis) Get(key string) interface{} {
+func (r *Redis) Get(key string) ([]byte, error) {
 	conn := r.conn.Get()
 	defer conn.Close()
 
-	var data []byte
-	var err error
-	if data, err = redis.Bytes(conn.Do("GET", key)); err != nil {
-		return nil
+	reply, err := redis.Bytes(conn.Do("GET", key))
+	if err != nil {
+		return nil, err
 	}
-	var reply interface{}
-	if err = json.Unmarshal(data, &reply); err != nil {
-		return nil
-	}
-
-	return reply
+	return reply, nil
 }
 
 // SetEx 设置一个值 a
@@ -213,4 +207,23 @@ func (r *Redis) Expire(key string, timeout time.Duration) (err error) {
 	_, err = conn.Do("EXPIRE", key, int64(timeout/time.Second))
 
 	return
+}
+
+// LikeDeletes batch delete
+func (r *Redis) LikeDeletes(key string) error {
+	conn := r.conn.Get()
+	defer conn.Close()
+
+	keys, err := redis.Strings(conn.Do("KEYS", "*"+key+"*"))
+	if err != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		err = r.Delete(key)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

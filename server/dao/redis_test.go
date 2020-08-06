@@ -43,14 +43,11 @@ func TestRedis(t *testing.T) {
 func TestEncapsulatedRedis(t *testing.T) {
 	rd := NewRedis(redisCfg)
 
-	if err := rd.Set("fuck", "xue mei"); err != nil {
+	if err := rd.Set("f", "xue mei"); err != nil {
 		t.Errorf("redis set err: %v", err)
 	} else {
 		t.Logf("redis set done!")
 	}
-
-	val := rd.Get("fuck")
-	t.Logf("get done! key: fuck, val: %s", val.(string))
 
 	err := rd.SetEx("name", "lisa", time.Second*10)
 	if err != nil {

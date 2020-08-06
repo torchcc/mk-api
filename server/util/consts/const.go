@@ -11,3 +11,9 @@ const (
 	Success       int8 = 2
 	Unpaid        int8 = 0
 )
+
+const (
+	CacheCategory = "CATEGORY"
+	CacheDisease  = "DISEASE"
+	CachePackage  = "PACKAGE"
+)

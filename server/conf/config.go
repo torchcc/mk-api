@@ -11,13 +11,14 @@ const ServiceName = "mk-server"
 var C *Config
 
 type Config struct {
-	MysqlRead   MysqlConfig
-	MysqlWrite  MysqlConfig
-	RedisToken  RedisConfig
-	RedisWechat RedisConfig
-	Local       superconf.Config
-	MongoLog    MongoConfig
-	WeChat      WechatConfig
+	MysqlRead     MysqlConfig
+	MysqlWrite    MysqlConfig
+	RedisToken    RedisConfig
+	RedisApiCache RedisConfig
+	RedisWechat   RedisConfig
+	Local         superconf.Config
+	MongoLog      MongoConfig
+	WeChat        WechatConfig
 	// GenerateOrderKafka kafka.Config
 	RecvOpenIds []string // 运营人员open列表
 }
@@ -75,6 +76,7 @@ func init() {
 	allConfigs["/superconf/union/mysql/write"] = &cfg.MysqlWrite
 	allConfigs["/superconf/union/redis/token"] = &cfg.RedisToken
 	allConfigs["/superconf/union/redis/wechat"] = &cfg.RedisWechat
+	allConfigs["/superconf/union/redis/api_cache"] = &cfg.RedisApiCache
 	allConfigs["/superconf/union/mongo/log"] = &cfg.MongoLog
 	allConfigs["/superconf/third_party/wechat"] = &cfg.WeChat
 	allConfigs["/superconf/third_party/receiver_open_ids"] = &cfg.RecvOpenIds

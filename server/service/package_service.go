@@ -1,12 +1,16 @@
 package service
 
 import (
+	"encoding/json"
 	"sort"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	. "mk-api/server/dao"
 	"mk-api/server/dto"
 	"mk-api/server/model"
 	"mk-api/server/util"
+	"mk-api/server/util/consts"
 )
 
 type PkgAttr = int8
@@ -29,11 +33,48 @@ type packageService struct {
 }
 
 func (service *packageService) ListCategory() ([]*dto.Category, error) {
-	return service.packageModel.ListCategory()
+	var (
+		ctgs, cacheCtgs []*dto.Category
+	)
+	key := consts.CacheCategory
+	if Rdb.ApiCache.Exists(key) {
+		if data, err := Rdb.ApiCache.Get(key); err != nil {
+			util.Log.Errorf("failed to get categories from redis, err: %s", err.Error())
+		} else {
+			_ = json.Unmarshal(data, &cacheCtgs)
+			util.Log.Debugf("hit redis when getting category list!")
+			return cacheCtgs, nil
+		}
+	}
+	ctgs, err := service.packageModel.ListCategory()
+	if err != nil {
+		return nil, err
+	}
+	_ = Rdb.ApiCache.SetEx(key, ctgs, time.Minute*15)
+	return ctgs, nil
+
 }
 
 func (service *packageService) ListDisease() ([]*dto.Disease, error) {
-	return service.packageModel.ListDisease()
+	var (
+		diseases, cacheDiseases []*dto.Disease
+	)
+	key := consts.CacheDisease
+	if Rdb.ApiCache.Exists(key) {
+		if data, err := Rdb.ApiCache.Get(key); err != nil {
+			util.Log.Warningf("failed to get disease from redis, err: %s", err.Error())
+		} else {
+			_ = json.Unmarshal(data, &cacheDiseases)
+			util.Log.Debugf("hit redis when getting disease list!")
+			return cacheDiseases, nil
+		}
+	}
+	diseases, err := service.packageModel.ListDisease()
+	if err != nil {
+		return nil, err
+	}
+	_ = Rdb.ApiCache.SetEx(key, diseases, time.Minute*15)
+	return diseases, nil
 }
 
 func (service *packageService) RetrievePackage(id int64) (*dto.GetPackageOutPut, error) {
