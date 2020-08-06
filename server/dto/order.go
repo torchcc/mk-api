@@ -88,8 +88,6 @@ type ListOrderInput struct {
 func (input *ListOrderInput) GetListKey(userId int64) string {
 	keys := make([]string, 0, 8)
 
-	keys = append(keys, strconv.FormatInt(userId, 10))
-
 	if input.PageNo != 0 {
 		keys = append(keys, strconv.FormatInt(input.PageNo, 10))
 	}
@@ -100,7 +98,7 @@ func (input *ListOrderInput) GetListKey(userId int64) string {
 		keys = append(keys, strconv.Itoa(int(input.Status)))
 	}
 
-	return consts.CacheOrder + ".LIST." + util.MD5V([]byte(strings.Join(keys, "_")))
+	return consts.CacheOrder + ".LIST." + strconv.FormatInt(userId, 10) + "." + util.MD5V([]byte(strings.Join(keys, "_")))
 }
 
 type ListOrderOutputEle struct {

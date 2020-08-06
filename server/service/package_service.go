@@ -36,7 +36,7 @@ func (service *packageService) ListCategory() ([]*dto.Category, error) {
 	var (
 		ctgs, cacheCtgs []*dto.Category
 	)
-	key := consts.CacheCategory
+	key := consts.CacheCategory + ".ALL"
 	if Rdb.ApiCache.Exists(key) {
 		if data, err := Rdb.ApiCache.Get(key); err != nil {
 			util.Log.Errorf("failed to get categories from redis, err: %s", err.Error())
@@ -59,7 +59,7 @@ func (service *packageService) ListDisease() ([]*dto.Disease, error) {
 	var (
 		diseases, cacheDiseases []*dto.Disease
 	)
-	key := consts.CacheDisease
+	key := consts.CacheDisease + ".ALL"
 	if Rdb.ApiCache.Exists(key) {
 		if data, err := Rdb.ApiCache.Get(key); err != nil {
 			util.Log.Warningf("failed to get disease from redis, err: %s", err.Error())
