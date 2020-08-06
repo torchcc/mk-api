@@ -312,7 +312,7 @@ func (db *orderDatabase) ListOrder(input *dto.ListOrderInput, userId int64) ([]*
 			mko_order_item AS moi
 				INNER JOIN
 					mkp_package AS mp
-					ON moi.pkg_id = mp.id AND mp.is_deleted = 0
+					ON moi.pkg_id = mp.id 
 		WHERE
 				moi.order_id IN (?)
 		  AND moi.is_deleted = 0
