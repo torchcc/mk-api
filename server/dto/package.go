@@ -33,7 +33,7 @@ type ListPackageInput struct {
 	Name string `json:"name" form:"name" db:"name"`
 }
 
-func (input *ListPackageInput) GetPkgsKey() string {
+func (input *ListPackageInput) GetListKey() string {
 	keys := make([]string, 0, 8)
 	if input.PageNo != 0 {
 		keys = append(keys, strconv.FormatInt(input.PageNo, 10))

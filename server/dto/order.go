@@ -1,5 +1,13 @@
 package dto
 
+import (
+	"strconv"
+	"strings"
+
+	"mk-api/server/util"
+	"mk-api/server/util/consts"
+)
+
 type PostOrderInput struct {
 	// 订单项目
 	CartItems []*CartItem `json:"cart_items" binding:"required,dive"`
@@ -75,6 +83,24 @@ type ListOrderInput struct {
 	PageSize int64 `json:"page_size,default=10" form:"page_size,default=10" binding:"min=1,max=100"`
 	// 订单筛选 -1-全部，0-待付款，2-待预约(指已经付款) 3-已退款 4-已关闭 5-待评价(该功能暂时disable)
 	Status int8 `json:"status" db:"status" form:"status,default=-1" binding:"min=-1,max=5"`
+}
+
+func (input *ListOrderInput) GetListKey(userId int64) string {
+	keys := make([]string, 0, 8)
+
+	keys = append(keys, strconv.FormatInt(userId, 10))
+
+	if input.PageNo != 0 {
+		keys = append(keys, strconv.FormatInt(input.PageNo, 10))
+	}
+	if input.PageSize != 0 {
+		keys = append(keys, strconv.FormatInt(input.PageSize, 10))
+	}
+	if input.Status != 0 {
+		keys = append(keys, strconv.Itoa(int(input.Status)))
+	}
+
+	return consts.CacheOrder + "_LIST_" + util.MD5V([]byte(strings.Join(keys, "_")))
 }
 
 type ListOrderOutputEle struct {

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -13,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"mk-api/library/ecode"
 	"mk-api/server/conf"
+	. "mk-api/server/dao"
 	"mk-api/server/dto"
 	"mk-api/server/model"
 	"mk-api/server/util"
@@ -129,24 +131,42 @@ func (service *orderService) RetrieveOrder(ctx *gin.Context, id int64) (*dto.Ret
 }
 
 func (service *orderService) ListOrder(ctx *gin.Context, input *dto.ListOrderInput) (*dto.PaginateListOutput, error) {
-	var data dto.PaginateListOutput
+	var (
+		output, cacheOutput dto.PaginateListOutput
+	)
+
+	key := input.GetListKey(ctx.GetInt64("userId"))
+	if Rdb.ApiCache.Exists(key) {
+		data, err := Rdb.ApiCache.Get(key)
+		if err != nil {
+			util.Log.Warningf("failed to order list from redis, err: %s", err.Error())
+		} else {
+			util.Log.Debugf("hit redis when getting order list !")
+			_ = json.Unmarshal(data, &cacheOutput)
+			return &cacheOutput, nil
+		}
+	}
+
 	list, err := service.orderModel.ListOrder(input, ctx.GetInt64("userId"))
 	if err != nil {
 		util.Log.Errorf("查询订单列表出错, err: [%s]", err)
-		return &data, err
+		return &output, err
 	}
 	var length int
 	if len(list) == int(input.PageSize)+1 {
-		data.HasNext = 1
+		output.HasNext = 1
 		length = len(list) - 1
 	} else {
 		length = len(list)
 	}
 	list = list[:length]
-	data.PageSize = int64(length)
-	data.PageNo = input.PageNo
-	data.List = list
-	return &data, err
+	output.PageSize = int64(length)
+	output.PageNo = input.PageNo
+	output.List = list
+
+	go Rdb.ApiCache.SetEx(key, output, consts.OrderListDuration)
+
+	return &output, err
 }
 
 func (service *orderService) CreateOrder(ctx *gin.Context, input *dto.PostOrderInput) (*wo.Config, error) {

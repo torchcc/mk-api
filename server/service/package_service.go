@@ -121,7 +121,7 @@ func (service *packageService) ListPackage(ctx *gin.Context, input *dto.ListPack
 	var (
 		output, cacheOutput dto.PaginateListOutput
 	)
-	key := input.GetPkgsKey()
+	key := input.GetListKey()
 	if Rdb.ApiCache.Exists(key) {
 		data, err := Rdb.ApiCache.Get(key)
 		if err != nil {
