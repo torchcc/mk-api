@@ -38,6 +38,8 @@ func (db regionDatabase) FindRegionsByParentId(parentId int64) (output []*dto.Re
 	err = db.connection.Select(&output, cmd, parentId)
 
 	if err != nil {
+		util.Log.Errorf("failed to get regions, sql: %s, parent_id: %d, err: %s", cmd, parentId, err.Error())
+	} else {
 		db.goCache.Set(key, output, cache.DefaultExpiration)
 	}
 	return

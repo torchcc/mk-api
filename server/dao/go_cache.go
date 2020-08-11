@@ -7,5 +7,5 @@ import (
 )
 
 func NewGoCache() *cache.Cache {
-	return cache.New(5*time.Minute, 10*time.Minute)
+	return cache.New(15*time.Minute, 20*time.Minute)
 }
