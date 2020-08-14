@@ -148,7 +148,7 @@ func (c *userController) UploadAvatar(ctx *gin.Context) {
 func (c *userController) PutUserProfile(ctx *gin.Context) {
 	var input dto.PutUserProfileInput
 	if err := util.ParseRequest(ctx, &input); err != nil {
-		util.Log.Errorf("参数绑定失败, err: [%s]", err)
+		util.Log.Warningf("failed to bind params, err: [%s]", err)
 		middleware.ResponseError(ctx, ecode.RequestErr, err)
 		return
 	}

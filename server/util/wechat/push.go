@@ -44,7 +44,7 @@ func RefundLaunchedNotifyStaff(openIds []string, outTradeNo string) {
 		}
 
 		if _, err := tmpl.Send(msg); err != nil {
-			util.Log.Errorf("failed to send msg to %s, err: [%s]", openIds[i], err.Error())
+			util.Log.Warningf("failed to send msg to %s, err: [%s]", openIds[i], err.Error())
 		}
 	}
 }
@@ -85,7 +85,7 @@ func OrderPaidNotifyStaff(openIds []string, outTradeNo string, amount float64, p
 			},
 		}
 		if _, err := tmpl.Send(msg); err != nil {
-			util.Log.Errorf("failed to send msg to %s, err: [%s]", openIds[i], err.Error())
+			util.Log.Warningf("failed to send msg to %s, err: [%s]", openIds[i], err.Error())
 		}
 	}
 }
@@ -129,7 +129,7 @@ func OrderPaidNotifyClient(openId, outTradeNo string, amount float64, orderId, p
 		},
 	}
 	if _, err := tmpl.Send(msg); err != nil {
-		util.Log.Errorf("failed to send msg to %s, err: [%s]", openId, err.Error())
+		util.Log.Warningf("failed to send msg to %s, err: [%s]", openId, err.Error())
 	}
 
 }
@@ -173,7 +173,7 @@ func AppointmentMadeNotifyClient(openId string, examTime string, examCenterName 
 	}
 
 	if _, err := tmpl.Send(msg); err != nil {
-		util.Log.Errorf("failed to send msg to %s, err: [%s]", openId, err.Error())
+		util.Log.Warningf("failed to send msg to %s, err: [%s]", openId, err.Error())
 	}
 }
 
@@ -210,6 +210,6 @@ func RefundAgreedNotifyClient(openId, outTradeNo string, amount float64) {
 		},
 	}
 	if _, err := tmpl.Send(msg); err != nil {
-		util.Log.Errorf("failed to send msg to %s, err: [%s]", openId, err.Error())
+		util.Log.Warningf("failed to send msg to %s, err: [%s]", openId, err.Error())
 	}
 }

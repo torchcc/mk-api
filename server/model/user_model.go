@@ -125,7 +125,7 @@ func (db *userDatabase) Save(u *User) (id int64, err error) {
 			tx.Rollback() // err is non-nil; don't change it
 		} else {
 			err = tx.Commit() // err is nil; if Commit returns error update err
-			util.Log.Info("commit")
+			util.Log.Infof("tx done! success to create a user, param is %v", u)
 		}
 	}()
 

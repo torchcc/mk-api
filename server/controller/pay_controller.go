@@ -59,7 +59,7 @@ type payController struct {
 func (c *payController) Launch2ndPay(ctx *gin.Context) {
 	var order dto.ResourceID
 	if err := ctx.ShouldBindJSON(&order); err != nil {
-		util.Log.Error("绑定参数错误")
+		util.Log.Warning("failed to bind param order_id")
 		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("参数id出错"))
 		return
 	}
@@ -69,19 +69,19 @@ func (c *payController) Launch2ndPay(ctx *gin.Context) {
 		case ecode.Codes:
 			if ecode.Equal(err.(ecode.Codes), ecode.RequestErr) {
 				util.Log.WithFields(logrus.Fields{"order_id": order.Id}).
-					Warningf("重新支付失败, err: [%s]", ctx.Errors.Last().Error())
+					Warningf("failed to launch a 2nd pay, err: [%s]", ctx.Errors.Last().Error())
 				middleware.ResponseError(ctx, ecode.RequestErr, ctx.Errors.Last())
 				return
 			}
 			if ecode.Equal(err.(ecode.Codes), ecode.NothingFound) {
 				util.Log.WithFields(logrus.Fields{"order_id": order.Id}).
-					Warningf("重新支付失败, err: [%s]", ctx.Errors.Last().Error())
+					Warningf("failed to launch a 2nd pay, err: [%s]", ctx.Errors.Last().Error())
 				middleware.ResponseError(ctx, ecode.NothingFound, errors.New("啥都木有"))
 				return
 			}
 		}
 		util.Log.WithFields(logrus.Fields{"order_id": order.Id}).
-			Errorf("重新支付失败, err: [%s]", ctx.Errors.Last().Error())
+			Errorf("failed to launch a 2nd pay, err: [%s]", ctx.Errors.Last().Error())
 		middleware.ResponseError(ctx, ecode.ServerErr, errors.New("服务器错误"))
 	}
 	middleware.ResponseSuccess(ctx, cfg)

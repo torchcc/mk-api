@@ -383,7 +383,7 @@ func (db *orderDatabase) SaveOrder(order *dto.Order, items []*dto.OrderItem) (id
 			tx.Rollback() // err is non-nil; don't change it
 		} else {
 			err = tx.Commit() // err is nil; if Commit returns error update err
-			util.Log.Info("commit")
+			util.Log.Info("tx done! success to create an order")
 		}
 	}()
 

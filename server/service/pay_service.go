@@ -76,7 +76,7 @@ func (service *payService) WechatPayCallBack(ctx *gin.Context) bool {
 		return false
 	}
 
-	util.Log.Infof("wechat pay notify body: [%s]", string(body))
+	util.Log.Debugf("wechat pay notify body: [%s]", string(body))
 
 	var result notify.PaidResult
 	err = xml.Unmarshal(body, &result)

@@ -178,10 +178,10 @@ func (db *packageDatabase) ListPackage(input *dto.ListPackageInput) ([]dto.ListP
 		Start: start, Offset: offset, ListPackageInput: *input,
 	}
 	str, _ := json.Marshal(params)
-	util.Log.Infof("查询套餐列表sql: [%s], 参数: [%v]", cmd, string(str))
+	util.Log.Debugf("查询套餐列表sql: [%s], 参数: [%v]", cmd, string(str))
 	rows, err := db.connection.NamedQuery(cmd, params)
 	if err != nil {
-		util.Log.Errorf("查询套餐列表出错, sql: [%s], 参数： [%v], err: [%s]", cmd, input, err.Error())
+		util.Log.Errorf("failed to query package list, sql: [%s], params： [%v], err: [%s]", cmd, input, err.Error())
 		return elems, err
 	}
 	defer rows.Close()

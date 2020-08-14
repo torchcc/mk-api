@@ -55,7 +55,7 @@ func (db regionDatabase) GetRegionIdNameMap() (id2name map[int64]string, err err
 		cmd := `SELECT id, name FROM mkm_region WHERE is_deleted = 0`
 		err = db.connection.Select(&idNames, cmd)
 		if err != nil {
-			util.Log.Errorf("查询region出错，err: [%s]", err)
+			util.Log.Errorf("failed to get regionIdName map，err: [%s]", err)
 			return
 		}
 		regionId2NameMap = make(map[int64]string)

@@ -92,7 +92,7 @@ func (db *payDatabase) SaveTradeBill(bill *dto.TradeBill) (id int64, err error) 
 	if err != nil {
 		return
 	}
-	util.Log.Infof("sql is: [%s], params is: [%v]", cmd, bill)
+	util.Log.Infof("success to create a trade bill, sql is: [%s], params is: [%v]", cmd, bill)
 	id, err = rs.LastInsertId()
 	return
 }
