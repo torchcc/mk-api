@@ -3,15 +3,18 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"mk-api/library/ecode"
+	. "mk-api/server/dao"
 	"mk-api/server/dto"
 	"mk-api/server/model"
 	"mk-api/server/util"
+	"mk-api/server/util/consts"
 	"mk-api/server/validator/id_card"
 )
 
@@ -40,6 +43,11 @@ type userService struct {
 
 func (service *userService) UploadAvatar(ctx *gin.Context, avatarUrl string) error {
 	userId := ctx.GetInt64("userId")
+
+	// delete api cache
+	key := consts.CacheProfile + "." + strconv.FormatInt(userId, 10)
+	go Rdb.ApiCache.Delete(key)
+
 	return service.model.UpdateAvatUrl(avatarUrl, userId)
 }
 
@@ -49,6 +57,11 @@ func (service *userService) ModifyProfile(ctx *gin.Context, input *dto.PutUserPr
 	if err != nil {
 		util.Log.Errorf("修改用户信息失败, input: [%v], err: [%s]", input, err.Error())
 	}
+
+	// delete api cache
+	key := consts.CacheProfile + "." + strconv.FormatInt(input.UserId, 10)
+	go Rdb.ApiCache.Delete(key)
+
 	return err
 }
 
@@ -133,11 +146,29 @@ func (service *userService) SaveAddr(addr *model.UserAddr) (id int64, err error)
 }
 
 func (service *userService) Retrieve(id int64) (*dto.UserDetailOutput, error) {
+	var output dto.UserDetailOutput
+
+	// try to get result from redis
+	key := consts.CacheProfile + "." + strconv.FormatInt(id, 10)
+	if Rdb.ApiCache.Exists(key) {
+		data, err := Rdb.ApiCache.Get(key)
+		if err != nil {
+			util.Log.Warningf("failed to retrieve profile from redis, err: %s, user_id: %d", err.Error(), id)
+		} else {
+			util.Log.Debugf("hit redis when retrieving package !")
+			_ = json.Unmarshal(data, &output)
+			return &output, nil
+		}
+	}
+
 	u, err := service.model.FindUserByID(id)
 	if err != nil {
 		err = errors.Wrap(ecode.ServerErr,
 			fmt.Sprintf("[FindUserByID] Params: [%v] failed with error: %s", id, err.Error()))
 	}
+
+	go Rdb.ApiCache.SetEx(key, u, consts.ProfileOneDuration)
+
 	return u, err
 }
 

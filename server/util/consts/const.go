@@ -9,7 +9,6 @@ const (
 	OrderExpireIn      = time.Second * 2 * 3600
 	Closed        int8 = 4
 	Success       int8 = 2
-	Unpaid        int8 = 0
 )
 
 const (
@@ -17,6 +16,7 @@ const (
 	CacheDisease  = "string.DISEASE"
 	CachePackage  = "string.PACKAGE"
 	CacheOrder    = "string.ORDER"
+	CacheProfile  = "string.PROFILE"
 )
 
 // Api Cache Duration
@@ -26,4 +26,5 @@ const (
 	PackageListDuration  = time.Minute * 10
 	PackageOneDuration   = time.Minute * 10
 	OrderListDuration    = time.Second * 2
+	ProfileOneDuration   = time.Hour * 24
 )
