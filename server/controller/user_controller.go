@@ -78,18 +78,18 @@ type userController struct {
 // @Success 200 {object} middleware.Response{data=string} "success"
 // @Router /location [post]
 func (c *userController) PostLocation(ctx *gin.Context) {
-	userId := ctx.GetInt64("userId")
-	var input dto.PostLocInput
-	err := ctx.ShouldBindJSON(&input)
-	if err != nil {
-		util.Log.Warningf("location param error, [%s]", err)
-		middleware.ResponseError(ctx, ecode.RequestErr, err)
-		return
-	}
-	util.Log.WithFields(logrus.Fields{"longitude": input.Longitude,
-		"latitude": input.Latitude,
-		"user_id":  userId,
-	}).Infof("location gotten")
+	// userId := ctx.GetInt64("userId")
+	// var input dto.PostLocInput
+	// err := ctx.ShouldBindJSON(&input)
+	// if err != nil {
+	// 	util.Log.Warningf("location param error, [%s]", err)
+	// 	middleware.ResponseError(ctx, ecode.RequestErr, err)
+	// 	return
+	// }
+	// util.Log.WithFields(logrus.Fields{"longitude": input.Longitude,
+	// 	"latitude": input.Latitude,
+	// 	"user_id":  userId,
+	// }).Infof("location gotten")
 	middleware.ResponseSuccess(ctx, "ok")
 }
 
