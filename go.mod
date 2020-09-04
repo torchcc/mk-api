@@ -26,9 +26,7 @@ require (
 	github.com/swaggo/swag v1.6.7
 	github.com/tencentcloud/tencentcloud-sdk-go v3.0.213+incompatible
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.7
-	github.com/weekface/mgorus v0.0.0-20181029072001-239539fe10e4
 	golang.org/x/image v0.0.0-20200618115811-c13761719519 // indirect
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
-	golang.org/x/tools v0.0.0-20190614205625-5aca471b1d59
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )
