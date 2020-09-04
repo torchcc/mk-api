@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"github.com/weekface/mgorus"
+	"mk-api/server/util/mgorus"
 
 	"mk-api/server/conf"
 )
