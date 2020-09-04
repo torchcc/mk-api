@@ -41,7 +41,8 @@ ENV \
 # 将 PRC 复制到 /etc/localtime 可以改变本地时区，从而不需要改 golang 代码
 ADD PRC /etc/localtime
 ADD zoneinfo.tar.gz /
-ADD https://curl.haxx.se/ca/cacert.pem /etc/ssl/certs/
+# ADD https://curl.haxx.se/ca/cacert.pem /etc/ssl/certs/
+ADD cacert.pem /etc/ssl/certs/
 
 COPY ./server/static /src/mk-api/server/static
 COPY ./deployment  /src/mk-api/deployment
