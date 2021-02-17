@@ -11,8 +11,8 @@ ENV \
 
 
 COPY app .
-COPY ./server/static ./server/static
-COPY ./deployment  ./deployment
+COPY ./server/static /var/lib/jenkins/workspace/mk-api-pipeline/server/static
+COPY ./deployment  /var/lib/jenkins/workspace/mk-api-pipeline/deployment
 
 ADD PRC /etc/localtime
 ADD zoneinfo.tar.gz /
