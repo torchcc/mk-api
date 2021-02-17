@@ -128,4 +128,5 @@ Log.WithFields(logrus.Fields{"order_id": 123456, "user_id": 1}).Errorf("订单�
 ```bash
 go get -u github.com/swaggo/swag/cmd/swag 
 swag init
+
 ```
