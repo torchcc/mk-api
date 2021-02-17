@@ -11,7 +11,6 @@ ENV \
 
 
 COPY app .
-COPY conf/conf.toml ./conf/
 COPY ./server/static ./server/static
 COPY ./deployment  ./deployment
 

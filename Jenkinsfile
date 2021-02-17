@@ -20,7 +20,7 @@ def build(branch) {
         sh "docker rm -f t-mk-con && docker run -p 8081:8081 -d --name t-mk-con t-mk-img"
     }  else if (branch == 'release') {
         echo 'building prod env docker image...'
-        sh "docker build . -t mk-img-prd -f ./deployment/prod/Dockerfile"
+        sh "docker build . -t mk-img-prod -f ./deployment/prod/Dockerfile"
         echo 'running prod env docker container...'
         sh "docker rm -f p-mk-con && docker run -p 8071:8071 -d --name p-mk-con mk-img-prod"
     }
