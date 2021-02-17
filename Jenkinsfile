@@ -48,9 +48,13 @@ pipeline {
     }
 
     stages {
-        stage('pull code') {
+        stage('Prepare Env') {
             steps {
+                echo 'Preparing Env...'
+                // need to install workspace plugin
+                cleanWs()
                 checkout([$class: 'GitSCM', branches: [[name: '*/release']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '47238156-6f3a-4339-9495-12d51b6c9577', url: 'git@github.com:Torchcc/mk-api.git']]])
+                echo "checkout to path ${env.WORKSPACE}"
             }
         }
         stage('Build') {
