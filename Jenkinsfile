@@ -61,7 +61,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
-                build(env.BRANCH_NAME)
+                build('release')
             }
         }
     }
