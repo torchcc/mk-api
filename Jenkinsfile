@@ -11,10 +11,18 @@ def getLatestVersion(branch) {
 
 def build(branch) {
     echo 'going to build branch ' + branch
-    sh "go mod tidy"
+    sh "go mod download"
     sh "go build -o app ."
-    if (branch == 'release') {
-        echo 'deploying...'
+    if (branch == 'test') {
+        echo 'building test env docker image...'
+        sh "docker build . -t t-mk-img -f ./deployment/test/Dockerfile"
+        echo 'running test env docker container...'
+        sh "docker rm -f t-mk-con && docker run -p 8081:8081 -d --name t-mk-con t-mk-img"
+    }  else if (branch == 'release') {
+        echo 'building prod env docker image...'
+        sh "docker build . -t mk-img-prd -f ./deployment/prod/Dockerfile"
+        echo 'running prod env docker container...'
+        sh "docker rm -f p-mk-con && docker run -p 8071:8071 -d --name p-mk-con mk-img-prod"
     }
 }
 
@@ -52,13 +60,8 @@ pipeline {
 
         stage('Build') {
             steps {
-            echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
-            sh 'mvn clean package'
-            }
-        }
-        stage('publish project') {
-            steps {
-                deploy adapters: [tomcat9(credentialsId: '8c2f7e52-3591-4460-84fc-64ac1c1482ad', path: '', url: 'http://106.53.124.190:7080')], contextPath: 'web_demo_pipeline', war: 'target/*.war'
+                echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
+                build(env.BRANCH_NAME)
             }
         }
     }
