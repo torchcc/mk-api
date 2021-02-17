@@ -50,7 +50,7 @@ pipeline {
     stages {
         stage('pull code') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/release']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Torchcc/mk-api.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/release']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'git@github.com:Torchcc/mk-api.git']]])
             }
         }
         stage('Build') {
