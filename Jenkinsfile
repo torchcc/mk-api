@@ -48,16 +48,11 @@ pipeline {
     }
 
     stages {
-        stage('Prepare Env') {
+        stage('pull code') {
             steps {
-                echo 'Preparing Env...'
-                // need to install workspace plugin
-                cleanWs()
-                checkout scm
-                echo "checkout to path ${env.WORKSPACE}"
+                checkout([$class: 'GitSCM', branches: [[name: '*/release']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Torchcc/mk-api.git']]])
             }
         }
-
         stage('Build') {
             steps {
                 echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
