@@ -10,6 +10,7 @@ def getLatestVersion(branch) {
 }
 
 def build(branch) {
+    echo '****************************** golang start... ******************************'
     echo 'going to build branch ' + branch
     sh "go mod download"
     sh "go build -o app ."
@@ -53,7 +54,7 @@ pipeline {
                 echo 'Preparing Env...'
                 // need to install workspace plugin
                 cleanWs()
-                checkout([$class: 'GitSCM', branches: [[name: '*/release']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '47238156-6f3a-4339-9495-12d51b6c9577', url: 'git@github.com:Torchcc/mk-api.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/release']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'troy-ssh-private-tx', url: 'git@github.com:Torchcc/mk-api.git']]])
                 echo "checkout to path ${env.WORKSPACE}"
             }
         }
